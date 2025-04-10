@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Bangers&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-black: #090909;
+  --color-dark-blue: #0f1626;
+  --color-midnight: #1a1f35;
+  --color-cosmic-blue: #283654;
+  --color-accent-gold: #c8a95a;
+  --color-accent-blue: #3b75c4;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b8b8d0;
+  --color-surface: #0c0e16;
+  --color-surface-hover: #151a28;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  color: var(--color-text-primary);
+  background-color: var(--color-black);
+}
+
+.heading-accent {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.heading-stylized {
+  font-family: 'Bangers', cursive;
+  letter-spacing: 1px;
+}
+
+@layer components {
+  .container {
+    @apply px-4 mx-auto max-w-7xl;
+  }
+
+  .btn {
+    @apply px-6 py-3 text-sm font-medium transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply text-white bg-[color:var(--color-cosmic-blue)] hover:bg-[color:var(--color-accent-blue)] border border-[rgba(255,255,255,0.15)];
+  }
+
+  .btn-accent {
+    @apply text-[color:var(--color-black)] bg-[color:var(--color-accent-gold)] hover:bg-[#dabb6e] font-medium;
+  }
+
+  .nav-link {
+    @apply text-sm font-medium uppercase transition-all duration-200 hover:text-[color:var(--color-accent-gold)];
+  }
+
+  .product-card {
+    @apply relative overflow-hidden transition-all duration-300 bg-[color:var(--color-surface)] hover:bg-[color:var(--color-surface-hover)] border-b border-[rgba(255,255,255,0.1)];
+  }
+
+  .product-title {
+    @apply text-sm font-medium;
+  }
+
+  .product-price {
+    @apply text-sm font-medium;
+  }
+}
+
+/* Subtle starry background */
+.starry-bg {
+  background-color: var(--color-black);
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0.5px, transparent 0.5px),
+    radial-gradient(circle at 70% 30%, rgba(255,255,255,0.1) 0.5px, transparent 0.5px),
+    radial-gradient(circle at 30% 70%, rgba(255,255,255,0.1) 0.5px, transparent 0.5px);
+  background-size: 100px 100px;
+}
+
+/* Subtle animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.8s ease-out;
+}
+
+.slide-up {
+  animation: slideUp 0.8s ease-out;
+}
+
+/* Gradient text effect */
+.gradient-text {
+  background: linear-gradient(45deg, var(--color-accent-gold), #e0c88a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Cosmic border glow */
+.cosmic-glow {
+  box-shadow: 0 0 15px rgba(200, 169, 90, 0.2);
+}
