@@ -101,16 +101,16 @@ const FeaturedProducts = () => {
       });
   
   return (
-    <section className="py-16 cosmic-gradient relative overflow-hidden">
+    <section className="py-16 relative overflow-hidden bg-[#0f172a]">
       <div className="absolute inset-0 starry-bg opacity-20"></div>
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col items-center mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-3 relative inline-block">
-            <span className="text-white">NEW ARRIVALS</span>
+            <span style={{ color: '#ffffff' }} className="text-white">NEW ARRIVALS</span>
             <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500"></span>
           </h2>
-          <p className="text-[#cbd5e1] text-center mt-4 max-w-2xl">
+          <p style={{ color: '#cbd5e1' }} className="text-[#cbd5e1] text-center mt-4 max-w-2xl">
             Discover our latest collection of premium streetwear designed for those who appreciate distinctive style
           </p>
           
@@ -125,6 +125,7 @@ const FeaturedProducts = () => {
                     : 'bg-[#1e293b] text-[#cbd5e1] hover:bg-[#334155]'
                 }`}
                 onClick={() => setActiveCategory(category.id)}
+                style={{ color: activeCategory === category.id ? '#ffffff' : '#cbd5e1' }}
               >
                 {category.name}
               </button>
@@ -133,15 +134,27 @@ const FeaturedProducts = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-          {filteredProducts.map(product => (
-            <div key={product.id} className="opacity-0 transform translate-y-8" style={{animation: 'slideUp 0.6s forwards'}}>
+          {filteredProducts.map((product, index) => (
+            <div 
+              key={product.id} 
+              className="featured-product-item"
+              style={{
+                animation: `slideUp 0.6s forwards ${index * 0.1}s`,
+                opacity: 0,
+                transform: 'translateY(20px)'
+              }}
+            >
               <ProductCard product={product} />
             </div>
           ))}
         </div>
         
         <div className="flex justify-center mt-12">
-          <Link to="/collections/all" className="btn btn-secondary group">
+          <Link 
+            to="/collections/all" 
+            className="px-6 py-3 bg-[#1e293b] text-white rounded-md hover:bg-[#334155] transition-all duration-300 flex items-center group"
+            style={{ color: '#ffffff' }}
+          >
             <span>VIEW ALL PRODUCTS</span>
             <FiArrowRight className="ml-2 transform transition-transform group-hover:translate-x-1" />
           </Link>
