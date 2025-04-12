@@ -18,7 +18,7 @@ const HeroTitle = () => {
         span.style.transition = `all 0.5s ease`;
         span.style.transitionDelay = `${index * 0.03}s`;
         
-        // Apply elegant white color with subtle glow
+        
         span.style.color = '#ffffff';
         span.style.textShadow = '0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(150, 170, 255, 0.3)';
         
@@ -35,14 +35,14 @@ const HeroTitle = () => {
   return (
     <div className="container mx-auto px-4 mb-8 relative">
       <div className="relative z-10 py-20 text-center">
-        {/* Removed the title tag "Experience the Universe" */}
         
-        {/* Main title with animation */}
+        
+        
         <h1 ref={titleRef} className="text-4xl md:text-5xl lg:text-6xl font-black mb-8">
           WELCOME TO COSMIC HEROS
         </h1>
 
-        {/* Animated underline */}
+       
         <div className="h-1 w-0 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-full mx-auto mb-8 animate-expand"></div>
 
         <p className="text-center text-slate-300 max-w-2xl mx-auto text-lg mb-10 animate-fadeIn opacity-0" style={{ animationDelay: '1s', animationFillMode: 'forwards' }}>
@@ -56,7 +56,7 @@ const HeroTitle = () => {
         </div>
       </div>
 
-      {/* Animations CSS */}
+      
       <style jsx="true">{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(20px); }

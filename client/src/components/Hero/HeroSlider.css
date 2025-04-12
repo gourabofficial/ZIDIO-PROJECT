@@ -7,7 +7,7 @@
 .swiper-slide {
   display: flex;
   transition: all 0.6s ease;
-  justify-content: center; /* 🟢 Center cards inside each slide */
+  justify-content: center; 
 }
 
 /* Card styling */
@@ -16,8 +16,8 @@
   transform: scale(0.9);
   transition: all 0.6s ease;
   height: 100%;
-  width: 90%; /* 🟢 Reduced card width for better spacing */
-  max-width: 320px; /* 🟢 Optional limit */
+  width: 90%; 
+  max-width: 320px; 
   border-radius: 12px;
   overflow: hidden;
 }

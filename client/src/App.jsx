@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Collection from './pages/Collection';
 import ProductDetails from './pages/ProductDetails';
 import './App.css';
+import TrendingProducts from './pages/TrandingProducts';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Route path="/collections/:collectionHandle" element={<Collection />} />
             <Route path="/collections/all" element={<Collection />} />
             <Route path="/products/:handle" element={<ProductDetails />} />
+            <Route path="/trending" element={<TrendingProducts />} />
             {/* Add more routes as needed */}
           </Routes>
         </main>

@@ -51,8 +51,8 @@ export const mockProducts = [
     title: 'Alchemy Washed Tshirt (Preorder)',
     price: 1749.00,
     compareAtPrice: null,
-    image: 'https://ext.same-assets.com/1881412388/3830187826.jpeg',
-    hoverImage: 'https://ext.same-assets.com/1881412388/3830187826.jpeg',
+    image: 'https://veirdo.in/cdn/shop/files/6_4.jpg?v=1721718417&width=720',
+    hoverImage: 'https://veirdo.in/cdn/shop/files/6_4.jpg?v=1721718417&width=720',
   },
   {
     id: 7,

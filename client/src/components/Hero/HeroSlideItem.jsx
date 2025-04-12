@@ -4,7 +4,7 @@ import { FiArrowRight } from 'react-icons/fi';
 
 const HeroSlideItem = ({ slide }) => {
   return (
-    <div className="w-full max-w-[300px]"> {/* ✅ Limit max card width */}
+    <div className="w-full max-w-[300px]"> 
       <div className="bg-[#171a29] rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:shadow-purple-500/20 hover:-translate-y-1 h-full flex flex-col">
         <div className="h-64 overflow-hidden">
           <img 

@@ -9,14 +9,14 @@ import './HeroSlider.css';
 
 const HeroSlider = () => {
   return (
-    <div className="w-full max-w-[1280px] mx-auto"> {/* Centered Swiper */}
+    <div className="w-full max-w-[1280px] mx-auto"> 
       <Swiper
         slidesPerView={3}
-        spaceBetween={0} // ✅ No extra space
+        spaceBetween={0} 
         centeredSlides={false}
         pagination={{ clickable: true }}
         autoplay={{
-          delay: 3000,
+          delay: 1000,
           disableOnInteraction: false,
         }}
         speed={600}

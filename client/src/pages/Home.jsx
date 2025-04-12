@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import HeroSection from '../components/Hero/HeroSection';
 import FeaturedProducts from '../components/FeaturedProducts/FeatureProduct';
+import TrendingProductsPage from '../components/TrandingProducts/TrandingProductsPage';
 
 const Home = () => {
   useEffect(() => {
@@ -12,6 +13,7 @@ const Home = () => {
     <div className="min-h-screen">
       <HeroSection />
       <FeaturedProducts />
+      <TrendingProductsPage />
     </div>
   );
 };
