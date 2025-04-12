@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import Hero from '../components/Hero';
-import FeaturedProducts from '../components/FeaturedProducts';
+import HeroSection from '../components/Hero/HeroSection';
+import FeaturedProducts from '../components/FeaturedProducts/FeatureProduct';
 
 const Home = () => {
   useEffect(() => {
@@ -10,7 +10,7 @@ const Home = () => {
   
   return (
     <div className="min-h-screen">
-      <Hero />
+      <HeroSection />
       <FeaturedProducts />
     </div>
   );

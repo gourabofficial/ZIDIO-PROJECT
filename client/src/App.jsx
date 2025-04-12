@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/Header';
-import Footer from './components/Footer';
+import Header from './components/Header/Header';
+import Footer from './components/Footer/Footer';
 import Home from './pages/Home';
 import Collection from './pages/Collection';
 import ProductDetails from './pages/ProductDetails';
@@ -9,9 +9,9 @@ import './App.css';
 function App() {
   return (
     <Router>
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-[#0c0e16]"> {/* Make sure background color is consistent */}
         <Header />
-        <main className="flex-grow">
+        <main className="flex-grow flex flex-col"> {/* Added flex flex-col */}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/collections/:collectionHandle" element={<Collection />} />
