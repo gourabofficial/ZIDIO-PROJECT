@@ -6,7 +6,7 @@ import ViewAllButton from './ViewAllButton';
 
 const FeaturedProducts = () => {
   return (
-    <section className="py-16 relative overflow-hidden bg-[#0f172a]">
+    <section className="py-16 relative overflow-hidden bg-[#0c0e16] border-t border-[#334155]">
       <div className="absolute inset-0 starry-bg opacity-20"></div>
       
       <div className="container mx-auto px-4 relative z-10">

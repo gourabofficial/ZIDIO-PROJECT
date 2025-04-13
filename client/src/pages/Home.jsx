@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import HeroSection from '../components/Hero/HeroSection';
 import FeaturedProducts from '../components/FeaturedProducts/FeatureProduct';
 import TrendingProductsPage from '../components/TrandingProducts/TrandingProductsPage';
+import HotProduct from './HotProduct';
 
 const Home = () => {
   useEffect(() => {
@@ -14,6 +15,7 @@ const Home = () => {
       <HeroSection />
       <FeaturedProducts />
       <TrendingProductsPage />
+      <HotProduct />
     </div>
   );
 };
