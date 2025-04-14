@@ -7,7 +7,7 @@ import SizeSelector from './SizeSelector';
 import QuantitySelector from './QuantitySelector';
 import ProductActions from './ProductAction';
 import ProductTabs from './ProductTabs';
-import { mockProductDetails } from './ProductDetailsData';
+import { mockProductDetails } from './ProductDetailsData.js';
 
 const ProductDetailsPage = () => {
   const { handle } = useParams();

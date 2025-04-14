@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { FiHeart, FiShoppingCart, FiEye } from "react-icons/fi";
 
 const ProductCard = ({ product }) => {
@@ -18,14 +17,12 @@ const ProductCard = ({ product }) => {
 
   return (
     <div
-      className="product-card group hover:translate-y-[-8px]"
+      className="product-card group hover:translate-y-[-8px] transition-transform duration-300"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link
-        to={`/products/${product.handle}`}
-        className="block relative overflow-hidden"
-      >
+      {/* Outer container previously wrapped with <Link> */}
+      <div className="block relative overflow-hidden">
         {/* Sale badge */}
         {product.compareAtPrice && (
           <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-semibold px-2 py-1 rounded">
@@ -108,7 +105,7 @@ const ProductCard = ({ product }) => {
             )}
           </div>
         </div>
-      </Link>
+      </div>
     </div>
   );
 };

@@ -8,10 +8,12 @@ import TrendingProducts from './pages/TrandingProducts';
 import HotProduct from './pages/HotProduct';
 import SmoothScrollWrapper from './components/common/SmoothScrollWraper';
 import './App.css';
+import ScrollToTop from './components/common/ScrollToTop';
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <SmoothScrollWrapper>
         <div className="flex flex-col min-h-screen bg-[#0c0e16]">
           <Header />

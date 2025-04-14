@@ -3,6 +3,7 @@ import HeroSection from '../components/Hero/HeroSection';
 import FeaturedProducts from '../components/FeaturedProducts/FeatureProduct';
 import TrendingProductsPage from '../components/TrandingProducts/TrandingProductsPage';
 import HotProduct from './HotProduct';
+import WomenCollection from './WomenCollection';
 
 const Home = () => {
   useEffect(() => {
@@ -16,6 +17,7 @@ const Home = () => {
       <FeaturedProducts />
       <TrendingProductsPage />
       <HotProduct />
+      <WomenCollection />
     </div>
   );
 };
