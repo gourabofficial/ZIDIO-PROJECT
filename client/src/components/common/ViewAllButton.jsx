@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowRight } from 'react-icons/fi';
 
-const ViewAllButton = ({ text = "VIEW ALL PRODUCTS", url = "/collections/all" }) => {
+const ViewAllButton = ({ text = "text", url = "url" }) => {
   return (
     <div className="flex justify-center ">
       <Link 

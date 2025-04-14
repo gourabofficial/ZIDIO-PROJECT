@@ -4,6 +4,7 @@ import CropTopsCategories from './CropTopsCategories';
 import CropTopsProductGrid from './CroptopProductGrid';
 import ViewAllButton from '../common/ViewAllButton';
 
+
 import { cropTopsProducts, cropTopsCategories } from './CroptopData';
 
 const CropTopsPage = () => {
@@ -81,7 +82,7 @@ const CropTopsPage = () => {
           isLoading={isLoading} 
         />
       </div>
-      <ViewAllButton />
+      <ViewAllButton text='VIEW ALL PRODUCT' url='/crop-top' />
     </div>
   );
 };

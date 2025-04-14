@@ -1,10 +1,14 @@
 export const categoryItems = [
-  { path: "/collections/tshirt", label: "T-SHIRTS" },
-  { path: "/collections/sweatshirt", label: "SWEATSHIRTS" },
-  { path: "/collections/hoodies", label: "HOODIES" },
-  { path: "/collections/bottoms", label: "BOTTOMS" },
-  { path: "/collections/co-ord-set", label: "CO-ORD SETS" },
-  { path: "/collections/sleeveless-vest", label: "SLEEVELESS VESTS" },
+  { path: "/collections/oversized", label: "OVERSIZED" },
+  { path: "/collections/acidwash", label: "ACID WASH" },
+  { path: "/collections/graphicprinted", label: "GRAPHIC PRINTED" },
+  { path: "/collections/solidcolor", label: "SOLID COLOR" },
+  { path: "/collections/polot-shirts", label: "POLO T-SHIRTS" },
+  { path: "/collections/sleeveless", label: "SLEEVELESS " },
+  { path: "/collections/longsleeve", label: "LONG SLEEVE " },
+  { path: "/collections/henley", label: "HENLEY " },
+  { path: "/collections/hooded", label: "HOODED " },
+  { path: "/collections/croptops", label: "CROP TOPS  " },
 ];
 
 export const collectionItems = [

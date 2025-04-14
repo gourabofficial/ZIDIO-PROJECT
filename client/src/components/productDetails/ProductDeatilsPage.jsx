@@ -21,7 +21,7 @@ const ProductDetailsPage = () => {
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
-    
+
     // Simulate loading product data
     setIsLoading(true);
     setTimeout(() => {
@@ -32,7 +32,7 @@ const ProductDetailsPage = () => {
     }, 500);
   }, [handle]);
 
-  // Added missing handler functions
+  // Handler functions
   const handleSizeChange = (size) => {
     setSelectedSize(size);
   };
@@ -44,7 +44,7 @@ const ProductDetailsPage = () => {
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
   };
-  
+
   const handleAddToCart = () => {
     if (!selectedSize) return;
     setAddedToCart(true);
@@ -60,53 +60,68 @@ const ProductDetailsPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-24 min-h-[calc(100vh-120px)]">
+    <div className="container mx-auto px-4 py-16 min-h-[calc(100vh-120px)]">
       <BackButton />
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-        <ProductGallery images={product.images} />
 
-        <div>
-          <ProductInfo title={product.title} price={product.price} />
-          <SizeSelector 
-            sizes={product.sizes} 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        {/* Product Gallery */}
+        <div className="flex justify-center">
+          <div className="w-full max-w-md">
+            <ProductGallery images={product.images} />
+          </div>
+        </div>
+
+        {/* Product Details */}
+        <div className="space-y-6">
+          <ProductInfo
+            title={product.title}
+            price={product.price}
+            className="text-lg font-semibold"
+          />
+          <SizeSelector
+            sizes={product.sizes}
             selectedSize={selectedSize}
-            onSizeChange={handleSizeChange} 
+            onSizeChange={handleSizeChange}
+            className="text-base"
           />
-          <QuantitySelector 
-            quantity={quantity} 
-            onChange={handleQuantityChange} 
+          <QuantitySelector
+            quantity={quantity}
+            onChange={handleQuantityChange}
+            className="text-base"
           />
-          <ProductActions 
+          <ProductActions
             selectedSize={selectedSize}
             addedToCart={addedToCart}
             isFavorite={isFavorite}
             onAddToCart={handleAddToCart}
             onToggleFavorite={toggleFavorite}
           />
-          <ProductTabs product={product} />
+          <ProductTabs product={product} className="text-sm" />
         </div>
       </div>
     </div>
   );
 };
 
-// Added the missing components
+// Loading spinner component
 const LoadingSpinner = () => (
-  <div className="flex justify-center py-24">
+  <div className="flex justify-center py-16">
     <div className="relative">
-      <div className="w-16 h-16 rounded-full border-4 border-[#334155] border-t-[#c4b5fd] animate-spin"></div>
+      <div className="w-12 h-12 rounded-full border-4 border-[#334155] border-t-[#c4b5fd] animate-spin"></div>
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-6 h-6 bg-[#0f172a] rounded-full"></div>
+        <div className="w-4 h-4 bg-[#0f172a] rounded-full"></div>
       </div>
     </div>
   </div>
 );
 
+// Product not found component
 const ProductNotFound = () => (
   <div className="bg-[#1e293b] p-6 rounded-lg text-center">
-    <h1 className="text-2xl font-bold text-[#c4b5fd]">Product Not Found</h1>
-    <p className="mt-2 text-[#cbd5e1]">This product is no longer available or may have been moved.</p>
+    <h1 className="text-xl font-bold text-[#c4b5fd]">Product Not Found</h1>
+    <p className="mt-2 text-[#cbd5e1] text-sm">
+      This product is no longer available or may have been moved.
+    </p>
   </div>
 );
 

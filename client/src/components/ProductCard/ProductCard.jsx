@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FiHeart, FiShoppingCart, FiEye } from "react-icons/fi";
+import AddToCartButton from "../common/AddToCart";
 
 const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -75,9 +76,13 @@ const ProductCard = ({ product }) => {
           <button className="w-10 h-10 flex items-center justify-center bg-[#334155] hover:bg-[#c4b5fd] hover:text-[#0f172a] rounded-full transition-colors">
             <FiEye size={16} />
           </button>
-          <button className="w-10 h-10 flex items-center justify-center bg-[#334155] hover:bg-[#c4b5fd] hover:text-[#0f172a] rounded-full transition-colors">
+          <AddToCartButton 
+            product={product} 
+            size="small" 
+            className="w-10 h-10 bg-[#334155] hover:bg-[#c4b5fd] hover:text-[#0f172a] rounded-full transition-colors !p-0" 
+          >
             <FiShoppingCart size={16} />
-          </button>
+          </AddToCartButton>
         </div>
 
         {/* Product info */}
