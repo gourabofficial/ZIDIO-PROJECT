@@ -2,7 +2,11 @@ import React from 'react'
 
 const Search = () => {
   return (
-    <div>Search</div>
+    <>
+      <div className='mt-20'>
+        Search
+      </div>
+    </>
   )
 }
 

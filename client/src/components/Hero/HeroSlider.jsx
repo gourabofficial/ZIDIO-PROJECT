@@ -4,15 +4,58 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import { Pagination, Autoplay } from 'swiper/modules';
 import HeroSlideItem from './HeroSlideItem';
-import { heroSlides } from './HeroData';
 import './HeroSlider.css';
 
 const HeroSlider = () => {
+  const heroSlides = [
+    {
+      id: 1,
+      image: "https://wallpaperaccess.com/full/19684.jpg",
+      title: "Elevate Your Style",
+      description: "Discover a collection that transcends ordinary fashion",
+      buttonText: "DISCOVER NOW",
+      buttonLink: "/collection/nox-collection-ss1-0"
+    },
+    {
+      id: 2,
+      image: "https://wallpaperaccess.com/full/19690.jpg",
+      title: "New Arrivals",
+      description: "Experience our latest cosmic collection",
+      buttonText: "SHOP NEW",
+      buttonLink: "/collections/new-arrivals"
+    },
+    {
+      id: 2,
+      image: "https://wallpaperaccess.com/full/19691.jpg",
+      title: "New Arrivals",
+      description: "Experience our latest cosmic collection",
+      buttonText: "SHOP NEW",
+      buttonLink: "/collection/new-arrivals"
+    },
+    {
+      id: 2,
+      image: "https://wallpaperaccess.com/full/19694.jpg",
+      title: "New Arrivals",
+      description: "Experience our latest cosmic collection",
+      buttonText: "SHOP NEW",
+      buttonLink: "/collection/new-arrivals"
+    }, {
+      id: 2,
+      image: "https://wallpaperaccess.com/full/19697.jpg",
+      title: "New Arrivals",
+      description: "Experience our latest cosmic collection",
+      buttonText: "SHOP NEW",
+      buttonLink: "/collection/new-arrivals"
+    },
+
+  ];
+
+
   return (
-    <div className="w-full max-w-[1280px] mx-auto"> 
+    <div className="w-full max-w-[1280px] mx-auto">
       <Swiper
         slidesPerView={3}
-        spaceBetween={0} 
+        spaceBetween={0}
         centeredSlides={false}
         pagination={{ clickable: true }}
         autoplay={{
@@ -40,7 +83,9 @@ const HeroSlider = () => {
       >
         {heroSlides.map((slide) => (
           <SwiperSlide key={slide.id} className="hero-slide">
-            <HeroSlideItem slide={slide} />
+            <HeroSlideItem
+              key={slide.id}
+              slide={slide} />
           </SwiperSlide>
         ))}
       </Swiper>
