@@ -3,7 +3,8 @@ import MobileNav from './ModileNav';
 import { Link } from 'react-router-dom';
 import { FiHeart, FiSearch, FiShoppingCart, FiUser } from 'react-icons/fi';
 import { categoryItems, collectionItems } from '../../constant/constant';
-import { ChevronDown, ChevronUp, LoaderCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp,  } from 'lucide-react';
+import { useAuth, UserButton } from "@clerk/clerk-react";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,6 +13,8 @@ const Header = () => {
 
   const categoryRef = useRef(null);
   const collectionRef = useRef(null);
+
+  const { isSignedIn } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -170,13 +173,28 @@ const Header = () => {
                 <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 bg-[#c8a95a] text-[#0c0e16] text-xs rounded-full font-semibold">0</span>
               </div>
             </Link>
-            <Link
-              to="/account"
-              className="text-white hover:text-[#c8a95a] transition-colors p-2 hidden md:block"
-              aria-label="Account"
-            >
-              <FiUser size={20} />
-            </Link>
+            {isSignedIn ? (
+              <div className="hidden md:block">
+                <UserButton 
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      userButtonBox: "p-2",
+                      userButtonAvatarBox: "w-5 h-5",
+                      userButtonAvatarImage: "w-5 h-5"
+                    }
+                  }}
+                />
+              </div>
+            ) : (
+              <Link
+                to="/sign-in"
+                className="text-white hover:text-[#c8a95a] transition-colors p-2 hidden md:block"
+                aria-label="Sign In"
+              >
+                <FiUser size={20} />
+              </Link>
+            )}
           </div>
         </div>
       </div>

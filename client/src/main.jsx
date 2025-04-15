@@ -1,19 +1,28 @@
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
+import { ClerkProvider } from "@clerk/clerk-react";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { BrowserRouter } from "react-router-dom";
 import SmoothScrollWrapper from "./components/common/SmoothScrollWraper.jsx";
 import { CartProvider } from "./context/CartContext.jsx";
 
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+if (!PUBLISHABLE_KEY) {
+  throw new Error("Missing Publishable Key");
+}
+
 createRoot(document.getElementById("root")).render(
-  <SmoothScrollWrapper>
-    <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
-          <App />
-        </CartProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </SmoothScrollWrapper>
+  <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <SmoothScrollWrapper>
+      <BrowserRouter>
+        <AuthProvider>
+          <CartProvider>
+            <App />
+          </CartProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </SmoothScrollWrapper>
+  </ClerkProvider>
 );
