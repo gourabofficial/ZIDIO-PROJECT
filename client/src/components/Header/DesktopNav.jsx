@@ -13,6 +13,18 @@ const DesktopNav = () => {
   const categoryTimeoutRef = useRef(null);
   const collectionTimeoutRef = useRef(null);
 
+  // Ensure category links follow the /category/:id pattern
+  const formattedCategoryItems = categoryItems.map(item => ({
+    ...item,
+    link: `/category/${item.id || item.slug || item.value}`
+  }));
+
+  // Ensure collection links follow the /collection/:id pattern
+  const formattedCollectionItems = collectionItems.map(item => ({
+    ...item,
+    link: `/collection/${item.id || item.slug || item.value}`
+  }));
+
   useEffect(() => {
     return () => {
       if (categoryTimeoutRef.current) clearTimeout(categoryTimeoutRef.current);
@@ -82,7 +94,7 @@ const DesktopNav = () => {
             size={14} 
           />
         </button>
-        <DropdownMenu isOpen={isShopCategoryOpen} items={categoryItems} />
+        <DropdownMenu isOpen={isShopCategoryOpen} items={formattedCategoryItems} />
       </div>
 
       <div 
@@ -101,7 +113,7 @@ const DesktopNav = () => {
             size={14} 
           />
         </button>
-        <DropdownMenu isOpen={isShopCollectionOpen} items={collectionItems} />
+        <DropdownMenu isOpen={isShopCollectionOpen} items={formattedCollectionItems} />
       </div>
 
       <Link to="/track-order" className="nav-link relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#c8a95a] hover:after:w-full after:transition-all after:duration-300">TRACK ORDER</Link>
