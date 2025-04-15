@@ -84,6 +84,7 @@ const Header = () => {
                   onClick={() => toggleDropdown('category')}
                   className="text-white hover:text-[#c8a95a] transition-colors p-2 flex items-center"
                   aria-expanded={openDropdown === 'category'}
+                  aria-controls="category-dropdown"
                 >
                   SHOP BY CATEGORY
                   <span className="ml-1">

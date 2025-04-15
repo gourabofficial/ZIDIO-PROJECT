@@ -77,6 +77,10 @@ const CareTab = ({ careInstructions }) => {
 };
 
 const SizingTab = ({ sizeChart }) => {
+  if (!sizeChart) {
+    return <div className="text-[#cbd5e1]">Size chart information not available</div>;
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-[#cbd5e1] text-sm">

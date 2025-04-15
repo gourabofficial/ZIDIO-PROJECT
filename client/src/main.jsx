@@ -15,14 +15,14 @@ if (!PUBLISHABLE_KEY) {
 
 createRoot(document.getElementById("root")).render(
   <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-    <SmoothScrollWrapper>
-      <BrowserRouter>
+    <BrowserRouter>
+      <SmoothScrollWrapper>
         <AuthProvider>
           <CartProvider>
             <App />
           </CartProvider>
         </AuthProvider>
-      </BrowserRouter>
-    </SmoothScrollWrapper>
+      </SmoothScrollWrapper>
+    </BrowserRouter>
   </ClerkProvider>
 );
