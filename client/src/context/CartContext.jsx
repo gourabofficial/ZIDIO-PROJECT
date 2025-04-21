@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './AuthContext';
+import { useAuthdata } from './AuthContext';
 
 const CartContext = createContext(null);
 
@@ -7,7 +7,7 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthdata();
 
   // When user changes, load their cart
   useEffect(() => {

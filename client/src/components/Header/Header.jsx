@@ -1,20 +1,29 @@
 import { useState, useEffect, useRef } from 'react';
 import MobileNav from './ModileNav';
 import { Link } from 'react-router-dom';
-import { FiHeart, FiSearch, FiShoppingCart, FiUser } from 'react-icons/fi';
+import { FiHeart, FiSearch, FiShoppingCart, FiUser, FiChevronDown, FiSettings, FiPackage, FiLogOut } from 'react-icons/fi';
 import { categoryItems, collectionItems } from '../../constant/constant';
-import { ChevronDown, ChevronUp,  } from 'lucide-react';
-import { useAuth, UserButton } from "@clerk/clerk-react";
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useClerk } from "@clerk/clerk-react";
+import { useAuthdata } from '../../context/AuthContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const categoryRef = useRef(null);
   const collectionRef = useRef(null);
+  const profileRef = useRef(null);
 
-  const { isSignedIn } = useAuth();
+  const { signOut } = useClerk();
+  const {
+    currentUser,
+    isAuth,
+    isLoaded,
+    error
+  } = useAuthdata();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,9 +35,12 @@ const Header = () => {
         categoryRef.current &&
         !categoryRef.current.contains(event.target) &&
         collectionRef.current &&
-        !collectionRef.current.contains(event.target)
+        !collectionRef.current.contains(event.target) &&
+        profileRef.current &&
+        !profileRef.current.contains(event.target)
       ) {
         setOpenDropdown(null);
+        setIsProfileOpen(false);
       }
     };
 
@@ -47,6 +59,15 @@ const Header = () => {
 
   const toggleDropdown = (dropdown) => {
     setOpenDropdown(openDropdown === dropdown ? null : dropdown);
+  };
+
+  const toggleProfileDropdown = () => {
+    setIsProfileOpen(!isProfileOpen);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setIsProfileOpen(false);
   };
 
   return (
@@ -174,18 +195,86 @@ const Header = () => {
                 <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 bg-[#c8a95a] text-[#0c0e16] text-xs rounded-full font-semibold">0</span>
               </div>
             </Link>
-            {isSignedIn ? (
-              <div className="hidden md:block">
-                <UserButton 
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      userButtonBox: "p-2",
-                      userButtonAvatarBox: "w-5 h-5",
-                      userButtonAvatarImage: "w-5 h-5"
-                    }
-                  }}
-                />
+            {!isLoaded ? (
+              <div className="w-5 h-5 rounded-full bg-gray-600 animate-pulse"></div>
+            ) : isAuth && currentUser ? (
+              <div className="hidden md:block relative" ref={profileRef}>
+                <button
+                  onClick={toggleProfileDropdown}
+                  className="flex items-center space-x-1 text-white hover:text-[#c8a95a] transition-colors p-2"
+                  aria-label="Profile"
+                >
+                  {currentUser.imageUrl ? (
+                    <img
+                      src={currentUser.imageUrl}
+                      alt="Profile"
+                      className="w-5 h-5 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-[#c8a95a] flex items-center justify-center text-[#0c0e16] text-xs font-bold">
+                      {currentUser.firstName?.[0] || 'U'}
+                    </div>
+                  )}
+                  <FiChevronDown size={16} className={`transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-[#0c0e16] shadow-lg rounded-md py-2 z-50 border border-gray-700">
+                    <div className="px-4 py-2 border-b border-gray-700">
+                      <p className="text-white font-medium">{currentUser.fullName || 'User'}</p>
+                      <p className="text-gray-400 text-xs truncate">{currentUser.email}</p>
+                    </div>
+                    
+                    {/* Profile menu items */}
+                    <Link
+                      to="/account"
+                      className="flex items-center px-4 py-2 text-sm text-white hover:bg-gray-800 hover:text-[#c8a95a]"
+                      onClick={() => setIsProfileOpen(false)}
+                    >
+                      <FiUser className="mr-2" size={16} />
+                      My Account
+                    </Link>
+
+                    {/* Show admin link if user has admin role */}
+                    {currentUser.role === 'admin' && (
+                      <Link
+                        to="/admin"
+                        className="flex items-center px-4 py-2 text-sm text-white hover:bg-gray-800 hover:text-[#c8a95a]"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <FiSettings className="mr-2" size={16} />
+                        Admin Dashboard
+                      </Link>
+                    )}
+
+                    {/* Rest of the menu items */}
+                    <Link
+                      to="/orders"
+                      className="flex items-center px-4 py-2 text-sm text-white hover:bg-gray-800 hover:text-[#c8a95a]"
+                      onClick={() => setIsProfileOpen(false)}
+                    >
+                      <FiPackage className="mr-2" size={16} />
+                      My Orders
+                    </Link>
+
+                    <Link
+                      to="/settings"
+                      className="flex items-center px-4 py-2 text-sm text-white hover:bg-gray-800 hover:text-[#c8a95a]"
+                      onClick={() => setIsProfileOpen(false)}
+                    >
+                      <FiSettings className="mr-2" size={16} />
+                      Settings
+                    </Link>
+
+                    <button
+                      onClick={handleSignOut}
+                      className="flex items-center w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800 hover:text-[#c8a95a]"
+                    >
+                      <FiLogOut className="mr-2" size={16} />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <Link

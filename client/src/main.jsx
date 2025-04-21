@@ -5,7 +5,9 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { BrowserRouter } from "react-router-dom";
 import SmoothScrollWrapper from "./components/common/SmoothScrollWraper.jsx";
-import { CartProvider } from "./context/CartContext.jsx";
+
+import { CartProvider } from './context/CartContext.jsx';
+
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowLeft, FiUser } from 'react-icons/fi';
+import { useAuthdata } from '../../context/AuthContext';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Signup
@@ -11,7 +11,7 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState('');
-  const { login, signup, loading } = useAuth();
+  const { login, signup, loading } = useAuthdata();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || '/';

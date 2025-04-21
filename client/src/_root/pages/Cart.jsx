@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { useAuth } from '../../context/AuthContext';
 import { FiShoppingCart, FiTrash2, FiMinus, FiPlus, FiArrowLeft, FiX, FiTag, FiChevronsRight } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuthdata } from '../../context/AuthContext';
 
 const Cart = () => {
   const { cartItems, loading, error, updateQuantity, removeFromCart, clearCart, subtotal, itemsCount } = useCart();
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthdata();
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoError, setPromoError] = useState('');
