@@ -75,18 +75,7 @@ const Cart = () => {
 
   // Recommended products (you can replace with actual recommendations)
   const recommendedProducts = [
-    {
-      id: 'rec1',
-      title: 'Cosmic Hoodie',
-      price: 2499,
-      image: 'https://example.com/cosmic-hoodie.jpg'
-    },
-    {
-      id: 'rec2',
-      title: 'Nebula T-Shirt',
-      price: 1299,
-      image: 'https://example.com/nebula-tshirt.jpg'
-    }
+    
   ];
 
   return (
@@ -188,7 +177,7 @@ const Cart = () => {
                   >
                     <div className="h-40 bg-gray-800">
                       <img
-                        src={product.image || 'https://via.placeholder.com/150'}
+                        src={product.image || ''}
                         alt={product.title}
                         className="w-full h-full object-cover"
                       />
@@ -256,7 +245,7 @@ const Cart = () => {
                             </Link>
                             <button
                               onClick={() => handleRemoveItem(item.id)}
-                              className="text-gray-400 hover:text-red-400 transition-colors hover:rotate-90 transition-transform"
+                              className="text-gray-400 hover:text-red-400  hover:rotate-90 transition-transform"
                             >
                               <FiX />
                             </button>
@@ -310,7 +299,7 @@ const Cart = () => {
                       >
                         <div className="h-24 bg-gray-800">
                           <img
-                            src={product.image || 'https://via.placeholder.com/150'}
+                            src={product.image || ''}
                             alt={product.title}
                             className="w-full h-full object-cover"
                           />
@@ -415,16 +404,7 @@ const Cart = () => {
                 </div>
 
                 {/* Payment icons */}
-                <div className="px-6 py-4 border-t border-gray-800">
-                  <p className="text-center text-xs text-gray-500 mb-2">We accept</p>
-                  <div className="flex justify-center space-x-2">
-                    <div className="w-10 h-6 bg-gray-700 rounded"></div>
-                    <div className="w-10 h-6 bg-gray-700 rounded"></div>
-                    <div className="w-10 h-6 bg-gray-700 rounded"></div>
-                    <div className="w-10 h-6 bg-gray-700 rounded"></div>
-                  </div>
-                  <p className="text-center text-xs text-gray-500 mt-2">Secured by Razorpay</p>
-                </div>
+               
               </motion.div>
             </div>
           </div>
