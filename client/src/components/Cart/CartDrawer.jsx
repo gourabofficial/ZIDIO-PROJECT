@@ -22,19 +22,19 @@ const CartDrawer = ({ isOpen, onClose }) => {
       >
         {/* Drawer header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-800">
+          <h2 className="text-xl font-bold text-white">Your Cart</h2>
           <div className="flex items-center">
-            <FiShoppingBag className="text-purple-400 mr-2" />
-            <h2 className="text-xl font-bold text-white">Your Cart</h2>
-            <span className="ml-2 bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-              {itemsCount}
-            </span>
+            <div className="flex items-center text-purple-400 mr-4">
+              <FiShoppingBag className="mr-2" />
+              <span>{itemsCount} items</span>
+            </div>
+            <button 
+              onClick={onClose}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <FiX className="w-6 h-6" />
+            </button>
           </div>
-          <button 
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            <FiX className="w-6 h-6" />
-          </button>
         </div>
         
         {/* Cart items */}

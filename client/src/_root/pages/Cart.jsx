@@ -103,19 +103,21 @@ const Cart = () => {
       </AnimatePresence>
 
       <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex items-center mb-8">
-          <Link to="/" className="flex items-center text-purple-400 hover:text-purple-300 transition-colors group">
-            <FiArrowLeft className="mr-2 group-hover:translate-x-[-3px] transition-transform" />
-            <span>Continue Shopping</span>
-          </Link>
+        <div className="flex flex-col mb-8">
+          <h1 className="text-3xl font-bold text-white mb-4">Your Cart</h1>
+          
+          <div className="flex justify-between items-center">
+            <Link to="/" className="flex items-center text-purple-400 hover:text-purple-300 transition-colors group mt-2">
+              <FiArrowLeft className="mr-2 group-hover:translate-x-[-3px] transition-transform" />
+              <span>Continue Shopping</span>
+            </Link>
 
-          <h1 className="text-3xl font-bold text-white ml-auto">Your Cart</h1>
-
-          <div className="ml-auto flex items-center">
-            <FiShoppingCart className="text-purple-400 mr-2" />
-            <span className="text-white font-semibold">
-              {itemsCount} {itemsCount === 1 ? 'Item' : 'Items'}
-            </span>
+            <div className="flex items-center">
+              <FiShoppingCart className="text-purple-400 mr-2" />
+              <span className="text-white font-semibold">
+                {itemsCount} {itemsCount === 1 ? 'Item' : 'Items'}
+              </span>
+            </div>
           </div>
         </div>
 

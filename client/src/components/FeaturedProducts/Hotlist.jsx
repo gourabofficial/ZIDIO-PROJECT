@@ -5,16 +5,16 @@ import ProductGrid from './ProductGrid';
 
 // Sample hotlist products data - expanded
 const hotlistProductsData = [
-  {
-    id: 1,
-    title: "Cosmic Guardian Helmet",
-    price: 1299.99,
-    compareAtPrice: 1799.99,
-    image: "https://images.unsplash.com/photo-1578269174936-2709b6aeb913?q=80&w=500",
-    category: "armor",
-    rating: 4.8,
-    inStock: true,
-  },
+  // {
+  //   id: 1,
+  //   title: "Cosmic Guardian Helmet",
+  //   price: 1299.99,
+  //   compareAtPrice: 1799.99,
+  //   image: "https://images.unsplash.com/photo-1578269174936-2709b6aeb913?q=80&w=500",
+  //   category: "armor",
+  //   rating: 4.8,
+  //   inStock: true,
+  // },
   {
     id: 2,
     title: "Stellar Force Shield",

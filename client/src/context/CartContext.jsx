@@ -21,20 +21,20 @@ export const CartProvider = ({ children }) => {
           
           // Simulated cart data
           const mockCartData = [
-            {
-              id: 'product1',
-              title: 'Cosmic Guardian Helmet',
-              price: 1299.99,
-              image: 'https://images.unsplash.com/photo-1578269174936-2709b6aeb913?q=80&w=500',
-              quantity: 1
-            },
-            {
-              id: 'product2',
-              title: 'Nebula Blade 3000',
-              price: 1599.99,
-              image: 'https://images.unsplash.com/photo-1623501097816-03faeef1ad34?q=80&w=500',
-              quantity: 2
-            }
+            // {
+            //   id: 'product1',
+            //   title: 'Cosmic Guardian Helmet',
+            //   price: 1299.99,
+            //   image: 'https://images.unsplash.com/photo-1578269174936-2709b6aeb913?q=80&w=500',
+            //   quantity: 1
+            // },
+            // {
+            //   id: 'product2',
+            //   title: 'Nebula Blade 3000',
+            //   price: 1599.99,
+            //   image: 'https://images.unsplash.com/photo-1623501097816-03faeef1ad34?q=80&w=500',
+            //   quantity: 2
+            // }
           ];
           
           setCartItems(mockCartData);
