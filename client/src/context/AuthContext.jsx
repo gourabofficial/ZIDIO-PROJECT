@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { isLogin } from "../Api/user";
+import {useUser} from '@clerk/clerk-react';
 
 const AuthContext = createContext();
 
@@ -8,6 +9,9 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isAuth, setIsAuth] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  const { user, isLoaded:isUserLoading } = useUser();
+
 
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -46,7 +50,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     checkLoginStatus();
-  }, []);
+  }, [user, isUserLoading]);
 
   const authValues = {
     currentUser,

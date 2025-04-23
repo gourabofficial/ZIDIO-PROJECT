@@ -25,7 +25,7 @@ const HeroSlider = () => {
       buttonLink: "/collections/new-arrivals"
     },
     {
-      id: 2,
+      id: 3,
       image: "https://wallpaperaccess.com/full/19691.jpg",
       title: "New Arrivals",
       description: "Experience our latest cosmic collection",
@@ -33,14 +33,14 @@ const HeroSlider = () => {
       buttonLink: "/collection/new-arrivals"
     },
     {
-      id: 2,
+      id: 4,
       image: "https://wallpaperaccess.com/full/19694.jpg",
       title: "New Arrivals",
       description: "Experience our latest cosmic collection",
       buttonText: "SHOP NEW",
       buttonLink: "/collection/new-arrivals"
     }, {
-      id: 2,
+      id: 5,
       image: "https://wallpaperaccess.com/full/19697.jpg",
       title: "New Arrivals",
       description: "Experience our latest cosmic collection",
