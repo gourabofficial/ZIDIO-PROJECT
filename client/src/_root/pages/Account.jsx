@@ -33,8 +33,8 @@ const Account = () => {
   }
 
   // Extract user details
-  const firstName = user?.firstName || '';
-  const lastName = user?.lastName || '';
+  const firstName = user?.firstName || 'User';
+  const lastName = user?.lastName || 'Name';
   const fullName = `${firstName} ${lastName}`;
   const email = user?.primaryEmailAddress?.emailAddress || '';
   const phone = user?.primaryPhoneNumber?.phoneNumber || '629400000';
