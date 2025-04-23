@@ -1,74 +1,56 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
-   clerkId: {
+const userSchema = new mongoose.Schema(
+  {
+    clerkId: {
       type: String,
       required: true,
       unique: true,
-   },
-   fullName: {
+    },
+    fullName: {
       type: String,
       required: true,
       trim: true,
       minlength: 3,
       maxlength: 50,
-   },
-   email: {
+    },
+    email: {
       type: String,
       required: true,
       unique: true,
       trim: true,
       lowercase: true,
-   },
-   phone: {
+    },
+    role: {
       type: String,
-      unique: true,
-      trim: true,
+      enum: ["admin", "user"],
+      default: "user",
+    },
+    avatar: {
+      type: String,
       default: null,
-   },
-   profileUpdates: {
-      type: [Date],
-      default: [],
-   },
-   role: {
-      type: String,
-      enum: ['admin', 'user'],
-      default: 'user',
-   },
-   avatar: {
-      type: String,
-      required: true,
-   },
-   address: {
+    },
+    // forgen key
+    address: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Address',
-      default: null,
-   },
-   orders: [
+      ref: "Address",
+    },
+    cart: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Cart",
+    },
+    orders: [
       {
-         type: mongoose.Schema.Types.ObjectId,
-         ref: 'Order',
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Order",
       },
-   ],
-   cart: [
-      {
-         type: mongoose.Schema.Types.ObjectId,
-         ref: 'Product',
-      },
-   ],
-   wishlist: [
-      {
-         type: mongoose.Schema.Types.ObjectId,
-         ref: 'Product',
-      },
-   ],
-   notifications: [
-      {
-         type: mongoose.Schema.Types.ObjectId,
-         ref: 'Notification',
-      },
-   ],
+    ],
+    wishlist: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+    },
+  },
+  { timestamps: true }
+);
 
-}, { timestamps: true });
-
-export const User = mongoose.model('User', userSchema);
+export const User = mongoose.model("User", userSchema);
