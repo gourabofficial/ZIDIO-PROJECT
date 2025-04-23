@@ -1,11 +1,10 @@
 import React from 'react';
-import { useUser, useClerk } from '@clerk/clerk-react';
 import { FiMail, FiPhone, FiUser } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
+import { useAuthdata } from '../../context/AuthContext';
 
 const Account = () => {
-  const { user, isLoaded, isSignedIn } = useUser();
-  const { signOut } = useClerk();
+  const { currentUser, isAuth, isLoaded } = useAuthdata();
   
   if (!isLoaded) {
     return (
@@ -15,7 +14,7 @@ const Account = () => {
     );
   }
 
-  if (!isSignedIn) {
+  if (!isAuth) {
     return (
       <div className="min-h-screen bg-[#0c0e16] p-6 flex flex-col items-center justify-center">
         <div className="text-center max-w-md">
@@ -32,22 +31,23 @@ const Account = () => {
     );
   }
 
-  // Extract user details
-  const firstName = user?.firstName || 'User';
-  const lastName = user?.lastName || 'Name';
-  const fullName = `${firstName} ${lastName}`;
-  const email = user?.primaryEmailAddress?.emailAddress || '';
-  const phone = user?.primaryPhoneNumber?.phoneNumber || '629400000';
-  const imageUrl = user?.imageUrl || 'https://images.unsplash.com/photo-1573405202162-52ba7a3e0377?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjZ8fHN1cGVyaGVybyUyMGF2YXRhcnxlbnwwfHwwfHx8MA%3D%3D';
+  // Extract user details from currentUser
+  const fullName = currentUser?.fullName || 'User Name';
+  const email = currentUser?.email || '';
+  const phone = '629400000'; // You may need to add this field to your user object
+  const imageUrl = currentUser?.avatar || 'https://images.unsplash.com/photo-1573405202162-52ba7a3e0377?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjZ8fHN1cGVyaGVybyUyMGF2YXRhcnxlbnwwfHwwfHx8MA%3D%3D';
 
   // Handle sign out with proper error handling
   const handleSignOut = async () => {
     try {
-      await signOut();
-      // No need for navigation as Clerk will handle the redirect
+      // You need to implement a logout function in your auth system
+      // For example, you might redirect to a logout endpoint
+      window.location.href = '/api/logout';
+      
+      // Alternatively, you could make this a feature request for your AuthContext
+      // to include a logout function that clears the current user and sets isAuth to false
     } catch (error) {
       console.error("Error signing out:", error);
-      // You could add error handling UI here if needed
     }
   };
 
@@ -74,7 +74,7 @@ const Account = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-center md:justify-start gap-2 text-gray-300">
                   <FiUser className="text-purple-400" />
-                  <span>Account ID: {user.id.substring(0, 8)}...</span>
+                  <span>Account ID: {currentUser.id.substring(0, 8)}...</span>
                 </div>
                 
                 <div className="flex items-center justify-center md:justify-start gap-2 text-gray-300">
@@ -104,8 +104,7 @@ const Account = () => {
           </Link>
           
           <Link 
-            to="https://accounts.clerk.dev/account"
-            target="_blank"
+            to="/settings"
             className="bg-[#1e293b] rounded-lg p-4 text-white hover:bg-[#2d3748] transition-colors"
           >
             <h3 className="font-medium mb-1">Account Settings</h3>
