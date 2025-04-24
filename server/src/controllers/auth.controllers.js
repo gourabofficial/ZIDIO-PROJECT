@@ -1,5 +1,5 @@
-import { User } from "../model/user.model.js";
-import { clerkClient } from "@clerk/clerk-sdk-node";
+import { clerkClient } from '@clerk/clerk-sdk-node';
+import { User } from '../model/user.model.js';
 
 export const checkedUserLogin = async (req, res) => {
   try {
@@ -37,22 +37,39 @@ export const checkedUserLogin = async (req, res) => {
       : null;
 
     const email = emailObject ? emailObject.emailAddress : null;
-
+    
     const isAdmin = clerkUser.publicMetadata?.role === "admin";
 
-    if (!email || !fullName) {
+    if (!email) {
       return res.status(400).json({
-        message: "User name and email are required",
+        message: "Email is required",
         success: false
       });
     }
 
-    const existingUser = await User.findOne({ clerkId });
+    // If fullName is empty, use email username as fallback
+    const effectiveFullName = fullName || email.split('@')[0];
+
+    let existingUser = await User.findOne({ clerkId });
+
+    // If no user found by clerkId, check by email 
+    if (!existingUser && email) {
+      const userByEmail = await User.findOne({ email });
+      
+      if (userByEmail) {
+        // Update the existing user with the new clerkId
+        existingUser = await User.findByIdAndUpdate(
+          userByEmail._id,
+          { clerkId, fullName: effectiveFullName },
+          { new: true }
+        );
+      }
+    }
 
     if (!existingUser) {
       const newUser = await User.create({
         clerkId,
-        fullName,
+        fullName: effectiveFullName,
         email,
         role: isAdmin ? "admin" : "user"
       });
@@ -73,7 +90,7 @@ export const checkedUserLogin = async (req, res) => {
       const updatedUser = await User.findByIdAndUpdate(
         existingUser._id,
         {
-          fullName,
+          fullName: effectiveFullName,
           email,
           role: isAdmin ? "admin" : existingUser.role
         },
@@ -87,7 +104,6 @@ export const checkedUserLogin = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error checking user login:", error);
     return res.status(500).json({
       message: "Internal server error",
       success: false,

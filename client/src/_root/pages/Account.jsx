@@ -1,10 +1,13 @@
 import React from 'react';
 import { FiMail, FiPhone, FiUser } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthdata } from '../../context/AuthContext';
+import { useClerk } from '@clerk/clerk-react';
 
 const Account = () => {
   const { currentUser, isAuth, isLoaded } = useAuthdata();
+  const { signOut } = useClerk();
+  const navigate = useNavigate();
   
   if (!isLoaded) {
     return (
@@ -37,15 +40,12 @@ const Account = () => {
   const phone = '629400000'; // You may need to add this field to your user object
   const imageUrl = currentUser?.avatar ;
 
-  // Handle sign out with proper error handling
+  // Updated sign out handler
   const handleSignOut = async () => {
     try {
-      // You need to implement a logout function in your auth system
-      // For example, you might redirect to a logout endpoint
-      window.location.href = '/api/logout';
-      
-      // Alternatively, you could make this a feature request for your AuthContext
-      // to include a logout function that clears the current user and sets isAuth to false
+      await signOut();
+      // After signing out with Clerk, redirect to home or login page
+      navigate('/sign-in');
     } catch (error) {
       console.error("Error signing out:", error);
     }
