@@ -111,3 +111,11 @@ export const checkedUserLogin = async (req, res) => {
     });
   }
 }
+
+export const adminLogin = async (req, res) => {
+  try {
+    
+  } catch (error) {
+    
+  }
+}

@@ -1,7 +1,7 @@
 import express from 'express';
-import { isLogedin } from '../middlewares/isAuthenticated.js';
+import { isAdmin, isLogedin } from '../middlewares/isAuthenticated.js';
 import { addAddress, updateAddress, updateAvatar, updateUser } from '../controllers/user.controllers.js';
-import { checkedUserLogin } from '../controllers/auth.controllers.js';
+import { adminLogin, checkedUserLogin } from '../controllers/auth.controllers.js';
 
 
 const userRouter = express.Router();
@@ -16,6 +16,8 @@ userRouter.patch('/update-address', isLogedin, updateAddress)
 userRouter.post('/add-address', isLogedin, addAddress)
 // is login
 userRouter.post('/is-login', checkedUserLogin)
+// admin routes
+userRouter.post('/admin',isAdmin,adminLogin)
 
 
 export default userRouter;

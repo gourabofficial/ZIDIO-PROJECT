@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import connectCloudinary from "./src/config/cloudinary.js";
 import { clerkMiddleware } from '@clerk/express';
 import userRouter from "./src/routes/user.routes.js";
+import productRouter from "./src/routes/product.routes.js"
 
 dotenv.config();
 
@@ -48,6 +49,8 @@ app.get("/", (req, res) => {
 
 // user routes
 app.use('/api/user', userRouter);
+// product routes
+app.use('/api/product',productRouter)
 
 app.listen(port, () => {
   console.log(`Server is running on PORT http://localhost:${port}/`);
