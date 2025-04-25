@@ -1,9 +1,15 @@
 import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema({
-  userId: {
+  owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
+    required: true,
+  },
+  
+  trackingId: {
+    type: String,
+    unique: true,
     required: true,
   },
   
@@ -27,38 +33,20 @@ const orderSchema = new mongoose.Schema({
     },
   ],
   totalAmount: {
-    type: Number,
+    type: Number, 
     required: true,
   },
   
   Orderstatus: {
     type: String,
-    enum: ["pending", "processing", "shipped", "delivered", "cancelled", "returned"],
+    enum: ["pending", "processing", "shipped", "delivered", "cancelled",],
     default: "pending",
   },
-  shippingAddress: {
-    street: {
-      type: String,
-      required: true,
-    },
-    city: {
-      type: String,
-      required: true,
-    },
-    state: {
-      type: String,
-      required: true,
-    },
-    zipCode: {
-      type: String,
-      required: true,
-    },
-    country: {
-      type: String,
-      required: true,
-      default: "India",
-    }
-  },
+  
+  totalAmount: {
+    type: Number,
+    required: true
+ },
   paymentMethod: {
     type: String,
     enum: ["online", "cashOnDelivery"],
@@ -69,12 +57,7 @@ const orderSchema = new mongoose.Schema({
     enum: ["paid", "unpaid"],
     default: "unpaid",
   },
-  trackingId: {
-    type: String,
-    unique: true,
-    required: true,
-  },
-  
+ 
  
 }, { timestamps: true });
 

@@ -47,10 +47,16 @@ app.get("/", (req, res) => {
   res.json({ message: "Server is running successfully" });
 });
 
+
+
 // user routes
 app.use('/api/user', userRouter);
 // product routes
-app.use('/api/product',productRouter)
+app.use('/api/product', productRouter)
+
+
+
+
 
 app.listen(port, () => {
   console.log(`Server is running on PORT http://localhost:${port}/`);

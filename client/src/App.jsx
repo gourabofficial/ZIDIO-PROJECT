@@ -8,14 +8,16 @@ import TrackOrder from "./_root/pages/TrackOrder";
 import Search from "./_root/pages/Search";
 import Wishlist from "./_root/pages/Wishlist";
 import Cart from "./_root/pages/Cart";
-import  Product  from "./_root/pages/Product";
+import Product from "./_root/pages/Product";
 import Order from "./_root/pages/Order";
-import  Offer  from "./_root/pages/Offer";
-import  NotFound  from "./_root/pages/NotFound";
+import Offer from "./_root/pages/Offer";
+import NotFound from "./_root/pages/NotFound";
 import Account from "./_root/pages/Account";
 import AuthLayout from "./_auth/AuthLayout";
 import SignIn from "./_auth/pages/SignIn";
-import  SignUp  from "./_auth/pages/SignUp";
+import SignUp from "./_auth/pages/SignUp";
+import AdminLayout from "./admin/AdminLayout";
+import AdminDashboard from "./admin/pages/AdminDashbord";
 
 const App = () => {
   return (
@@ -41,6 +43,15 @@ const App = () => {
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
         </Route>
+
+        //admin layout
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          {/* <Route path="users" element={<UsersPage />} />
+          <Route path="products" element={<ProductsPage />} /> */}
+          {/* Add other admin routes here */}
+        </Route>
+
       </Routes>
     </>
   );

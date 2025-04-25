@@ -112,10 +112,65 @@ export const checkedUserLogin = async (req, res) => {
   }
 }
 
+
+// admin authentication 
 export const adminLogin = async (req, res) => {
   try {
-    
+    const clerkId = req.auth?.userId;
+
+    if (!clerkId) {
+      return res.status(401).json({
+        message: "Unauthorized, user ID is required",
+        success: false
+      });
+    }
+
+    // Get user from Clerk
+    let clerkUser;
+    try {
+      clerkUser = await clerkClient.users.getUser(clerkId);
+    } catch (error) {
+      return res.status(404).json({
+        message: "Failed to fetch user from Clerk",
+        success: false,
+        error: error.message
+      });
+    }
+
+    // Get user from database
+    const user = await User.findOne({ clerkId });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Admin not found",
+        success: false
+      });
+    }
+
+    // Check if user has admin role
+    if (user.role !== "admin") {
+      return res.status(403).json({
+        message: "Access denied. Admin privileges required",
+        success: false
+      });
+    }
+
+    return res.status(200).json({
+      message: "Admin login successful",
+      success: true,
+      admin: {
+        id: user._id,
+        clerkId: user.clerkId,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role
+      }
+    });
   } catch (error) {
-    
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+      error: error.message
+    });
   }
 }

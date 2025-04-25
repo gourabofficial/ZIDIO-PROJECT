@@ -14,18 +14,7 @@ const collectionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  images: [
-    {
-      imageUrl: {
-        type: String,
-        required: true,
-      },
-      imageId: {
-        type: String,
-        required: true,
-      },
-    }
-  ],
+  
   products: [ 
     {
       type: mongoose.Schema.Types.ObjectId,
