@@ -6,13 +6,7 @@ import {
   Package, 
   DollarSign,
   AlertCircle,
-  RefreshCw,
-  Bell,
-  LogOut,
-  Menu,
-  X,
-  User,
-  Search
+  RefreshCw
 } from 'lucide-react';
 
 // Updated global styles to properly handle scrolling
@@ -24,6 +18,7 @@ const globalStyles = `
     width: 100%;
     height: 100%;
     overflow-x: hidden;
+    overflow-y:auto;
   }
 `;
 
@@ -38,7 +33,8 @@ const AdminDashbord = () => {
   const [recentOrders, setRecentOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Removed mobileMenuOpen state as it was for the navbar
 
   // Apply global styles
   useEffect(() => {
@@ -122,82 +118,6 @@ const AdminDashbord = () => {
     }
   };
 
-  // Admin Navbar Component
-  const AdminNavbar = () => (
-    <div className="bg-black shadow-md sticky top-0 z-10">
-      <div className="max-w-full mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo and Toggle */}
-          <div className="flex items-center">
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-gray-300 hover:text-white focus:outline-none md:hidden"
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-            <div className="ml-4 md:ml-0">
-              <span className="text-white font-bold text-xl">Admin Panel</span>
-            </div>
-          </div>
-          
-          {/* Search */}
-          <div className="hidden md:flex md:flex-1 justify-center px-2 lg:ml-6 lg:justify-end">
-            <div className="max-w-lg w-full">
-              <div className="relative flex items-center">
-                <input
-                  className="bg-gray-800 block w-full text-sm text-white rounded-md py-2 pl-10 pr-3 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Search..."
-                  type="search"
-                />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-4 w-4 text-gray-400" />
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Right side icons */}
-          <div className="flex items-center">
-            <button className="p-1 rounded-full text-gray-300 hover:text-white focus:outline-none">
-              <Bell size={20} />
-            </button>
-            <div className="ml-3 relative">
-              <div className="flex items-center">
-                <div className="rounded-full bg-gray-700 p-1">
-                  <User size={20} className="text-gray-300" />
-                </div>
-                <span className="ml-2 text-gray-300 text-sm hidden md:inline-block">Admin User</span>
-              </div>
-            </div>
-            <button className="ml-4 p-1 rounded-full text-gray-300 hover:text-white focus:outline-none">
-              <LogOut size={20} />
-            </button>
-          </div>
-        </div>
-        
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden pb-3 pt-2 bg-black">
-            <div className="px-2 space-y-1">
-              <div className="bg-gray-800 p-2 rounded mb-2">
-                <input
-                  className="bg-gray-700 block w-full text-sm text-white rounded-md py-2 pl-3 pr-3 border border-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Search..."
-                  type="search"
-                />
-              </div>
-              <a href="#" className="block px-3 py-2 rounded-md text-base font-medium text-white bg-gray-800">Dashboard</a>
-              <a href="#" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Users</a>
-              <a href="#" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Products</a>
-              <a href="#" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Orders</a>
-              <a href="#" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Settings</a>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen w-screen bg-gray-900 text-white fixed top-0 left-0 right-0 bottom-0 z-50">
@@ -234,8 +154,7 @@ const AdminDashbord = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col overflow-x-hidden">
-      {/* Top Navbar */}
-      <AdminNavbar />
+      {/* Navbar removed */}
       
       <div className="p-6 flex-grow bg-gray-900 overflow-y-auto">
         <h1 className="text-2xl font-semibold mb-6 text-white">Admin Dashboard</h1>

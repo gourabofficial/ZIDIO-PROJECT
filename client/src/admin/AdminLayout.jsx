@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { 
   FaTachometerAlt, 
@@ -12,7 +12,6 @@ import {
   FaSignOutAlt,
   FaBell,
   FaUserCircle,
-  FaSearch,
   FaAngleRight,
   FaChevronDown,
   FaMoon,
@@ -25,6 +24,7 @@ const AdminLayout = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const location = useLocation();
+  const mainContentRef = useRef(null);
   
   useEffect(() => {
     const handleResize = () => {
@@ -100,8 +100,25 @@ const AdminLayout = () => {
     return navItem ? navItem.name : 'Dashboard';
   };
 
+  // Add smooth scroll function
+  const handleWheelScroll = (e) => {
+    if (mainContentRef.current) {
+      // Prevent default only if needed for custom behavior
+      // e.preventDefault();
+      
+      const scrollAmount = e.deltaY;
+      const currentScroll = mainContentRef.current.scrollTop;
+      
+      // For smooth scrolling, use behavior: 'smooth'
+      mainContentRef.current.scrollTo({
+        top: currentScroll + scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
-    <div className={`flex h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-100'} transition-colors duration-200`}>
+    <div className={`flex h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-100'} transition-colors duration-200 overflow-hidden`}>
       {/* Mobile overlay */}
       {mobileView && sidebarOpen && (
         <div 
@@ -179,7 +196,6 @@ const AdminLayout = () => {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Top Navbar */}
         <header className={`${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-md h-16 flex items-center justify-between px-4 ${darkMode ? 'text-white' : 'text-gray-800'} transition-colors duration-200`}>
@@ -210,19 +226,7 @@ const AdminLayout = () => {
           </div>
           
           <div className="flex items-center space-x-4">
-            {/* Search Bar */}
-            <div className="hidden md:block relative">
-              <input
-                type="text"
-                placeholder="Search..."
-                className={`w-48 lg:w-64 py-1 px-3 pl-8 rounded-full text-sm ${
-                  darkMode 
-                    ? 'bg-gray-700 text-white placeholder-gray-400 border-gray-600' 
-                    : 'bg-gray-100 text-gray-800 placeholder-gray-500 border-gray-300'
-                } border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200`}
-              />
-              <FaSearch className="absolute left-3 top-2 text-gray-400 text-sm" />
-            </div>
+            {/* Search Bar - REMOVED */}
             
             {/* Notification Bell */}
             <button className={`p-2 rounded-full hover:${darkMode ? 'bg-gray-700' : 'bg-gray-200'} focus:outline-none transition-colors duration-200 relative`}>
@@ -271,8 +275,12 @@ const AdminLayout = () => {
           </div>
         </header>
 
-        {/* Main Content Area */}
-        <main className={`flex-1 overflow-auto p-4 md:p-6 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'} transition-colors duration-200`}>
+        {/* Main Content Area - Modified with ref and wheel event handler */}
+        <main 
+          ref={mainContentRef}
+          onWheel={handleWheelScroll}
+          className={`flex-1 overflow-y-auto p-4 md:p-6 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'} transition-colors duration-200 scroll-smooth`}
+        >
           <div className="p-1">
             <div className="bg-gradient-to-r from-blue-800 to-indigo-900 rounded-lg p-4 mb-4 shadow-lg">
               <div className="flex flex-col md:flex-row md:items-center justify-between">
