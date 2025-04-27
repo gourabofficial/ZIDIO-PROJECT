@@ -1,4 +1,6 @@
 /* We're using Tailwind CSS for most of the styling */
+ 
+
 
 #root {
   width: 100%;
@@ -198,3 +200,4 @@
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
 }
+

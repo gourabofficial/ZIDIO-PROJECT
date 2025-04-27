@@ -320,7 +320,7 @@ body {
   animation: fadeIn 1s ease-in-out;
 }
 
-/* for logn page  */
+/* for login page  */
 
 /* Add these styles to your global CSS file */
 
@@ -342,26 +342,43 @@ body {
   animation: slideUp 0.6s ease forwards;
 }
 
-/* Add to your CSS file or create styles.css */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
+/* Add these specific scrolling fixes at the end of your file */
+
+/* Reset overflow settings */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #1f2937; /* dark mode track */
+/* Ensure flex containers properly handle overflow */
+.flex-1 {
+  min-height: 0;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #4b5563; /* dark mode thumb */
-  border-radius: 4px;
+/* Specific class for scrollable content */
+.scrollable-content {
+  height: auto !important; 
+  min-height: 0;
+  overflow-y: auto !important;
 }
 
-/* For light mode */
-.bg-gray-100 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f3f4f6; /* light mode track */
+/* Add this at the end of your file */
+
+/* Force scrolling for admin main content */
+.custom-scrollbar {
+  overflow-y: scroll !important; /* Use scroll instead of auto */
+  height: calc(100vh - 112px) !important; /* Force the height */
+  display: block !important; /* Ensure it's displayed as block */
+  scrollbar-width: thin;
+  scrollbar-color: #4a5568 #2d3748;
+  -webkit-overflow-scrolling: touch;
 }
 
-.bg-gray-100 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #d1d5db; /* light mode thumb */
-  border-radius: 4px;
+/* More specific style for admin dashboard - with !important to override */
+.admin-dashboard-content {
+  min-height: 100%;
+  padding-bottom: 2rem;
+  overflow: visible !important; /* Ensure content expands */
 }

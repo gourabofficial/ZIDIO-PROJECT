@@ -1,30 +1,49 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { 
-  FaTachometerAlt, 
-  FaUsers, 
-  FaBoxes, 
-  FaShoppingCart, 
-  FaChartLine, 
-  FaCog, 
-  FaBars, 
-  FaTimes, 
-  FaSignOutAlt,
-  FaBell,
-  FaUserCircle,
-  FaAngleRight,
-  FaChevronDown,
-  FaMoon,
-  FaSun
-} from 'react-icons/fa';
+  LayoutDashboard, 
+  Users, 
+  Package as PackageIcon, 
+  ShoppingCart, 
+  BarChart2, 
+  Settings, 
+  Menu, 
+  X, 
+  LogOut,
+  Bell,
+  User,
+  ChevronRight,
+  ChevronDown,
+  Home,
+  Shield
+} from 'lucide-react';
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
   const [mobileView, setMobileView] = useState(window.innerWidth < 768);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode] = useState(true); // Keep dark mode state but remove toggling
   const location = useLocation();
   const mainContentRef = useRef(null);
+  const userMenuRef = useRef(null);
+  
+  // Current date/time and login info
+  const currentDateTime = "2025-04-25 21:23:25";
+  const currentUser = "gourabofficial";
+  
+  // Handle click outside user menu to close it
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   
   useEffect(() => {
     const handleResize = () => {
@@ -53,17 +72,13 @@ const AdminLayout = () => {
     setUserMenuOpen(!userMenuOpen);
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-
   const navigation = [
-    { name: 'Dashboard', href: '/admin', icon: <FaTachometerAlt /> },
-    { name: 'Users', href: '/admin/users', icon: <FaUsers /> },
-    { name: 'Products', href: '/admin/products', icon: <FaBoxes /> },
-    { name: 'Orders', href: '/admin/orders', icon: <FaShoppingCart /> },
-    { name: 'Analytics', href: '/admin/analytics', icon: <FaChartLine /> },
-    { name: 'Settings', href: '/admin/settings', icon: <FaCog /> },
+    { name: 'Dashboard', href: '/admin', icon: <LayoutDashboard size={20} /> },
+    { name: 'Users', href: '/admin/users', icon: <Users size={20} /> },
+    { name: 'Products', href: '/admin/products', icon: <PackageIcon size={20} /> },
+    { name: 'Orders', href: '/admin/orders', icon: <ShoppingCart size={20} /> },
+    { name: 'Analytics', href: '/admin/analytics', icon: <BarChart2 size={20} /> },
+    { name: 'Settings', href: '/admin/settings', icon: <Settings size={20} /> },
   ];
 
   const isCurrentPath = (path) => {
@@ -100,16 +115,12 @@ const AdminLayout = () => {
     return navItem ? navItem.name : 'Dashboard';
   };
 
-  // Add smooth scroll function
+  // Add smooth scroll function - retain original functionality
   const handleWheelScroll = (e) => {
     if (mainContentRef.current) {
-      // Prevent default only if needed for custom behavior
-      // e.preventDefault();
-      
       const scrollAmount = e.deltaY;
       const currentScroll = mainContentRef.current.scrollTop;
       
-      // For smooth scrolling, use behavior: 'smooth'
       mainContentRef.current.scrollTo({
         top: currentScroll + scrollAmount,
         behavior: 'smooth'
@@ -118,49 +129,52 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className={`flex h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-100'} transition-colors duration-200 overflow-hidden`}>
+    <div className={`flex h-screen bg-gray-900 transition-colors duration-200 overflow-hidden`}>
       {/* Mobile overlay */}
       {mobileView && sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-20" 
+          className="fixed inset-0 bg-black bg-opacity-70 z-20" 
           onClick={toggleSidebar}
+          aria-hidden="true"
         ></div>
       )}
       
       {/* Sidebar */}
       <div 
-        className={`${darkMode ? 'bg-gray-800' : 'bg-white'} text-${darkMode ? 'white' : 'gray-800'} fixed h-full z-30 md:relative transition-all duration-300 shadow-lg ${
+        className={`bg-gray-800 text-white fixed h-full z-30 md:relative transition-all duration-300 shadow-lg ${
           sidebarOpen ? 'w-64' : 'w-0 md:w-20'
         } ${mobileView && !sidebarOpen ? '-translate-x-full' : 'translate-x-0'}`}
       >
-        <div className={`flex justify-between items-center p-4 h-16 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-          <div className={`font-bold text-xl ${!sidebarOpen && 'md:hidden'}`}>
+        <div className={`flex justify-between items-center p-4 h-16 border-b border-gray-700`}>
+          <div className={`font-bold text-xl flex items-center ${!sidebarOpen && 'md:hidden'}`}>
             {sidebarOpen ? (
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">ADMIN PANEL</span>
-            ) : ''}
+              <>
+                <Shield className="text-blue-400 mr-2" size={24} />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">ADMIN PANEL</span>
+              </>
+            ) : (
+              <Shield className="mx-auto text-blue-400" size={24} />
+            )}
           </div>
           <button 
             onClick={toggleSidebar} 
-            className={`p-2 rounded-full hover:${darkMode ? 'bg-gray-700' : 'bg-gray-200'} focus:outline-none transition-colors duration-200`}
+            className={`p-2 rounded-full hover:bg-gray-700 focus:outline-none transition-colors duration-200`}
+            aria-label="Toggle sidebar"
           >
-            {sidebarOpen ? <FaTimes /> : <FaBars />}
+            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
 
-        <nav className="mt-6">
-          <ul className="space-y-1 px-2">
+        <nav className="mt-6 px-2">
+          <ul className="space-y-2">
             {navigation.map((item) => (
               <li key={item.name}>
                 <Link
                   to={item.href}
                   className={`flex items-center py-3 px-4 rounded-lg transition-all duration-200 ${
                     isCurrentPath(item.href)
-                      ? darkMode 
-                        ? 'bg-blue-600 text-white font-medium' 
-                        : 'bg-blue-100 text-blue-700 font-medium'
-                      : darkMode
-                        ? 'text-gray-300 hover:bg-gray-700'
-                        : 'text-gray-700 hover:bg-gray-200'
+                      ? 'bg-blue-600 text-white font-medium' 
+                      : 'text-gray-300 hover:bg-gray-700'
                   }`}
                 >
                   <span className={`${sidebarOpen ? 'mr-3' : 'mx-auto'} text-lg`}>{item.icon}</span>
@@ -168,7 +182,7 @@ const AdminLayout = () => {
                     {item.name}
                   </span>
                   {isCurrentPath(item.href) && sidebarOpen && (
-                    <FaAngleRight className="ml-auto" />
+                    <ChevronRight className="ml-auto" size={18} />
                   )}
                 </Link>
               </li>
@@ -177,20 +191,8 @@ const AdminLayout = () => {
         </nav>
 
         <div className="absolute bottom-0 w-full p-4 border-t border-gray-700">
-          <button 
-            onClick={toggleDarkMode}
-            className={`flex items-center justify-center md:justify-start mb-4 w-full py-2 px-4 rounded-lg ${
-              darkMode ? 'text-yellow-400 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-200'
-            } transition-colors duration-200`}
-          >
-            {darkMode ? <FaSun className={sidebarOpen ? 'mr-3' : 'mx-auto'} /> : <FaMoon className={sidebarOpen ? 'mr-3' : 'mx-auto'} />}
-            <span className={!sidebarOpen ? 'hidden' : ''}>
-              {darkMode ? 'Light Mode' : 'Dark Mode'}
-            </span>
-          </button>
-          
-          <button className={`flex items-center justify-center md:justify-start w-full py-2 px-4 rounded-lg text-red-400 hover:${darkMode ? 'bg-gray-700' : 'bg-gray-200'} transition-colors duration-200`}>
-            <FaSignOutAlt className={sidebarOpen ? 'mr-3' : 'mx-auto'} />
+          <button className={`flex items-center justify-center md:justify-start w-full py-2 px-4 rounded-lg text-red-400 hover:bg-gray-700 transition-colors duration-200`}>
+            <LogOut className={sidebarOpen ? 'mr-3' : 'mx-auto'} size={20} />
             <span className={!sidebarOpen ? 'hidden' : ''}>Logout</span>
           </button>
         </div>
@@ -198,13 +200,14 @@ const AdminLayout = () => {
 
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Top Navbar */}
-        <header className={`${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-md h-16 flex items-center justify-between px-4 ${darkMode ? 'text-white' : 'text-gray-800'} transition-colors duration-200`}>
+        <header className={`bg-gray-800 shadow-md h-16 flex items-center justify-between px-4 text-white transition-colors duration-200`}>
           <div className="flex items-center">
             <button 
               className="md:hidden focus:outline-none mr-3"
               onClick={toggleSidebar}
+              aria-label="Open sidebar"
             >
-              <FaBars />
+              <Menu size={20} />
             </button>
             
             {/* Breadcrumbs */}
@@ -213,9 +216,9 @@ const AdminLayout = () => {
                 <div key={crumb.href} className="flex items-center">
                   {index > 0 && <span className="mx-2 text-gray-500">/</span>}
                   {index === array.length - 1 ? (
-                    <span className={`font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{crumb.name}</span>
+                    <span className={`font-medium text-blue-400`}>{crumb.name}</span>
                   ) : (
-                    <Link to={crumb.href} className={`hover:${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{crumb.name}</Link>
+                    <Link to={crumb.href} className={`hover:text-blue-400`}>{crumb.name}</Link>
                   )}
                 </div>
               ))}
@@ -226,45 +229,47 @@ const AdminLayout = () => {
           </div>
           
           <div className="flex items-center space-x-4">
-            {/* Search Bar - REMOVED */}
+            {/* Current Date - Desktop Only */}
+            <span className="hidden md:block text-sm text-gray-400">{currentDateTime}</span>
             
             {/* Notification Bell */}
-            <button className={`p-2 rounded-full hover:${darkMode ? 'bg-gray-700' : 'bg-gray-200'} focus:outline-none transition-colors duration-200 relative`}>
-              <FaBell />
+            <button className={`p-2 rounded-full hover:bg-gray-700 focus:outline-none transition-colors duration-200 relative`}
+                   aria-label="Notifications">
+              <Bell size={20} />
               <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
             </button>
             
             {/* User Menu */}
-            <div className="relative">
+            <div className="relative" ref={userMenuRef}>
               <button 
                 onClick={toggleUserMenu}
-                className={`flex items-center focus:outline-none hover:${darkMode ? 'bg-gray-700' : 'bg-gray-200'} p-2 rounded-full transition-colors duration-200`}
+                className={`flex items-center focus:outline-none hover:bg-gray-700 p-2 rounded-full transition-colors duration-200`}
+                aria-label="User menu"
+                aria-expanded={userMenuOpen}
               >
-                <FaUserCircle className="h-6 w-6 text-blue-400" />
-                <span className="ml-2 font-medium hidden md:block">gourabofficial</span>
-                <FaChevronDown className="ml-1 text-xs hidden md:block" />
+                <User className="h-6 w-6 text-blue-400" />
+                <span className="ml-2 font-medium hidden md:block">{currentUser}</span>
+                <ChevronDown className="ml-1 text-xs hidden md:block" size={16} />
               </button>
               
               {/* Dropdown menu */}
               {userMenuOpen && (
                 <div
-                  className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg ${
-                    darkMode ? 'bg-gray-800' : 'bg-white'
-                  } ring-1 ring-black ring-opacity-5 z-50`}
+                  className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 z-50`}
                 >
                   <div className="py-1" role="menu" aria-orientation="vertical">
-                    <div className={`px-4 py-2 text-sm border-b ${darkMode ? 'border-gray-700 text-gray-300' : 'border-gray-200 text-gray-700'}`}>
-                      <p className="font-medium">gourabofficial</p>
+                    <div className={`px-4 py-2 text-sm border-b border-gray-700 text-gray-300`}>
+                      <p className="font-medium">{currentUser}</p>
                       <p className="text-xs text-gray-500">Administrator</p>
                     </div>
-                    <Link to="/admin/profile" className={`block px-4 py-2 text-sm ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}>
+                    <Link to="/admin/profile" className={`block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700`}>
                       Your Profile
                     </Link>
-                    <Link to="/admin/settings" className={`block px-4 py-2 text-sm ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}>
+                    <Link to="/admin/settings" className={`block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700`}>
                       Settings
                     </Link>
-                    <div className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                      <button className={`block w-full text-left px-4 py-2 text-sm text-red-400 hover:${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                    <div className={`border-t border-gray-700`}>
+                      <button className={`block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700`}>
                         Sign out
                       </button>
                     </div>
@@ -275,11 +280,11 @@ const AdminLayout = () => {
           </div>
         </header>
 
-        {/* Main Content Area - Modified with ref and wheel event handler */}
+        {/* Main Content Area */}
         <main 
           ref={mainContentRef}
           onWheel={handleWheelScroll}
-          className={`flex-1 overflow-y-auto p-4 md:p-6 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'} transition-colors duration-200 scroll-smooth`}
+          className={`flex-1 overflow-y-auto p-4 md:p-6 bg-gray-900 text-white transition-colors duration-200 scroll-smooth`}
         >
           <div className="p-1">
             <div className="bg-gradient-to-r from-blue-800 to-indigo-900 rounded-lg p-4 mb-4 shadow-lg">
@@ -287,7 +292,7 @@ const AdminLayout = () => {
                 <div>
                   <h1 className="text-2xl font-bold text-white mb-2">{getCurrentPageTitle()}</h1>
                   <p className="text-blue-200 text-sm">
-                    Current Date: {new Date().toISOString().slice(0, 10)} | Last login: 2025-04-25 08:42:33
+                    Current Date: {currentDateTime} | Last login: {currentUser}
                   </p>
                 </div>
                 <div className="mt-4 md:mt-0">
@@ -303,8 +308,8 @@ const AdminLayout = () => {
         </main>
         
         {/* Footer */}
-        <footer className={`py-3 px-6 text-center ${darkMode ? 'bg-gray-800 text-gray-400 border-t border-gray-700' : 'bg-white text-gray-600 border-t border-gray-200'} text-sm`}>
-          <p>© 2025 Admin Dashboard. All rights reserved. Current user: gourabofficial</p>
+        <footer className={`py-3 px-6 text-center bg-gray-800 text-gray-400 border-t border-gray-700 text-sm`}>
+          <p>© 2025 Admin Dashboard. All rights reserved. Current user: {currentUser}</p>
         </footer>
       </div>
     </div>
