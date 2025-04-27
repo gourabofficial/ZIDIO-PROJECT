@@ -73,7 +73,6 @@ const AdminLayout = () => {
     { name: 'Users', href: '/admin/users', icon: <Users size={20} /> },
     { name: 'Products', href: '/admin/products', icon: <PackageIcon size={20} /> },
     { name: 'Orders', href: '/admin/orders', icon: <ShoppingCart size={20} /> },
-    { name: 'Analytics', href: '/admin/analytics', icon: <BarChart2 size={20} /> },
     { name: 'Settings', href: '/admin/settings', icon: <Settings size={20} /> },
   ];
 

@@ -18,6 +18,11 @@ import SignIn from "./_auth/pages/SignIn";
 import SignUp from "./_auth/pages/SignUp";
 import AdminLayout from "./admin/AdminLayout";
 import AdminDashboard from "./admin/pages/AdminDashbord";
+import AddProduct from "./admin/pages/AddProduct";
+
+import OrderAdmin from "./admin/pages/OrderAdmin";
+import User from "./admin/pages/User";
+import Settings from "./admin/pages/Settings";
 
 const App = () => {
   return (
@@ -47,9 +52,12 @@ const App = () => {
         //admin layout
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
-          {/* <Route path="users" element={<UsersPage />} />
-          <Route path="products" element={<ProductsPage />} /> */}
-          {/* Add other admin routes here */}
+          <Route path="products" element={<AddProduct />} />
+          <Route path="orders" element={<OrderAdmin />} />
+          <Route path="users" element={<User />} />
+          <Route path="settings" element={<Settings />} />
+
+         
         </Route>
 
       </Routes>
