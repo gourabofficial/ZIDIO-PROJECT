@@ -14,7 +14,6 @@ import {
   User,
   ChevronRight,
   ChevronDown,
-  Home,
   Shield
 } from 'lucide-react';
 
@@ -22,7 +21,6 @@ const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
   const [mobileView, setMobileView] = useState(window.innerWidth < 768);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [darkMode] = useState(true); // Keep dark mode state but remove toggling
   const location = useLocation();
   const mainContentRef = useRef(null);
   const userMenuRef = useRef(null);
@@ -50,10 +48,8 @@ const AdminLayout = () => {
       const isMobile = window.innerWidth < 768;
       setMobileView(isMobile);
       
-      // Auto close sidebar on mobile view
-      if (isMobile && sidebarOpen) {
-        setSidebarOpen(false);
-      } else if (!isMobile && !sidebarOpen) {
+      // On desktop, always show sidebar
+      if (!isMobile) {
         setSidebarOpen(true);
       }
     };
@@ -62,7 +58,7 @@ const AdminLayout = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [sidebarOpen]);
+  }, []);
   
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -98,7 +94,6 @@ const AdminLayout = () => {
       
       currentPath += `/${path}`;
       
-      // Find matching navigation item or create a default one
       const navItem = navigation.find(item => item.href === currentPath);
       const name = navItem ? navItem.name : path.charAt(0).toUpperCase() + path.slice(1);
       
@@ -108,14 +103,12 @@ const AdminLayout = () => {
     return breadcrumbs;
   };
 
-  // Get current page title
   const getCurrentPageTitle = () => {
     const path = location.pathname;
     const navItem = navigation.find(item => item.href === path || (item.href !== '/admin' && path.startsWith(item.href)));
     return navItem ? navItem.name : 'Dashboard';
   };
 
-  // Add smooth scroll function - retain original functionality
   const handleWheelScroll = (e) => {
     if (mainContentRef.current) {
       const scrollAmount = e.deltaY;
@@ -129,103 +122,86 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className={`flex h-screen bg-gray-900 transition-colors duration-200 overflow-hidden`}>
-      {/* Mobile overlay */}
-      {mobileView && sidebarOpen && (
+    <div className={`flex h-screen bg-gray-900 overflow-hidden`}>
+      {/* Sidebar - Only shown on desktop (md and up) */}
+      {!mobileView && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-70 z-20" 
-          onClick={toggleSidebar}
-          aria-hidden="true"
-        ></div>
-      )}
-      
-      {/* Sidebar */}
-      <div 
-        className={`bg-gray-800 text-white fixed h-full z-30 md:relative transition-all duration-300 shadow-lg ${
-          sidebarOpen ? 'w-64' : 'w-0 md:w-20'
-        } ${mobileView && !sidebarOpen ? '-translate-x-full' : 'translate-x-0'}`}
-      >
-        <div className={`flex justify-between items-center p-4 h-16 border-b border-gray-700`}>
-          <div className={`font-bold text-xl flex items-center ${!sidebarOpen && 'md:hidden'}`}>
-            {sidebarOpen ? (
-              <>
-                <Shield className="text-blue-400 mr-2" size={24} />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">ADMIN PANEL</span>
-              </>
-            ) : (
-              <Shield className="mx-auto text-blue-400" size={24} />
-            )}
+          className={`bg-gray-800 text-white h-full z-30 transition-all duration-300 shadow-lg ${
+            sidebarOpen ? 'w-64' : 'w-20'
+          }`}
+        >
+          <div className={`flex justify-between items-center p-4 h-16 border-b border-gray-700`}>
+            <div className={`font-bold text-xl flex items-center ${!sidebarOpen && 'hidden'}`}>
+              <Shield className="text-blue-400 mr-2" size={24} />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">ADMIN PANEL</span>
+            </div>
+            <button 
+              onClick={toggleSidebar} 
+              className={`p-2 rounded-full hover:bg-gray-700 focus:outline-none`}
+              aria-label="Toggle sidebar"
+            >
+              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </div>
-          <button 
-            onClick={toggleSidebar} 
-            className={`p-2 rounded-full hover:bg-gray-700 focus:outline-none transition-colors duration-200`}
-            aria-label="Toggle sidebar"
-          >
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        </div>
 
-        <nav className="mt-6 px-2">
-          <ul className="space-y-2">
-            {navigation.map((item) => (
-              <li key={item.name}>
-                <Link
-                  to={item.href}
-                  className={`flex items-center py-3 px-4 rounded-lg transition-all duration-200 ${
-                    isCurrentPath(item.href)
-                      ? 'bg-blue-600 text-white font-medium' 
-                      : 'text-gray-300 hover:bg-gray-700'
-                  }`}
-                >
-                  <span className={`${sidebarOpen ? 'mr-3' : 'mx-auto'} text-lg`}>{item.icon}</span>
-                  <span className={!sidebarOpen ? 'hidden' : 'transition-opacity duration-200'}>
-                    {item.name}
-                  </span>
-                  {isCurrentPath(item.href) && sidebarOpen && (
-                    <ChevronRight className="ml-auto" size={18} />
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+          <nav className="mt-6 px-2">
+            <ul className="space-y-2">
+              {navigation.map((item) => (
+                <li key={item.name}>
+                  <Link
+                    to={item.href}
+                    className={`flex items-center py-3 px-4 rounded-lg ${
+                      isCurrentPath(item.href)
+                        ? 'bg-blue-600 text-white font-medium' 
+                        : 'text-gray-300 hover:bg-gray-700'
+                    }`}
+                  >
+                    <span className={`${sidebarOpen ? 'mr-3' : 'mx-auto'} text-lg`}>{item.icon}</span>
+                    <span className={!sidebarOpen ? 'hidden' : ''}>
+                      {item.name}
+                    </span>
+                    {isCurrentPath(item.href) && sidebarOpen && (
+                      <ChevronRight className="ml-auto" size={18} />
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-        <div className="absolute bottom-0 w-full p-4 border-t border-gray-700">
-          <button className={`flex items-center justify-center md:justify-start w-full py-2 px-4 rounded-lg text-red-400 hover:bg-gray-700 transition-colors duration-200`}>
-            <LogOut className={sidebarOpen ? 'mr-3' : 'mx-auto'} size={20} />
-            <span className={!sidebarOpen ? 'hidden' : ''}>Logout</span>
-          </button>
+          <div className="absolute bottom-0 w-full p-4 border-t border-gray-700">
+            <button className={`flex items-center justify-center md:justify-start w-full py-2 px-4 rounded-lg text-red-400 hover:bg-gray-700`}>
+              <LogOut className={sidebarOpen ? 'mr-3' : 'mx-auto'} size={20} />
+              <span className={!sidebarOpen ? 'hidden' : ''}>Logout</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Top Navbar */}
-        <header className={`bg-gray-800 shadow-md h-16 flex items-center justify-between px-4 text-white transition-colors duration-200`}>
+        {/* Top Navbar - Always visible */}
+        <header className={`bg-gray-800 shadow-md h-16 flex items-center justify-between px-4 text-white`}>
           <div className="flex items-center">
-            <button 
-              className="md:hidden focus:outline-none mr-3"
-              onClick={toggleSidebar}
-              aria-label="Open sidebar"
-            >
-              <Menu size={20} />
-            </button>
-            
-            {/* Breadcrumbs */}
-            <div className="hidden md:flex items-center text-sm">
-              {getBreadcrumbs().map((crumb, index, array) => (
-                <div key={crumb.href} className="flex items-center">
-                  {index > 0 && <span className="mx-2 text-gray-500">/</span>}
-                  {index === array.length - 1 ? (
-                    <span className={`font-medium text-blue-400`}>{crumb.name}</span>
-                  ) : (
-                    <Link to={crumb.href} className={`hover:text-blue-400`}>{crumb.name}</Link>
-                  )}
+            {/* On mobile, show page title only */}
+            {mobileView ? (
+              <h1 className="text-lg font-medium">{getCurrentPageTitle()}</h1>
+            ) : (
+              <>
+                {/* On desktop, show breadcrumbs */}
+                <div className="flex items-center text-sm">
+                  {getBreadcrumbs().map((crumb, index, array) => (
+                    <div key={crumb.href} className="flex items-center">
+                      {index > 0 && <span className="mx-2 text-gray-500">/</span>}
+                      {index === array.length - 1 ? (
+                        <span className={`font-medium text-blue-400`}>{crumb.name}</span>
+                      ) : (
+                        <Link to={crumb.href} className={`hover:text-blue-400`}>{crumb.name}</Link>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            
-            {/* Mobile Page Title */}
-            <h1 className="md:hidden text-lg font-medium">{getCurrentPageTitle()}</h1>
+              </>
+            )}
           </div>
           
           <div className="flex items-center space-x-4">
@@ -233,7 +209,7 @@ const AdminLayout = () => {
             <span className="hidden md:block text-sm text-gray-400">{currentDateTime}</span>
             
             {/* Notification Bell */}
-            <button className={`p-2 rounded-full hover:bg-gray-700 focus:outline-none transition-colors duration-200 relative`}
+            <button className={`p-2 rounded-full hover:bg-gray-700 focus:outline-none relative`}
                    aria-label="Notifications">
               <Bell size={20} />
               <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
@@ -243,7 +219,7 @@ const AdminLayout = () => {
             <div className="relative" ref={userMenuRef}>
               <button 
                 onClick={toggleUserMenu}
-                className={`flex items-center focus:outline-none hover:bg-gray-700 p-2 rounded-full transition-colors duration-200`}
+                className={`flex items-center focus:outline-none hover:bg-gray-700 p-2 rounded-full`}
                 aria-label="User menu"
                 aria-expanded={userMenuOpen}
               >
@@ -252,7 +228,6 @@ const AdminLayout = () => {
                 <ChevronDown className="ml-1 text-xs hidden md:block" size={16} />
               </button>
               
-              {/* Dropdown menu */}
               {userMenuOpen && (
                 <div
                   className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 z-50`}
@@ -284,7 +259,7 @@ const AdminLayout = () => {
         <main 
           ref={mainContentRef}
           onWheel={handleWheelScroll}
-          className={`flex-1 overflow-y-auto p-4 md:p-6 bg-gray-900 text-white transition-colors duration-200 scroll-smooth`}
+          className={`flex-1 overflow-y-auto p-4 md:p-6 bg-gray-900 text-white scroll-smooth`}
         >
           <div className="p-1">
             <div className="bg-gradient-to-r from-blue-800 to-indigo-900 rounded-lg p-4 mb-4 shadow-lg">
@@ -296,7 +271,7 @@ const AdminLayout = () => {
                   </p>
                 </div>
                 <div className="mt-4 md:mt-0">
-                  <button className="bg-white text-blue-800 px-4 py-2 rounded-lg shadow-md hover:bg-blue-50 transition-colors duration-200 text-sm font-medium">
+                  <button className="bg-white text-blue-800 px-4 py-2 rounded-lg shadow-md hover:bg-blue-50 text-sm font-medium">
                     Generate Report
                   </button>
                 </div>
@@ -308,9 +283,9 @@ const AdminLayout = () => {
         </main>
         
         {/* Footer */}
-        <footer className={`py-3 px-6 text-center bg-gray-800 text-gray-400 border-t border-gray-700 text-sm`}>
-          <p>© 2025 Admin Dashboard. All rights reserved. Current user: {currentUser}</p>
-        </footer>
+          <footer className={`py-3 px-6 text-center bg-gray-800 text-gray-400 border-t border-gray-700 text-sm`}>
+            <p>© 2025 Admin Dashboard. All rights reserved. Current user: {currentUser}</p>
+          </footer>
       </div>
     </div>
   );
