@@ -236,7 +236,7 @@ const AdminLayout = () => {
                       <p className="font-medium">{currentUser}</p>
                       <p className="text-xs text-gray-500">Administrator</p>
                     </div>
-                    <Link to="/admin/profile" className={`block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700`}>
+                    <Link to="/admin/settings" className={`block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700`}>
                       Your Profile
                     </Link>
                     <Link to="/admin/settings" className={`block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700`}>

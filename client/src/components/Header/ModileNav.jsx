@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiChevronDown, FiSearch, FiHeart, FiShoppingCart, FiUser, FiX } from 'react-icons/fi';
 import { categoryItems, collectionItems } from './Navdata';
 
-const MobileNav = ({ isOpen, onClose }) => {
+const MobileNav = ({ isOpen, onClose, isAuth, currentUser }) => {
   const [isShopCategoryOpen, setIsShopCategoryOpen] = useState(false);
   const [isShopCollectionOpen, setIsShopCollectionOpen] = useState(false);
 

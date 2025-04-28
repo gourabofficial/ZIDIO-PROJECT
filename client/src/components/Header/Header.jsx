@@ -241,6 +241,8 @@ const Header = () => {
                         to="/admin"
                         className="flex items-center px-4 py-2 text-sm text-white hover:bg-gray-800 hover:text-[#c8a95a]"
                         onClick={() => setIsProfileOpen(false)}
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
                         <FiSettings className="mr-2" size={16} />
                         Admin Dashboard
@@ -290,7 +292,12 @@ const Header = () => {
       </div>
 
       {/* Mobile navigation */}
-      <MobileNav isOpen={isMenuOpen} onClose={toggleMenu} />
+      <MobileNav 
+  isOpen={isMenuOpen} 
+  onClose={toggleMenu} 
+  currentUser={currentUser}
+  isAuth={isAuth}
+/>
     </header>
   );
 };

@@ -15,7 +15,10 @@ import {
   User,
   Bell,
   TrendingUp,
-  X
+  X,
+  Menu,
+  Home,
+  LogOut
 } from 'lucide-react';
 
 // Dummy data for testing
@@ -32,6 +35,13 @@ const DUMMY_DATA = {
     { id: '1003', customer: 'Michael Brown', product: 'Gaming Console', amount: 499, status: 'Processing', date: '2025-04-25' },
     { id: '1004', customer: 'Emily Davis', product: 'Bluetooth Speaker', amount: 89, status: 'Pending', date: '2025-04-24' },
     { id: '1005', customer: 'David Wilson', product: '4K TV', amount: 899, status: 'Delivered', date: '2025-04-23' }
+  ],
+  navigation: [
+    { name: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'Users', icon: <Users size={20} /> },
+    { name: 'Products', icon: <Package size={20} /> },
+    { name: 'Orders', icon: <ShoppingCart size={20} /> },
+    { name: 'Settings', icon: <Settings size={20} /> }
   ]
 };
 
@@ -93,6 +103,7 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [currentDateTime] = useState(new Date().toLocaleString());
   const currentUser = "gourabofficial";
@@ -150,6 +161,10 @@ const AdminDashboard = () => {
     setFilteredOrders(recentOrders);
   };
 
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
   const StatCard = ({ title, value, icon, bgColor }) => (
     <div className="bg-gray-800 rounded-lg shadow-md overflow-hidden">
       <div className="flex items-center p-6">
@@ -161,12 +176,7 @@ const AdminDashboard = () => {
           <p className="text-2xl font-bold text-white">{value}</p>
         </div>
       </div>
-      <div className={`${bgColor} bg-opacity-20 px-6 py-2 border-t border-gray-700 flex justify-between items-center`}>
-        <span className="text-xs text-gray-300 flex items-center">
-          <TrendingUp size={14} className="mr-1 text-green-400" /> 12% Increase
-        </span>
-        <span className="text-xs text-gray-300">Last 30 days</span>
-      </div>
+      
     </div>
   );
 
@@ -223,13 +233,60 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col overflow-hidden">
+      {/* Mobile Sidebar */}
+      <div className={`md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 shadow-lg transform ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out`}>
+        <div className="flex items-center justify-between p-4 border-b border-gray-700">
+          <div className="flex items-center">
+            <Shield className="text-blue-400 mr-2" size={24} />
+            <h1 className="text-lg font-semibold text-white">Admin Panel</h1>
+          </div>
+          <button 
+            onClick={toggleMobileMenu}
+            className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700"
+          >
+            <X size={20} />
+          </button>
+        </div>
+        <nav className="p-4">
+          <ul className="space-y-2">
+            {DUMMY_DATA.navigation.map((item) => (
+              <li key={item.name}>
+                <button className="flex items-center w-full p-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white">
+                  <span className="mr-3">{item.icon}</span>
+                  <span>{item.name}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className="absolute bottom-0 w-full p-4 border-t border-gray-700">
+          <button className="flex items-center w-full p-3 rounded-lg text-red-400 hover:bg-gray-700">
+            <LogOut className="mr-3" size={20} />
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={toggleMobileMenu}
+        />
+      )}
+
       {/* Mobile header */}
       <div className="md:hidden bg-gray-800 shadow-md flex items-center justify-between p-4 sticky top-0 z-30">
+        <button 
+          onClick={toggleMobileMenu}
+          className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700"
+        >
+          <Menu size={20} />
+        </button>
         <div className="flex items-center">
           <Shield className="text-blue-400 mr-2" size={20} />
-          <h1 className="text-lg font-medium text-white">Admin Dashboard</h1>
+          <h1 className="text-lg font-medium text-white">Dashboard</h1>
         </div>
-        
         <div className="relative">
           <button className="p-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none relative">
             <Bell size={20} />

@@ -226,6 +226,19 @@ const Account = () => {
         
         {/* Account actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Admin Dashboard - Only visible to admins */}
+          {currentUser && currentUser.role === 'admin' && (
+            <Link 
+              to="/admin"
+              className="bg-[#1e293b] rounded-lg p-4 text-white hover:bg-[#2d3748] transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <h3 className="font-medium mb-1">Admin Dashboard</h3>
+              <p className="text-sm text-gray-400">Manage the store</p>
+            </Link>
+          )}
+          
           <Link to="/orders" className="bg-[#1e293b] rounded-lg p-4 text-white hover:bg-[#2d3748] transition-colors">
             <h3 className="font-medium mb-1">My Orders</h3>
             <p className="text-sm text-gray-400">View your order history</p>
