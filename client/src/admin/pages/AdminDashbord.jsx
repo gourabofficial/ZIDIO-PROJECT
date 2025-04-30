@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Add this import
+import { isLogin } from '../../Api/user'; // Add this import
 import { 
   Users, 
   ShoppingCart, 
@@ -104,9 +106,37 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const [currentDateTime] = useState(new Date().toLocaleString());
-  const currentUser = "gourabofficial";
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
+  
+  // Check authentication before rendering admin dashboard
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await isLogin();
+        
+        if (!response.success) {
+          // User is not logged in
+          navigate('/login');
+          return;
+        }
+        
+        // Check if user is admin
+        if (response.user && response.user.role !== 'admin') {
+          // User is not an admin
+          navigate('/'); // Redirect to home page
+          return;
+        }
+        
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('Authentication check failed:', error);
+        navigate('/login');
+      }
+    };
+    
+    checkAuth();
+  }, [navigate]);
   
   useEffect(() => {
     const styleElement = document.createElement('style');
@@ -226,6 +256,18 @@ const AdminDashboard = () => {
           >
             <RefreshCw className="h-4 w-4 mr-2" /> Retry
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state until authentication check completes
+  if (!isAuthenticated && !error) {
+    return (
+      <div className="flex justify-center items-center h-screen w-screen bg-gray-900 text-white fixed top-0 left-0 right-0 bottom-0 z-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-400 mx-auto mb-4"></div>
+          <p>Verifying authentication...</p>
         </div>
       </div>
     );
