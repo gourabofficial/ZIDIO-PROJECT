@@ -42,49 +42,43 @@ const Product = () => {
   const currentProduct = mockProductDetails['ashura-t-shirt-preorder'];
 
   return (
-    <div className="flex flex-col min-h-screen bg-black text-white">
-      {/* You can add Header here if needed */}
-      
-      <main className="flex-grow">
-        <div className="container mx-auto px-4 py-16 mt-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-            {/* Product Gallery */}
-            <div className="flex justify-center">
-              <div className="w-full max-w-md">
-                <ProductGallery images={currentProduct.images} />
-              </div>
-            </div>
-
-            {/* Product Details */}
-            <div className="space-y-6">
-              <ProductInfo
-                title={currentProduct.title}
-                price={currentProduct.price}
-                className="text-lg font-semibold"
-              />
-              <SizeSelector
-                sizes={currentProduct.sizes}
-                selectedSize={selectedSize}
-                onSizeChange={handleSizeChange}
-              />
-              <QuantitySelector
-                quantity={quantity}
-                onChange={handleQuantityChange}
-              />
-              <ProductActions
-                selectedSize={selectedSize}
-                addedToCart={addedToCart}
-                isFavorite={isFavorite}
-                onAddToCart={handleAddToCart}
-                onToggleFavorite={toggleFavorite}
-              />
-              <ProductTabs product={currentProduct} />
+    <div className="min-h-[calc(100vh-300px)] bg-black text-white"> {/* Adjust height as needed */}
+      <div className="container mx-auto px-4 py-16 mt-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          {/* Product Gallery */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-md">
+              <ProductGallery images={currentProduct.images} />
             </div>
           </div>
-        </div>
-      </main>
 
-     
+          {/* Product Details */}
+          <div className="space-y-6">
+            <ProductInfo
+              title={currentProduct.title}
+              price={currentProduct.price}
+              className="text-lg font-semibold"
+            />
+            <SizeSelector
+              sizes={currentProduct.sizes}
+              selectedSize={selectedSize}
+              onSizeChange={handleSizeChange}
+            />
+            <QuantitySelector
+              quantity={quantity}
+              onChange={handleQuantityChange}
+            />
+            <ProductActions
+              selectedSize={selectedSize}
+              addedToCart={addedToCart}
+              isFavorite={isFavorite}
+              onAddToCart={handleAddToCart}
+              onToggleFavorite={toggleFavorite}
+            />
+            <ProductTabs product={currentProduct} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

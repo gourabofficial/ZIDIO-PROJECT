@@ -3,13 +3,13 @@ import { FiFacebook, FiInstagram, FiArrowRight } from 'react-icons/fi';
 
 const Footer = () => {
   return (
-    <footer className="bg-[#0c0e16] text-white py-12 relative overflow-hidden text-sm">
+    <footer className="bg-[#0c0e16] text-white py-6 relative overflow-hidden text-sm">
       {/* Starry background */}
       <div className="absolute inset-0 starry-bg opacity-10 pointer-events-none"></div>
 
       <div className="container mx-auto px-4 relative z-10">
         {/* Newsletter */}
-        <div className="text-center max-w-2xl mx-auto mb-10">
+        <div className="text-center max-w-2xl mx-auto mb-5">
           <h3 className="text-lg md:text-xl font-semibold mb-2">Stay Connected</h3>
           <p className="text-[#cbd5e1] mb-4">Get updates on new drops and exclusive offers</p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
@@ -25,7 +25,7 @@ const Footer = () => {
         </div>
 
         {/* Links Section */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-10 text-center">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-5 text-center">
   {/* About */}
   <div className="flex flex-col items-center">
     <h4 className="text-base font-semibold text-[#c4b5fd] mb-3">COSMICWEAR</h4>

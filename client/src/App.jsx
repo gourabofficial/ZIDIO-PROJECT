@@ -19,14 +19,17 @@ import SignUp from "./_auth/pages/SignUp";
 import AdminLayout from "./admin/AdminLayout";
 import AdminDashboard from "./admin/pages/AdminDashbord";
 import AddProduct from "./admin/pages/AddProduct";
+import ScrollToTop from "./components/common/ScrollToTop";
 
 import OrderAdmin from "./admin/pages/OrderAdmin";
 import User from "./admin/pages/User";
 import Settings from "./admin/pages/Settings";
+import AccountSettings from "./_root/pages/AccountSettings";
 
 const App = () => {
   return (
     <>
+      <ScrollToTop />
       <Routes>
         // root layout
         <Route element={<RootLayout />}>
@@ -38,6 +41,7 @@ const App = () => {
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/settings" element={<AccountSettings />} />
           <Route path="/product/:id" element={<Product />} />
           <Route path="/orders" element={<Order />} />
           <Route path="/offers" element={<Offer />} />

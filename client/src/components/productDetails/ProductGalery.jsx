@@ -6,7 +6,7 @@ const ProductGallery = ({ images }) => {
   return (
     <div className="space-y-4">
       {/* Main Image */}
-      <div className="bg-[#1e293b] rounded-xl overflow-hidden cosmic-shadow h-[500px] md:h-[600px] flex items-center justify-center">
+      <div className="bg-[#1e293b] rounded-xl overflow-hidden cosmic-shadow max-h-[350px] md:max-h-[450px] flex items-center justify-center">
         <img
           src={selectedImage}
           alt="Product"
