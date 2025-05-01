@@ -13,8 +13,18 @@ const AccountSettings = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
     fullName: '',
-    avatar: ''
+    avatar: ''  // This will store the selected superhero avatar URL
   });
+
+  // Define the superhero avatars
+  const superheroAvatars = [
+    "https://images.unsplash.com/photo-1531259683007-016a7b628fc3?q=80&w=2000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Iron Man
+    "https://images.unsplash.com/photo-1657558045738-21507cf53606?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Captain America
+    "https://as2.ftcdn.net/v2/jpg/05/62/12/87/1000_F_562128745_Pt2bgKtkf0L5zbabWDeji6sGoszjFyfL.jpg", // Black Widow
+    "https://as2.ftcdn.net/v2/jpg/03/68/87/37/1000_F_368873773_erdZlAfQNMSIiX0n9e8XVHTQ8QButcaN.jpg",// Spider-Man
+    "https://as2.ftcdn.net/v2/jpg/04/06/23/13/1000_F_406231350_sPZSAkWgSH3yhgVzfuQ2tyNvWAThCKYv.jpg"//hulk
+    
+  ];
   
   // Address management states
   const [isEditingAddress, setIsEditingAddress] = useState(false);
@@ -74,6 +84,14 @@ const AccountSettings = () => {
     }));
   };
 
+  // Handle selecting a superhero avatar
+  const handleAvatarSelect = (avatarUrl) => {
+    setProfileForm(prev => ({
+      ...prev,
+      avatar: avatarUrl
+    }));
+  };
+
   const handleEditProfileClick = () => {
     setIsEditingProfile(true);
   };
@@ -88,7 +106,16 @@ const AccountSettings = () => {
 
   const handleUpdateProfile = async () => {
     try {
-      const response = await updateUserDetails(profileForm);
+      // Create FormData for the update
+      const formData = new FormData();
+      formData.append('fullName', profileForm.fullName);
+      
+      // Only append avatar if it's different from current
+      if (profileForm.avatar !== currentUser.avatar) {
+        formData.append('avatar', profileForm.avatar);
+      }
+      
+      const response = await updateUserDetails(formData);
       if (response.success) {
         await refetchUserData();
         setIsEditingProfile(false);
@@ -207,22 +234,33 @@ const AccountSettings = () => {
               </div>
               
               <div>
-                <label htmlFor="avatar" className="block text-gray-300 mb-1">Avatar URL</label>
-                <input
-                  type="text"
-                  id="avatar"
-                  name="avatar"
-                  value={profileForm.avatar}
-                  onChange={handleProfileInputChange}
-                  className="w-full bg-[#121828] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
+                <label className="block text-gray-300 mb-2">Select Avatar</label>
+                
+                <div className="grid grid-cols-5 gap-4 mb-4">
+                  {superheroAvatars.map((avatar, index) => (
+                    <div 
+                      key={index}
+                      className={`cursor-pointer rounded-md p-1 transition-all ${
+                        profileForm.avatar === avatar ? 'ring-2 ring-purple-500 scale-105' : 'hover:bg-[#2e3446]'
+                      }`}
+                      onClick={() => handleAvatarSelect(avatar)}
+                    >
+                      <img 
+                        src={avatar} 
+                        alt={`Superhero avatar ${index+1}`}
+                        className="w-16 h-16 rounded-full object-cover mx-auto"
+                      />
+                    </div>
+                  ))}
+                </div>
+                
                 {profileForm.avatar && (
-                  <div className="mt-2">
-                    <p className="text-gray-400 text-sm mb-1">Preview:</p>
+                  <div className="mt-4 text-center">
+                    <p className="text-gray-400 text-sm mb-1">Selected Avatar:</p>
                     <img 
                       src={profileForm.avatar} 
-                      alt="Avatar preview" 
-                      className="w-16 h-16 rounded-full object-cover"
+                      alt="Selected avatar" 
+                      className="w-20 h-20 rounded-full object-cover mx-auto"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = 'https://via.placeholder.com/80?text=Error';

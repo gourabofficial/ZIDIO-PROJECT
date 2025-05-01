@@ -42,7 +42,7 @@ const Product = () => {
   const currentProduct = mockProductDetails['ashura-t-shirt-preorder'];
 
   return (
-    <div className="min-h-[calc(100vh-300px)] bg-black text-white"> {/* Adjust height as needed */}
+    <div className="min-h-[600px] bg-black text-white"> {/* Adjust height as needed */}
       <div className="container mx-auto px-4 py-16 mt-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Product Gallery */}

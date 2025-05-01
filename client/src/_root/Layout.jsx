@@ -8,11 +8,11 @@ const Layout = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
       
-      <main className="flex-1" style={{ minHeight: 'calc(100vh - 250px)' }}>
-        <Outlet />
+      <main className="flex-1">
+        <Outlet /> {/* Where Product component is rendered */}
       </main>
       
-      <Footer />
+      <Footer className="flex-shrink-0" />
     </div>
   )
 }

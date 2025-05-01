@@ -1,27 +1,19 @@
-import React, { useState } from 'react';
-import { FiMail, FiPhone, FiUser, FiEdit } from 'react-icons/fi';
+import React from 'react';
+import { FiMail, FiPhone, FiUser } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthdata } from '../../context/AuthContext';
 import { useClerk } from '@clerk/clerk-react';
+import MiniLoader from '../../components/Loader/MiniLoader';
 
 const Account = () => {
   const { currentUser, isAuth, isLoaded } = useAuthdata();
   const { signOut } = useClerk();
   const navigate = useNavigate();
   
-  // New states for edit profile
-  const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({
-    fullName: '',
-    phone: '',
-    avatar: ''
-  });
-  const [isUpdating, setIsUpdating] = useState(false);
-  
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-[#0c0e16] flex items-center justify-center">
-        <p className="text-white">Loading...</p>
+        <p className="text-white"><MiniLoader /></p>
       </div>
     );
   }
@@ -47,7 +39,7 @@ const Account = () => {
   const fullName = currentUser?.fullName || 'User Name';
   const email = currentUser?.email || '';
   const phone = '629400000'; // You may need to add this field to your user object
-  const imageUrl = currentUser?.avatar ;
+  const imageUrl = currentUser?.avatar;
 
   // Updated sign out handler
   const handleSignOut = async () => {
@@ -60,52 +52,6 @@ const Account = () => {
     }
   };
 
-  // Initialize edit form with current values
-  const handleEditClick = () => {
-    setEditForm({
-      fullName: fullName || '',
-      phone: phone || '',
-      avatar: imageUrl || ''
-    });
-    setIsEditing(true);
-  };
-
-  // Handle form input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditForm(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  // Cancel editing
-  const handleCancel = () => {
-    setIsEditing(false);
-  };
-
-  // Submit profile updates
-  const handleUpdateProfile = async () => {
-    setIsUpdating(true);
-    
-    try {
-      // This would need to be implemented in your auth context
-      // await updateUserProfile(editForm);
-      console.log("Profile update data:", editForm);
-      
-      // For now, just log the data and close the edit mode
-      setIsEditing(false);
-      
-      // Show success message or update the UI directly
-      // This is just a placeholder - you would update with actual API response
-      alert("Profile updated successfully!");
-    } catch (error) {
-      console.error("Error updating profile:", error);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#0c0e16] p-6 mt-20">
       <div className="max-w-3xl mx-auto">
@@ -113,113 +59,40 @@ const Account = () => {
         
         <div className="bg-[#1e293b] rounded-xl p-6 mb-8 shadow-lg">
           {/* Profile Card Header */}
-          <div className="flex justify-between items-start mb-4">
+          <div className="mb-4">
             <h2 className="text-xl font-semibold text-white">Profile Information</h2>
-            
-            {!isEditing ? (
-              <button
-                onClick={handleEditClick}
-                className="flex items-center gap-1 text-sm text-purple-400 hover:text-purple-300"
-              >
-                <FiEdit size={16} />
-                <span>Edit</span>
-              </button>
-            ) : (
-              <div className="flex gap-2">
-                <button
-                  onClick={handleCancel}
-                  className="px-3 py-1 text-sm bg-gray-700 rounded-md text-white hover:bg-gray-600"
-                  disabled={isUpdating}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleUpdateProfile}
-                  className="px-3 py-1 text-sm bg-purple-600 rounded-md text-white hover:bg-purple-700"
-                  disabled={isUpdating}
-                >
-                  {isUpdating ? 'Saving...' : 'Save'}
-                </button>
-              </div>
-            )}
           </div>
           
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             {/* Profile image */}
             <div className="flex-shrink-0">
-              {isEditing ? (
-                <div className="space-y-2">
-                  <img
-                    src={editForm.avatar || imageUrl}
-                    alt={fullName}
-                    className="w-24 h-24 rounded-full border-4 border-purple-500/30 object-cover mb-2"
-                  />
-                  <input
-                    type="text"
-                    name="avatar"
-                    value={editForm.avatar}
-                    onChange={handleInputChange}
-                    placeholder="Avatar URL"
-                    className="w-full bg-[#0c0e16] border border-gray-700 rounded-md px-3 py-1 text-white text-sm"
-                  />
-                </div>
-              ) : (
-                <img
-                  src={imageUrl}
-                  alt={fullName}
-                  className="w-24 h-24 rounded-full border-4 border-purple-500/30 object-cover"
-                />
-              )}
+              <img
+                src={imageUrl}
+                alt={fullName}
+                className="w-24 h-24 rounded-full border-4 border-purple-500/30 object-cover"
+              />
             </div>
             
             {/* User details */}
             <div className="flex-grow space-y-4 text-center md:text-left">
-              {isEditing ? (
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm text-gray-400 block mb-1">Full Name</label>
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={editForm.fullName}
-                      onChange={handleInputChange}
-                      className="w-full bg-[#0c0e16] border border-gray-700 rounded-md px-3 py-2 text-white"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-sm text-gray-400 block mb-1">Phone Number</label>
-                    <input
-                      type="text"
-                      name="phone"
-                      value={editForm.phone}
-                      onChange={handleInputChange}
-                      className="w-full bg-[#0c0e16] border border-gray-700 rounded-md px-3 py-2 text-white"
-                    />
-                  </div>
+              <h2 className="text-2xl font-semibold text-white">{fullName}</h2>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-center md:justify-start gap-2 text-gray-300">
+                  <FiUser className="text-purple-400" />
+                  <span>Account ID: {currentUser.id.substring(0, 8)}...</span>
                 </div>
-              ) : (
-                <>
-                  <h2 className="text-2xl font-semibold text-white">{fullName}</h2>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-center md:justify-start gap-2 text-gray-300">
-                      <FiUser className="text-purple-400" />
-                      <span>Account ID: {currentUser.id.substring(0, 8)}...</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-center md:justify-start gap-2 text-gray-300">
-                      <FiMail className="text-purple-400" />
-                      <span>{email}</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-center md:justify-start gap-2 text-gray-300">
-                      <FiPhone className="text-purple-400" />
-                      <span>{phone}</span>
-                    </div>
-                  </div>
-                </>
-              )}
+                
+                <div className="flex items-center justify-center md:justify-start gap-2 text-gray-300">
+                  <FiMail className="text-purple-400" />
+                  <span>{email}</span>
+                </div>
+                
+                <div className="flex items-center justify-center md:justify-start gap-2 text-gray-300">
+                  <FiPhone className="text-purple-400" />
+                  <span>{phone}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
