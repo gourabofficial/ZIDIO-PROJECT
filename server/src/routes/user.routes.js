@@ -12,6 +12,8 @@ userRouter.patch('/update-profile', isLogedin, updateAvatar)
 userRouter.patch('/update-user', isLogedin, updateUser)
 // update address
 userRouter.patch('/update-address', isLogedin, updateAddress)
+//update avatar
+userRouter.patch('/update-avatar', isLogedin, updateAvatar);
 //add address
 userRouter.post('/add-address', isLogedin, addAddress)
 // is login

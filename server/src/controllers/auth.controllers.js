@@ -30,8 +30,6 @@ export const checkedUserLogin = async (req, res) => {
       });
     }
 
-    const fullName = `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim();
-
     const emailObject = clerkUser.emailAddresses && clerkUser.emailAddresses.length > 0
       ? clerkUser.emailAddresses[0]
       : null;
@@ -47,8 +45,10 @@ export const checkedUserLogin = async (req, res) => {
       });
     }
 
-    // If fullName is empty, use email username as fallback
-    const effectiveFullName = fullName || email.split('@')[0];
+    // Get Clerk fullName only for new users
+    const clerkFullName = `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim();
+    // Use email username as fallback
+    const fallbackName = email.split('@')[0];
 
     let existingUser = await User.findOne({ clerkId });
 
@@ -57,19 +57,20 @@ export const checkedUserLogin = async (req, res) => {
       const userByEmail = await User.findOne({ email });
       
       if (userByEmail) {
-        // Update the existing user with the new clerkId
+        // Update the existing user with the new clerkId but keep their name
         existingUser = await User.findByIdAndUpdate(
           userByEmail._id,
-          { clerkId, fullName: effectiveFullName },
+          { clerkId },  // Don't update fullName here
           { new: true }
         );
       }
     }
 
     if (!existingUser) {
+      // For new users, use Clerk name
       const newUser = await User.create({
         clerkId,
-        fullName: effectiveFullName,
+        fullName: clerkFullName || fallbackName,
         email,
         role: isAdmin ? "admin" : "user"
       });
@@ -87,12 +88,13 @@ export const checkedUserLogin = async (req, res) => {
         user: newUser
       });
     } else {
+      // For existing users, only update email and role, NOT the name
       const updatedUser = await User.findByIdAndUpdate(
         existingUser._id,
         {
-          fullName: effectiveFullName,
           email,
           role: isAdmin ? "admin" : existingUser.role
+          // fullName is intentionally not updated here
         },
         { new: true }
       );

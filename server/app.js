@@ -6,6 +6,7 @@ import connectCloudinary from "./src/config/cloudinary.js";
 import { clerkMiddleware } from '@clerk/express';
 import userRouter from "./src/routes/user.routes.js";
 import productRouter from "./src/routes/product.routes.js"
+import adminRouter from "./src/routes/admin.routes.js";
 
 dotenv.config();
 
@@ -53,6 +54,9 @@ app.get("/", (req, res) => {
 app.use('/api/user', userRouter);
 // product routes
 app.use('/api/product', productRouter)
+
+//admin routes
+app.use('/api/admin', adminRouter)
 
 
 

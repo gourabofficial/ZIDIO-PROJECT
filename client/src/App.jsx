@@ -25,6 +25,9 @@ import OrderAdmin from "./admin/pages/OrderAdmin";
 import User from "./admin/pages/User";
 import Settings from "./admin/pages/Settings";
 import AccountSettings from "./_root/pages/AccountSettings";
+import AllProductList from "./admin/pages/AllProductList";
+import EditProfile from "./_root/pages/EditProfile";
+import AddAddress from "./_root/pages/AddAddress";
 
 const App = () => {
   return (
@@ -41,7 +44,9 @@ const App = () => {
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/account" element={<Account />} />
-          <Route path="/settings" element={<AccountSettings />} />
+          <Route path="/account-settings" element={<AccountSettings />} />
+          <Route path="/edit-profile" element={ <EditProfile />} />
+          <Route path="/add-address" element={ <AddAddress />} />
           <Route path="/product/:id" element={<Product />} />
           <Route path="/orders" element={<Order />} />
           <Route path="/offers" element={<Offer />} />
@@ -56,9 +61,10 @@ const App = () => {
         //admin layout
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
-          <Route path="products" element={<AddProduct />} />
-          <Route path="orders" element={<OrderAdmin />} />
-          <Route path="users" element={<User />} />
+          <Route path="/admin/add-products" element={<AddProduct />} />
+          <Route path="/admin/products-list" element={<AllProductList />} />
+          <Route path="/admin/all-orders" element={<OrderAdmin />} />
+          <Route path="/admin/all-users" element={<User />} />
           <Route path="settings" element={<Settings />} />
 
          

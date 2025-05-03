@@ -6,57 +6,90 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [overrideData, setOverrideData] = useState(null);
   const [error, setError] = useState(null);
   const [isAuth, setIsAuth] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const { user, isLoaded:isUserLoading } = useUser();
 
+  // Function to fetch latest user data
+  const refetchUserData = async () => {
+    try {
+      setIsLoaded(false);
+      
+      // Add a random query parameter to prevent caching
+      const timestamp = Date.now();
+      const response = await isLogin({ _t: timestamp });
 
-  useEffect(() => {
-    const checkLoginStatus = async () => {
-      try {
-        setIsLoaded(false);
-        const response = await isLogin();
-
-        if (response.success && response.user) {
-          setCurrentUser({
-            id: response.user._id,
-            clerkId: response.user.clerkId,
-            fullName: response.user.fullName,
-            email: response.user.email,
-            role: response.user.role || 'user',
-            avatar: response.user.avatar,
-            createdAt: response.user.createdAt,
-            updatedAt: response.user.updatedAt
-          });
-          setIsAuth(true);
-          setError(null);
-        } else {
-          setCurrentUser(null);
-          setIsAuth(false);
-          if (!response.success) {
-            setError(response.message || "Authentication failed");
-          }
-        }
-      } catch (err) {
+      if (response.success && response.user) {
+        console.log("User data refreshed:", response.user);
+        const updatedUser = {
+          id: response.user._id,
+          clerkId: response.user.clerkId,
+          fullName: response.user.fullName,
+          email: response.user.email,
+          role: response.user.role || 'user',
+          avatar: response.user.avatar,
+          address: response.user.address,
+          createdAt: response.user.createdAt,
+          updatedAt: response.user.updatedAt
+        };
+        
+        setCurrentUser(updatedUser);
+        setIsAuth(true);
+        setError(null);
+        
+        // Return the updated user data
+        return updatedUser;
+      } else {
         setCurrentUser(null);
         setIsAuth(false);
-        setError("Failed to authenticate user");
-        console.error("Auth check error:", err);
-      } finally {
-        setIsLoaded(true);
+        if (!response.success) {
+          setError(response.message || "Authentication failed");
+        }
+        return null;
       }
-    };
+    } catch (err) {
+      setCurrentUser(null);
+      setIsAuth(false);
+      setError("Failed to authenticate user");
+      console.error("Auth check error:", err);
+      return null;
+    } finally {
+      setIsLoaded(true);
+    }
+  };
 
-    checkLoginStatus();
+  // Add this new function to directly update the user state with override
+  const updateUserState = (updates) => {
+    if (!currentUser) return;
+    
+    // Create the updated user object
+    const updatedUser = {
+      ...currentUser,
+      ...updates
+    };
+    
+    // Update the user state directly
+    setCurrentUser(updatedUser);
+    
+    // Also store in overrideData to ensure it persists until backend catches up
+    setOverrideData(updatedUser);
+  };
+
+  useEffect(() => {
+    refetchUserData();
   }, [user, isUserLoading]);
 
   const authValues = {
-    currentUser,
+    // If we have override data, use it, otherwise use currentUser
+    currentUser: overrideData || currentUser,
     isAuth,
     isLoaded,
-    error
+    error,
+    refetchUserData,
+    updateUserState
   };
 
   return <AuthContext.Provider value={authValues}>{children}</AuthContext.Provider>;

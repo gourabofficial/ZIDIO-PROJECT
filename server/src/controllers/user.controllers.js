@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { User } from "../model/user.model.js";
+import { Address } from "../model/address.model.js";
 
 export const updateAvatar = async (req, res) => {
   try {
@@ -47,7 +48,7 @@ export const updateUser = async (req, res) => {
 
     if (!fullName && !email) {
       return res.status(400).json({
-        message: "At least one field is required for update",
+        message: "Nothing to update",
         success: false
       });
     }

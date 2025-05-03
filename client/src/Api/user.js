@@ -3,16 +3,12 @@ import axiosInstance from "./config";
 // update account (avatar)
 export const updateAccount = async (formData) => {
    try {
-      const res = await axiosInstance.patch('/user/update-profile', formData, {
-         headers: {
-            'Content-Type': 'multipart/form-data'
-         }
-      });
+      const res = await axiosInstance.patch('/user/update-profile', formData);
       return res.data;
    } catch (error) {
       console.error("Error updating account:", error);
       return {
-         message: "Failed to update account",
+         message: error.response?.data?.message || "Failed to update account",
          success: false
       };
    }
@@ -69,6 +65,22 @@ export const isLogin = async () => {
       console.error("Error checking login status:", error);
       return {
          message: "Failed to check login status",
+         success: false
+      };
+   }
+};
+
+// update avatar
+export const updateAvatar = async (avatarData) => {
+   try {
+      console.log("Sending avatar update:", avatarData);  // Debug log
+      const res = await axiosInstance.patch('/user/update-avatar', avatarData);
+      console.log("Avatar update response:", res.data);  // Debug log
+      return res.data;
+   } catch (error) {
+      console.error("Error updating avatar:", error.response?.data || error.message);
+      return {
+         message: error.response?.data?.message || "Failed to update avatar",
          success: false
       };
    }

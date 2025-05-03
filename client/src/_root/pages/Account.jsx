@@ -1,6 +1,6 @@
 import React from 'react';
 import { FiMail, FiPhone, FiUser } from 'react-icons/fi';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthdata } from '../../context/AuthContext';
 import { useClerk } from '@clerk/clerk-react';
 import MiniLoader from '../../components/Loader/MiniLoader';
@@ -9,6 +9,13 @@ const Account = () => {
   const { currentUser, isAuth, isLoaded } = useAuthdata();
   const { signOut } = useClerk();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Check if we have updated user data from navigation state
+  const updatedUserData = location.state?.updatedUser;
+  
+  // Use updated data from navigation if available, otherwise use context
+  const displayUser = updatedUserData || currentUser;
   
   if (!isLoaded) {
     return (
@@ -35,11 +42,11 @@ const Account = () => {
     );
   }
 
-  // Extract user details from currentUser
-  const fullName = currentUser?.fullName || 'User Name';
-  const email = currentUser?.email || '';
-  const phone = '629400000'; // You may need to add this field to your user object
-  const imageUrl = currentUser?.avatar;
+  // Extract user details from displayUser instead of currentUser
+  const fullName = displayUser?.fullName || 'User Name';
+  const email = displayUser?.email || '';
+  const phone = '629400000';
+  const imageUrl = displayUser?.avatar;
 
   // Updated sign out handler
   const handleSignOut = async () => {
@@ -80,7 +87,7 @@ const Account = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-center md:justify-start gap-2 text-gray-300">
                   <FiUser className="text-purple-400" />
-                  <span>Account ID: {currentUser.id.substring(0, 8)}...</span>
+                  <span>Account ID: {displayUser.id.substring(0, 8)}...</span>
                 </div>
                 
                 <div className="flex items-center justify-center md:justify-start gap-2 text-gray-300">
@@ -100,7 +107,7 @@ const Account = () => {
         {/* Account actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Admin Dashboard - Only visible to admins */}
-          {currentUser && currentUser.role === 'admin' && (
+          {displayUser && displayUser.role === 'admin' && (
             <Link 
               to="/admin"
               className="bg-[#1e293b] rounded-lg p-4 text-white hover:bg-[#2d3748] transition-colors"
@@ -123,7 +130,7 @@ const Account = () => {
           </Link>
           
           <Link 
-            to="/settings"
+            to="/account-settings"
             className="bg-[#1e293b] rounded-lg p-4 text-white hover:bg-[#2d3748] transition-colors"
           >
             <h3 className="font-medium mb-1">Account Settings</h3>

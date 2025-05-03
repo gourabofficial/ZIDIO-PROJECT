@@ -204,15 +204,15 @@ const Header = () => {
                   className="flex items-center space-x-1 text-white hover:text-[#c8a95a] transition-colors p-2"
                   aria-label="Profile"
                 >
-                  {currentUser.imageUrl ? (
+                  {currentUser.imageUrl || currentUser.avatar ? (
                     <img
-                      src={currentUser.imageUrl}
+                      src={currentUser.imageUrl || currentUser.avatar}
                       alt="Profile"
-                      className="w-5 h-5 rounded-full object-cover"
+                      className="w-8 h-8 rounded-full object-cover border border-[#c8a95a]/30"
                     />
                   ) : (
-                    <div className="w-5 h-5 rounded-full bg-[#c8a95a] flex items-center justify-center text-[#0c0e16] text-xs font-bold">
-                      {currentUser.firstName?.[0] || 'U'}
+                    <div className="w-8 h-8 rounded-full bg-[#c8a95a] flex items-center justify-center text-[#0c0e16] text-xs font-bold">
+                      {currentUser.firstName?.[0] || currentUser.fullName?.[0] || 'U'}
                     </div>
                   )}
                   <FiChevronDown size={16} className={`transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
@@ -220,9 +220,22 @@ const Header = () => {
 
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-[#0c0e16] shadow-lg rounded-md py-2 z-50 border border-gray-700">
-                    <div className="px-4 py-2 border-b border-gray-700">
-                      <p className="text-white font-medium">{currentUser.fullName || 'User'}</p>
-                      <p className="text-gray-400 text-xs truncate">{currentUser.email}</p>
+                    <div className="px-4 py-2 border-b border-gray-700 flex items-center">
+                      {currentUser.imageUrl || currentUser.avatar ? (
+                        <img
+                          src={currentUser.imageUrl || currentUser.avatar}
+                          alt="Profile"
+                          className="w-10 h-10 rounded-full object-cover border border-[#c8a95a]/30 mr-3"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-[#c8a95a] flex items-center justify-center text-[#0c0e16] text-sm font-bold mr-3">
+                          {currentUser.firstName?.[0] || currentUser.fullName?.[0] || 'U'}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-white font-medium truncate">{currentUser.fullName || 'User'}</p>
+                        <p className="text-gray-400 text-xs truncate max-w-[120px]">{currentUser.email}</p>
+                      </div>
                     </div>
                     
                     {/* Profile menu items */}
