@@ -1,6 +1,6 @@
 import express from 'express';
 import { isAdmin, isLogedin } from '../middlewares/isAuthenticated.js';
-import { addAddress, updateAddress, updateAvatar, updateUser } from '../controllers/user.controllers.js';
+import { addAddress, updateAddress, updateAvatar, updateUser,getAddressById } from '../controllers/user.controllers.js';
 import { adminLogin, checkedUserLogin } from '../controllers/auth.controllers.js';
 
 
@@ -16,6 +16,8 @@ userRouter.patch('/update-address', isLogedin, updateAddress)
 userRouter.patch('/update-avatar', isLogedin, updateAvatar);
 //add address
 userRouter.post('/add-address', isLogedin, addAddress)
+//add new address
+userRouter.get('/address/:addressId', isLogedin, getAddressById)
 // is login
 userRouter.post('/is-login', checkedUserLogin)
 // admin routes

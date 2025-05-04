@@ -35,10 +35,7 @@ export const updateAddress = async (addressData) => {
       return res.data;
    } catch (error) {
       console.error("Error updating address:", error);
-      return {
-         message: "Failed to update address",
-         success: false
-      };
+      throw error;
    }
 };
 
@@ -73,14 +70,26 @@ export const isLogin = async () => {
 // update avatar
 export const updateAvatar = async (avatarData) => {
    try {
-      console.log("Sending avatar update:", avatarData);  // Debug log
       const res = await axiosInstance.patch('/user/update-avatar', avatarData);
-      console.log("Avatar update response:", res.data);  // Debug log
       return res.data;
    } catch (error) {
       console.error("Error updating avatar:", error.response?.data || error.message);
       return {
          message: error.response?.data?.message || "Failed to update avatar",
+         success: false
+      };
+   }
+};
+
+// Add this new function to fetch address by ID
+export const getAddressById = async (addressId) => {
+   try {
+      const res = await axiosInstance.get(`/user/address/${addressId}`);
+      return res.data;
+   } catch (error) {
+      console.error("Error fetching address:", error);
+      return {
+         message: "Failed to fetch address",
          success: false
       };
    }

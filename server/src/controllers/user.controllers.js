@@ -86,40 +86,35 @@ export const updateUser = async (req, res) => {
 
 export const addAddress = async (req, res) => {
   try {
-    const { street, city, state, country, zipCode } = req.body;
+    const { addressInfo, city, state, country, pinCode } = req.body;
     const userId = req.userId;
 
-    const Address = mongoose.model("Address");
-
-    const newAddress = await Address.create({
-      street,
-      city,
-      state,
-      country,
-      zipCode
-    });
-
-    if (!newAddress) {
-      return res.status(500).json({
-        message: "Failed to create address",
-        success: false
-      });
-    }
-
-    const updatedUser = await User.findOneAndUpdate(
-      { clerkId: userId },
-      { address: newAddress._id },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      await Address.findByIdAndDelete(newAddress._id);
-
+    // Find user to get MongoDB _id
+    const user = await User.findOne({ clerkId: userId });
+    
+    if (!user) {
       return res.status(404).json({
         message: "User not found",
         success: false
       });
     }
+
+    // Create new address with correct field names
+    const newAddress = await Address.create({
+      userId: user._id,  // Use the MongoDB _id from user
+      addressInfo,
+      city,
+      state,
+      country,
+      pinCode
+    });
+
+    // Update user with address reference
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      { address: newAddress._id },
+      { new: true }
+    );
 
     return res.status(201).json({
       message: "Address added successfully",
@@ -138,8 +133,8 @@ export const addAddress = async (req, res) => {
 
 export const updateAddress = async (req, res) => {
   try {
-    const { addressId, street, city, state, country, zipCode } = req.body;
-    const userId = req.userId;
+    const { addressId, addressInfo, city, state, pinCode, country } = req.body;
+    const clerkId = req.userId; // This is the Clerk ID from auth middleware
 
     if (!addressId) {
       return res.status(400).json({
@@ -148,8 +143,9 @@ export const updateAddress = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ clerkId: userId });
-
+    // First find the user to get the MongoDB _id
+    const user = await User.findOne({ clerkId });
+    
     if (!user) {
       return res.status(404).json({
         message: "User not found",
@@ -157,29 +153,57 @@ export const updateAddress = async (req, res) => {
       });
     }
 
-    if (!user.address || user.address.toString() !== addressId) {
-      return res.status(403).json({
-        message: "Not authorized to update this address",
+    // Now find the address using MongoDB _id
+    const address = await Address.findOne({ 
+      _id: addressId,
+      userId: user._id // Use MongoDB _id instead of clerkId
+    });
+
+    if (!address) {
+      return res.status(404).json({
+        message: "Address not found",
         success: false
       });
     }
 
-    const Address = mongoose.model("Address");
+    // Update the address fields
+    address.addressInfo = addressInfo;
+    address.city = city;
+    address.state = state;
+    address.pinCode = pinCode;
+    address.country = country;
 
-    const updateData = {};
-    if (street) updateData.street = street;
-    if (city) updateData.city = city;
-    if (state) updateData.state = state;
-    if (country) updateData.country = country;
-    if (zipCode) updateData.zipCode = zipCode;
+    await address.save();
 
-    const updatedAddress = await Address.findByIdAndUpdate(
-      addressId,
-      updateData,
-      { new: true }
-    );
+    return res.status(200).json({
+      message: "Address updated successfully",
+      success: true,
+      address: address
+    });
+  } catch (error) {
+    console.error("Error updating address:", error);
+    console.error("Request body:", req.body); // Log request body for debugging
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false
+    });
+  }
+};
 
-    if (!updatedAddress) {
+export const getAddressById = async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(addressId)) {
+      return res.status(400).json({
+        message: "Invalid address ID format",
+        success: false
+      });
+    }
+
+    const address = await Address.findById(addressId);
+    
+    if (!address) {
       return res.status(404).json({
         message: "Address not found",
         success: false
@@ -187,12 +211,11 @@ export const updateAddress = async (req, res) => {
     }
 
     return res.status(200).json({
-      message: "Address updated successfully",
       success: true,
-      address: updatedAddress
+      address
     });
   } catch (error) {
-    console.error("Error updating address:", error);
+    console.error("Error in getAddressById:", error);
     return res.status(500).json({
       message: "Internal server error",
       success: false
