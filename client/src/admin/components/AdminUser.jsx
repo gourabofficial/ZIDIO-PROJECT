@@ -1,37 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Search, 
+  Edit, 
+  Trash2, 
   AlertCircle, 
   ChevronLeft, 
   ChevronRight, 
   Filter, 
   RefreshCw,
-  Eye,
-  CheckCircle,
-  Truck,
-  Package,
-  XCircle,
-  Clock
+  UserPlus,
+  UserCheck,
+  UserX,
+  Eye
 } from 'lucide-react';
 import axiosInstance from '../../Api/config';
 
-const OrderList = () => {
+const AdminUser = () => {
   // State
-  const [orders, setOrders] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [limit, setLimit] = useState(10);
-  const [filterStatus, setFilterStatus] = useState('');
+  const [filterRole, setFilterRole] = useState('');
   
-  // Order statuses
-  const orderStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+  // User roles
+  const roles = ['User', 'Admin', 'Moderator'];
   
-  // Fetch orders
-  const fetchOrders = async (page = 1, searchTerm = '') => {
+  // Fetch users
+  const fetchUsers = async (page = 1, searchTerm = '') => {
     setLoading(true);
     setError('');
     
@@ -40,22 +40,22 @@ const OrderList = () => {
         page, 
         limit,
         ...(searchTerm && { search: searchTerm }),
-        ...(filterStatus && { status: filterStatus.toLowerCase() })
+        ...(filterRole && { role: filterRole.toLowerCase() })
       };
       
-      const response = await axiosInstance.get('/orders', { params });
+      const response = await axiosInstance.get('/users', { params });
       
       if (response.data.success) {
-        setOrders(response.data.orders || []);
+        setUsers(response.data.users || []);
         setTotalPages(response.data.totalPages || 1);
-        setTotalOrders(response.data.totalItems || 0);
+        setTotalUsers(response.data.totalItems || 0);
       } else {
-        throw new Error(response.data.message || 'Failed to fetch orders');
+        throw new Error(response.data.message || 'Failed to fetch users');
       }
     } catch (err) {
-      console.error('Error fetching orders:', err);
-      setError(err.response?.data?.message || err.message || 'An error occurred while fetching orders');
-      setOrders([]);
+      console.error('Error fetching users:', err);
+      setError(err.response?.data?.message || err.message || 'An error occurred while fetching users');
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -65,19 +65,19 @@ const OrderList = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     setCurrentPage(1);
-    fetchOrders(1, searchQuery);
+    fetchUsers(1, searchQuery);
   };
   
   // Filter handler
   const handleFilterChange = (e) => {
-    setFilterStatus(e.target.value);
+    setFilterRole(e.target.value);
     setCurrentPage(1);
   };
   
   // Pagination handlers
   const goToPage = (page) => {
     setCurrentPage(page);
-    fetchOrders(page, searchQuery);
+    fetchUsers(page, searchQuery);
   };
   
   const goToPreviousPage = () => {
@@ -92,91 +92,63 @@ const OrderList = () => {
     }
   };
   
-  // Update order status
-  const updateOrderStatus = async (orderId, newStatus) => {
+  // Toggle user status
+  const toggleUserStatus = async (userId, currentStatus) => {
     try {
-      const response = await axiosInstance.patch(`/orders/${orderId}/status`, {
-        status: newStatus
+      const response = await axiosInstance.patch(`/users/${userId}/status`, {
+        active: !currentStatus
       });
       
       if (response.data.success) {
-        // Update the order in the local state
-        setOrders(orders.map(order => 
-          order._id === orderId ? { ...order, status: newStatus } : order
+        // Update the user in the local state
+        setUsers(users.map(user => 
+          user._id === userId ? { ...user, active: !currentStatus } : user
         ));
       } else {
-        throw new Error(response.data.message || 'Failed to update order status');
+        throw new Error(response.data.message || 'Failed to update user status');
       }
     } catch (err) {
-      console.error('Error updating order status:', err);
-      setError(err.response?.data?.message || err.message || 'An error occurred while updating order');
+      console.error('Error updating user status:', err);
+      setError(err.response?.data?.message || err.message || 'An error occurred while updating user');
     }
   };
   
-  // Apply filters when status changes
+  // Delete user
+  const deleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      const response = await axiosInstance.delete(`/users/${userId}`);
+      
+      if (response.data.success) {
+        // Remove the user from the local state
+        setUsers(users.filter(user => user._id !== userId));
+        setTotalUsers(totalUsers - 1);
+      } else {
+        throw new Error(response.data.message || 'Failed to delete user');
+      }
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setError(err.response?.data?.message || err.message || 'An error occurred while deleting user');
+    }
+  };
+  
+  // Apply filters when role changes
   useEffect(() => {
-    fetchOrders(currentPage, searchQuery);
-  }, [filterStatus, limit]);
+    fetchUsers(currentPage, searchQuery);
+  }, [filterRole, limit]);
   
   // Initial load
   useEffect(() => {
-    fetchOrders(currentPage);
+    fetchUsers(currentPage);
   }, []);
-  
-  // Get status icon based on order status
-  const getStatusIcon = (status) => {
-    switch(status) {
-      case 'pending':
-        return <Clock size={16} className="mr-1 text-yellow-400" />;
-      case 'processing':
-        return <Package size={16} className="mr-1 text-blue-400" />;
-      case 'shipped':
-        return <Truck size={16} className="mr-1 text-purple-400" />;
-      case 'delivered':
-        return <CheckCircle size={16} className="mr-1 text-green-400" />;
-      case 'cancelled':
-        return <XCircle size={16} className="mr-1 text-red-400" />;
-      default:
-        return <Clock size={16} className="mr-1 text-gray-400" />;
-    }
-  };
-  
-  // Get status badge class based on order status
-  const getStatusBadgeClass = (status) => {
-    switch(status) {
-      case 'pending':
-        return 'bg-yellow-900 text-yellow-300';
-      case 'processing':
-        return 'bg-blue-900 text-blue-300';
-      case 'shipped':
-        return 'bg-purple-900 text-purple-300';
-      case 'delivered':
-        return 'bg-green-900 text-green-300';
-      case 'cancelled':
-        return 'bg-red-900 text-red-300';
-      default:
-        return 'bg-gray-900 text-gray-300';
-    }
-  };
-  
-  // Format currency
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
-  
-  // Format date
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
   
   return (
     <div className="w-full max-w-7xl mx-auto">
       <div className="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-        <h1 className="text-2xl font-bold text-white mb-6">Order Management</h1>
+        <h1 className="text-2xl font-bold text-white mb-6">User Management</h1>
         
         {/* Error message */}
         {error && (
@@ -193,7 +165,7 @@ const OrderList = () => {
             <form onSubmit={handleSearch} className="relative">
               <input
                 type="text"
-                placeholder="Search by order ID or customer name..."
+                placeholder="Search users by name or email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -211,18 +183,18 @@ const OrderList = () => {
             </form>
           </div>
           
-          {/* Status Filter */}
+          {/* Role Filter */}
           <div className="w-full md:w-64">
             <div className="relative">
               <select
-                value={filterStatus}
+                value={filterRole}
                 onChange={handleFilterChange}
                 className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg py-2 pl-10 pr-4 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">All Statuses</option>
-                {orderStatuses.map((status) => (
-                  <option key={status} value={status.toLowerCase()}>
-                    {status}
+                <option value="">All Roles</option>
+                {roles.map((role) => (
+                  <option key={role} value={role.toLowerCase()}>
+                    {role}
                   </option>
                 ))}
               </select>
@@ -237,38 +209,43 @@ const OrderList = () => {
           <button
             onClick={() => {
               setSearchQuery('');
-              setFilterStatus('');
-              fetchOrders(1);
+              setFilterRole('');
+              fetchUsers(1);
             }}
             className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center"
           >
             <RefreshCw size={18} className="mr-2" />
             Reset
           </button>
+          
+          {/* Add User Button */}
+          <button
+            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center"
+          >
+            <UserPlus size={18} className="mr-2" />
+            Add User
+          </button>
         </div>
         
-        {/* Orders Table */}
+        {/* Users Table */}
         <div className="overflow-x-auto">
           <table className="min-w-full bg-gray-700 rounded-lg overflow-hidden">
             <thead className="bg-gray-800">
               <tr>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Order ID
+                  User
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Customer
+                  Email
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Date
+                  Role
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Total
+                  Joined Date
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Status
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Payment
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Actions
@@ -278,83 +255,99 @@ const OrderList = () => {
             <tbody className="divide-y divide-gray-600">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="py-10">
+                  <td colSpan="6" className="py-10">
                     <div className="flex justify-center">
                       <RefreshCw size={30} className="animate-spin text-blue-500" />
                     </div>
                   </td>
                 </tr>
-              ) : orders.length === 0 ? (
+              ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="py-10">
+                  <td colSpan="6" className="py-10">
                     <div className="text-center text-gray-400">
-                      <p className="text-lg">No orders found</p>
-                      <p className="text-sm mt-1">Try a different search or filter</p>
+                      <p className="text-lg">No users found</p>
+                      <p className="text-sm mt-1">Try a different search or add a new user</p>
                     </div>
                   </td>
                 </tr>
               ) : (
-                orders.map((order) => (
-                  <tr key={order._id} className="hover:bg-gray-650">
+                users.map((user) => (
+                  <tr key={user._id} className="hover:bg-gray-650">
                     <td className="py-3 px-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-white">
-                        #{order.orderNumber || order._id.substring(0, 8)}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-white">
-                        {order.user.name}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {order.user.email}
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 flex-shrink-0 bg-gray-600 rounded-full overflow-hidden">
+                          {user.profileImage ? (
+                            <img 
+                              className="h-10 w-10 object-cover" 
+                              src={user.profileImage} 
+                              alt={user.name} 
+                            />
+                          ) : (
+                            <div className="h-10 w-10 flex items-center justify-center text-gray-300">
+                              {user.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-white">
+                            {user.name}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            ID: {user._id}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap text-sm text-white">
-                      {formatDate(order.createdAt)}
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap text-sm text-white">
-                      {formatCurrency(order.totalAmount)}
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full items-center ${getStatusBadgeClass(order.status)}`}>
-                        {getStatusIcon(order.status)}
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                      </span>
+                      {user.email}
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                        ${order.paymentStatus === 'paid' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'}`}
+                        ${user.role === 'admin' ? 'bg-purple-900 text-purple-300' : 
+                          user.role === 'moderator' ? 'bg-blue-900 text-blue-300' : 
+                          'bg-gray-900 text-gray-300'}`}
                       >
-                        {order.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
+                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 whitespace-nowrap text-sm text-white">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                        ${user.active ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}
+                      >
+                        {user.active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-3">
-                        {/* View Order Details */}
+                      <div className="flex space-x-2">
                         <button
                           className="text-blue-400 hover:text-blue-300"
                           title="View Details"
                         >
                           <Eye size={18} />
                         </button>
-                        
-                        {/* Status Update Dropdown */}
-                        <div className="relative">
-                          <select
-                            value={order.status}
-                            onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                            className="bg-gray-800 border border-gray-600 text-white text-xs rounded py-1 pl-2 pr-6 appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          >
-                            {orderStatuses.map((status) => (
-                              <option 
-                                key={status} 
-                                value={status.toLowerCase()}
-                              >
-                                {status}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                        <button
+                          className="text-yellow-400 hover:text-yellow-300"
+                          title="Edit User"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          onClick={() => toggleUserStatus(user._id, user.active)}
+                          className={`${user.active ? 'text-orange-400 hover:text-orange-300' : 'text-green-400 hover:text-green-300'}`}
+                          title={user.active ? 'Deactivate User' : 'Activate User'}
+                        >
+                          {user.active ? <UserX size={18} /> : <UserCheck size={18} />}
+                        </button>
+                        <button
+                          onClick={() => deleteUser(user._id)}
+                          className="text-red-400 hover:text-red-300"
+                          title="Delete User"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -365,10 +358,10 @@ const OrderList = () => {
         </div>
         
         {/* Pagination */}
-        {!loading && orders.length > 0 && (
+        {!loading && users.length > 0 && (
           <div className="flex items-center justify-between mt-6">
             <div className="text-sm text-gray-400">
-              Showing {(currentPage - 1) * limit + 1} to {Math.min(currentPage * limit, totalOrders)} of {totalOrders} orders
+              Showing {(currentPage - 1) * limit + 1} to {Math.min(currentPage * limit, totalUsers)} of {totalUsers} users
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -430,4 +423,4 @@ const OrderList = () => {
   );
 };
 
-export default OrderList;
+export default AdminUser;

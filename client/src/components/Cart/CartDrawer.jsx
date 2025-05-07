@@ -53,7 +53,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
           ) : (
             <ul className="divide-y divide-gray-800">
               {cartItems.map(item => (
-                <li key={item.id} className="flex px-4 py-4">
+                <li key={item.variantId || item.id} className="flex px-4 py-4">
                   <img 
                     src={item.image} 
                     alt={item.title} 
@@ -61,13 +61,20 @@ const CartDrawer = ({ isOpen, onClose }) => {
                   />
                   <div className="ml-4 flex-1">
                     <h3 className="text-sm font-medium text-white">{item.title}</h3>
+                    {/* Add size display */}
+                    {item.selectedVariant && item.selectedVariant.size && (
+                      <p className="text-xs text-gray-400 mt-1">Size: {item.selectedVariant.size}</p>
+                    )}
                     <div className="flex justify-between items-center mt-1">
                       <div className="text-sm text-gray-400">
                         <span>{item.quantity} × </span>
                         <span className="text-purple-400">₹{item.price.toLocaleString()}</span>
                       </div>
                       <button 
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => {
+                          console.log("Removing item:", item);
+                          removeFromCart(item.variantId || item.id);
+                        }}
                         className="text-gray-500 hover:text-red-400 transition-colors"
                       >
                         <FiTrash2 className="w-4 h-4" />

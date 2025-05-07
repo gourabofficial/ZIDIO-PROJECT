@@ -1,61 +1,64 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { getAllProducts, searchProducts } from '../../Api/ProductApi';
 import { 
   Search, 
+  Edit, 
+  Trash2, 
   AlertCircle, 
   ChevronLeft, 
   ChevronRight, 
-  Filter, 
+  Filter,
   RefreshCw,
-  Eye,
-  CheckCircle,
-  Truck,
-  Package,
-  XCircle,
-  Clock
+  Eye
 } from 'lucide-react';
-import axiosInstance from '../../Api/config';
 
-const OrderList = () => {
+const AllProductList = () => {
   // State
-  const [orders, setOrders] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [limit, setLimit] = useState(10);
-  const [filterStatus, setFilterStatus] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
   
-  // Order statuses
-  const orderStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+  // Categories
+  const categories = ['Electronics', 'Clothing', 'Home & Kitchen', 'Books', 'Toys', 'Sports', 'Beauty', 'Other'];
   
-  // Fetch orders
-  const fetchOrders = async (page = 1, searchTerm = '') => {
+  // Fetch products
+  const fetchProducts = async (page = 1, searchTerm = '') => {
     setLoading(true);
     setError('');
     
     try {
-      const params = { 
-        page, 
-        limit,
-        ...(searchTerm && { search: searchTerm }),
-        ...(filterStatus && { status: filterStatus.toLowerCase() })
-      };
+      let response;
       
-      const response = await axiosInstance.get('/orders', { params });
-      
-      if (response.data.success) {
-        setOrders(response.data.orders || []);
-        setTotalPages(response.data.totalPages || 1);
-        setTotalOrders(response.data.totalItems || 0);
+      if (searchTerm) {
+        response = await searchProducts(searchTerm);
       } else {
-        throw new Error(response.data.message || 'Failed to fetch orders');
+        const params = { 
+          page, 
+          limit,
+          ...(filterCategory && { category: filterCategory.toLowerCase() })
+        };
+        
+        response = await getAllProducts(params);
+      }
+      
+      if (response.success) {
+        setProducts(response.products || []);
+        setTotalPages(response.totalPages || 1);
+        setTotalProducts(response.totalItems || 0);
+      } else {
+        throw new Error(response.message || 'Failed to fetch products');
       }
     } catch (err) {
-      console.error('Error fetching orders:', err);
-      setError(err.response?.data?.message || err.message || 'An error occurred while fetching orders');
-      setOrders([]);
+      console.error('Error fetching products:', err);
+      setError(err.message || 'An error occurred while fetching products');
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -65,19 +68,19 @@ const OrderList = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     setCurrentPage(1);
-    fetchOrders(1, searchQuery);
+    fetchProducts(1, searchQuery);
   };
   
   // Filter handler
   const handleFilterChange = (e) => {
-    setFilterStatus(e.target.value);
+    setFilterCategory(e.target.value);
     setCurrentPage(1);
   };
   
   // Pagination handlers
   const goToPage = (page) => {
     setCurrentPage(page);
-    fetchOrders(page, searchQuery);
+    fetchProducts(page, searchQuery);
   };
   
   const goToPreviousPage = () => {
@@ -92,91 +95,20 @@ const OrderList = () => {
     }
   };
   
-  // Update order status
-  const updateOrderStatus = async (orderId, newStatus) => {
-    try {
-      const response = await axiosInstance.patch(`/orders/${orderId}/status`, {
-        status: newStatus
-      });
-      
-      if (response.data.success) {
-        // Update the order in the local state
-        setOrders(orders.map(order => 
-          order._id === orderId ? { ...order, status: newStatus } : order
-        ));
-      } else {
-        throw new Error(response.data.message || 'Failed to update order status');
-      }
-    } catch (err) {
-      console.error('Error updating order status:', err);
-      setError(err.response?.data?.message || err.message || 'An error occurred while updating order');
-    }
-  };
-  
-  // Apply filters when status changes
+  // Apply filters when category changes
   useEffect(() => {
-    fetchOrders(currentPage, searchQuery);
-  }, [filterStatus, limit]);
+    fetchProducts(currentPage, searchQuery);
+  }, [filterCategory, limit]);
   
   // Initial load
   useEffect(() => {
-    fetchOrders(currentPage);
+    fetchProducts(currentPage);
   }, []);
-  
-  // Get status icon based on order status
-  const getStatusIcon = (status) => {
-    switch(status) {
-      case 'pending':
-        return <Clock size={16} className="mr-1 text-yellow-400" />;
-      case 'processing':
-        return <Package size={16} className="mr-1 text-blue-400" />;
-      case 'shipped':
-        return <Truck size={16} className="mr-1 text-purple-400" />;
-      case 'delivered':
-        return <CheckCircle size={16} className="mr-1 text-green-400" />;
-      case 'cancelled':
-        return <XCircle size={16} className="mr-1 text-red-400" />;
-      default:
-        return <Clock size={16} className="mr-1 text-gray-400" />;
-    }
-  };
-  
-  // Get status badge class based on order status
-  const getStatusBadgeClass = (status) => {
-    switch(status) {
-      case 'pending':
-        return 'bg-yellow-900 text-yellow-300';
-      case 'processing':
-        return 'bg-blue-900 text-blue-300';
-      case 'shipped':
-        return 'bg-purple-900 text-purple-300';
-      case 'delivered':
-        return 'bg-green-900 text-green-300';
-      case 'cancelled':
-        return 'bg-red-900 text-red-300';
-      default:
-        return 'bg-gray-900 text-gray-300';
-    }
-  };
-  
-  // Format currency
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
-  
-  // Format date
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
   
   return (
     <div className="w-full max-w-7xl mx-auto">
       <div className="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-        <h1 className="text-2xl font-bold text-white mb-6">Order Management</h1>
+        <h1 className="text-2xl font-bold text-white mb-6">Product Management</h1>
         
         {/* Error message */}
         {error && (
@@ -193,7 +125,7 @@ const OrderList = () => {
             <form onSubmit={handleSearch} className="relative">
               <input
                 type="text"
-                placeholder="Search by order ID or customer name..."
+                placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -211,18 +143,18 @@ const OrderList = () => {
             </form>
           </div>
           
-          {/* Status Filter */}
+          {/* Category Filter */}
           <div className="w-full md:w-64">
             <div className="relative">
               <select
-                value={filterStatus}
+                value={filterCategory}
                 onChange={handleFilterChange}
                 className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg py-2 pl-10 pr-4 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">All Statuses</option>
-                {orderStatuses.map((status) => (
-                  <option key={status} value={status.toLowerCase()}>
-                    {status}
+                <option value="">All Categories</option>
+                {categories.map((category) => (
+                  <option key={category} value={category.toLowerCase()}>
+                    {category}
                   </option>
                 ))}
               </select>
@@ -237,38 +169,43 @@ const OrderList = () => {
           <button
             onClick={() => {
               setSearchQuery('');
-              setFilterStatus('');
-              fetchOrders(1);
+              setFilterCategory('');
+              fetchProducts(1);
             }}
             className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center"
           >
             <RefreshCw size={18} className="mr-2" />
             Reset
           </button>
+          
+          {/* Add Product Button */}
+          <Link
+            to="/admin/add-products"
+            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center"
+          >
+            + Add Product
+          </Link>
         </div>
         
-        {/* Orders Table */}
+        {/* Products Table */}
         <div className="overflow-x-auto">
           <table className="min-w-full bg-gray-700 rounded-lg overflow-hidden">
             <thead className="bg-gray-800">
               <tr>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Order ID
+                  Product
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Customer
+                  Category
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Date
+                  Price
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Total
+                  Stock
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Status
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Payment
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Actions
@@ -278,83 +215,88 @@ const OrderList = () => {
             <tbody className="divide-y divide-gray-600">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="py-10">
+                  <td colSpan="6" className="py-10">
                     <div className="flex justify-center">
                       <RefreshCw size={30} className="animate-spin text-blue-500" />
                     </div>
                   </td>
                 </tr>
-              ) : orders.length === 0 ? (
+              ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="py-10">
+                  <td colSpan="6" className="py-10">
                     <div className="text-center text-gray-400">
-                      <p className="text-lg">No orders found</p>
-                      <p className="text-sm mt-1">Try a different search or filter</p>
+                      <p className="text-lg">No products found</p>
+                      <p className="text-sm mt-1">Try a different search or add a new product</p>
                     </div>
                   </td>
                 </tr>
               ) : (
-                orders.map((order) => (
-                  <tr key={order._id} className="hover:bg-gray-650">
+                products.map((product) => (
+                  <tr key={product._id || product.id} className="hover:bg-gray-650">
                     <td className="py-3 px-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-white">
-                        #{order.orderNumber || order._id.substring(0, 8)}
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 flex-shrink-0">
+                          <img
+                            className="h-10 w-10 rounded-md object-cover"
+                            src={product.images && product.images.length > 0 
+                              ? product.images[0].imageUrl 
+                              : 'https://via.placeholder.com/40'}
+                            alt={product.name}
+                          />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-white">
+                            {product.name}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            ID: {product._id || product.id}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-white">
-                        {order.user.name}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {order.user.email}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap text-sm text-white">
-                      {formatDate(order.createdAt)}
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap text-sm text-white">
-                      {formatCurrency(order.totalAmount)}
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full items-center ${getStatusBadgeClass(order.status)}`}>
-                        {getStatusIcon(order.status)}
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-900 text-blue-300">
+                        {product.category}
                       </span>
+                    </td>
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <div className="text-sm text-white">${product.price}</div>
+                      {product.discount > 0 && (
+                        <div className="text-xs text-green-400">
+                          Discount: ${product.discount}
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 whitespace-nowrap text-sm text-white">
+                      {product.stock}
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                        ${order.paymentStatus === 'paid' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'}`}
+                        ${product.stock > 0 ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}
                       >
-                        {order.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
+                        {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
                       </span>
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-3">
-                        {/* View Order Details */}
+                      <div className="flex space-x-2">
                         <button
                           className="text-blue-400 hover:text-blue-300"
-                          title="View Details"
+                          title="View"
                         >
                           <Eye size={18} />
                         </button>
-                        
-                        {/* Status Update Dropdown */}
-                        <div className="relative">
-                          <select
-                            value={order.status}
-                            onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                            className="bg-gray-800 border border-gray-600 text-white text-xs rounded py-1 pl-2 pr-6 appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          >
-                            {orderStatuses.map((status) => (
-                              <option 
-                                key={status} 
-                                value={status.toLowerCase()}
-                              >
-                                {status}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                        <button
+                          className="text-yellow-400 hover:text-yellow-300"
+                          title="Edit"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          className="text-red-400 hover:text-red-300"
+                          title="Delete"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -365,10 +307,10 @@ const OrderList = () => {
         </div>
         
         {/* Pagination */}
-        {!loading && orders.length > 0 && (
+        {!loading && products.length > 0 && (
           <div className="flex items-center justify-between mt-6">
             <div className="text-sm text-gray-400">
-              Showing {(currentPage - 1) * limit + 1} to {Math.min(currentPage * limit, totalOrders)} of {totalOrders} orders
+              Showing {(currentPage - 1) * limit + 1} to {Math.min(currentPage * limit, totalProducts)} of {totalProducts} products
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -430,4 +372,4 @@ const OrderList = () => {
   );
 };
 
-export default OrderList;
+export default AllProductList;

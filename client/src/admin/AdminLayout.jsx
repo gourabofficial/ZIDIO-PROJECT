@@ -56,20 +56,26 @@ const AdminLayout = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-900 overflow-hidden">
+    <div className="flex bg-gray-900">
       {/* Sidebar */}
-      <AdminSidebar 
-        sidebarOpen={isSidebarOpen} 
-        toggleSidebar={handleSidebarToggle}
-        location={location}
-      />
+      <div className="fixed h-screen z-30">
+        <AdminSidebar 
+          sidebarOpen={isSidebarOpen} 
+          toggleSidebar={handleSidebarToggle}
+          location={location}
+        />
+      </div>
       
-      {/* Main content */}
-      <main className={`flex-1 transition-all duration-300 ${
-        isSidebarOpen ? 'md:ml-64' : 'ml-0'
-      } p-6 overflow-y-auto bg-gray-900 text-white`}>
-        <Outlet />
-      </main>
+      {/* Main content - Scrollable */}
+      <div 
+        className={`w-full ${
+          isSidebarOpen ? 'ml-64' : 'ml-20'
+        } transition-all duration-300 min-h-screen`}
+      >
+        <main className="p-6 bg-gray-900 text-white">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };

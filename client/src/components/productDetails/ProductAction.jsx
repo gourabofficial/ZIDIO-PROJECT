@@ -1,31 +1,31 @@
 import { FiShoppingBag, FiShoppingCart, FiHeart, FiCheck } from 'react-icons/fi';
+import AddToCartButton from '../common/AddToCart';
 
-const ProductActions = ({ selectedSize, addedToCart, isFavorite, onAddToCart, onToggleFavorite }) => {
+const ProductActions = ({ product, selectedSize, addedToCart, isFavorite, onAddToCart, onToggleFavorite }) => {
+  // Debug log to trace the product data
+  console.log("ProductActions received product:", product);
+  
+  // Don't render buttons if product is undefined
+  if (!product) {
+    console.error("Product is undefined in ProductActions");
+    return <div>Loading product details...</div>;
+  }
+  
   return (
     <div className="flex flex-col space-y-4 mb-8">
-      <button 
-        onClick={onAddToCart}
-        disabled={!selectedSize || addedToCart}
+      <AddToCartButton
+        product={product}
+        selectedSize={selectedSize}
         className={`py-3 px-6 rounded-md w-full font-medium transition-all duration-300 flex items-center justify-center ${
-          addedToCart 
-            ? 'bg-green-500 text-white'
-            : selectedSize 
-              ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 shadow-lg shadow-indigo-500/30' 
-              : 'bg-slate-700 text-slate-300 cursor-not-allowed'
+          !selectedSize 
+            ? 'bg-slate-700 text-slate-300 cursor-not-allowed' 
+            : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 shadow-lg shadow-indigo-500/30'
         }`}
+        disabled={!selectedSize}
       >
-        {addedToCart ? (
-          <>
-            <FiCheck size={18} className="mr-2" />
-            ADDED TO CART
-          </>
-        ) : (
-          <>
-            <FiShoppingBag size={18} className="mr-2" />
-            ADD TO CART
-          </>
-        )}
-      </button>
+        <FiShoppingBag size={18} className="mr-2" />
+        ADD TO CART
+      </AddToCartButton>
       
       <button 
         disabled={!selectedSize}

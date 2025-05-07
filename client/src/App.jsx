@@ -16,18 +16,26 @@ import Account from "./_root/pages/Account";
 import AuthLayout from "./_auth/AuthLayout";
 import SignIn from "./_auth/pages/SignIn";
 import SignUp from "./_auth/pages/SignUp";
-import AdminLayout from "./admin/AdminLayout";
-// import AdminDashboard from "./admin/pages/AdminDashbord";
-// import AddProduct from "./admin/pages/AddProduct";
 import ScrollToTop from "./components/common/ScrollToTop";
-
-// import OrderAdmin from "./admin/pages/OrderAdmin";
-// import User from "./admin/pages/User";
-// import Settings from "./admin/pages/Settings";
 import AccountSettings from "./_root/pages/AccountSettings";
-// import AllProductList from "./admin/pages/AllProductList";
 import EditProfile from "./_root/pages/EditProfile";
 import AddAddress from "./_root/pages/AddAddress";
+
+// import admin
+
+import AdminLayout from "./admin/AdminLayout";
+import AdminDashboard from "./admin/components/AdminDashboard";
+import AddProduct from "./admin/components/AddProduct";
+import OrderAdmin from "./admin/components/OrderList";
+import AllProductList from "./admin/components/AllProductList";
+import AdminUser from "./admin/components/AdminUser";
+
+
+
+
+
+
+
 
 const App = () => {
   return (
@@ -59,16 +67,17 @@ const App = () => {
         </Route>
 
         //admin layout
-        {/* <Route path="/admin" element={<AdminLayout />}>
+         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="/admin/add-products" element={<AddProduct />} />
           <Route path="/admin/products-list" element={<AllProductList />} />
           <Route path="/admin/all-orders" element={<OrderAdmin />} />
-          <Route path="/admin/all-users" element={<User />} />
-          <Route path="settings" element={<Settings />} /> */}
-{/* 
+          <Route path="/admin/all-users" element={<AdminUser />} />
+          
+          
+
          
-        </Route> */}
+        </Route> 
 
       </Routes>
     </>

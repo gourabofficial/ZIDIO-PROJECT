@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FiHeart, FiShoppingCart, FiEye } from "react-icons/fi";
 import AddToCartButton from "../common/AddToCart";
 import { Link } from "react-router-dom";
+import ScrollToTop from "../common/ScrollToTop";
 
 const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -79,7 +80,13 @@ const ProductCard = ({ product }) => {
               <FiEye size={16} />
             </button>
             <AddToCartButton
-              product={product}
+              product={{
+                id: product.id,
+                title: product.title,
+                price: product.price,
+                image: product.image, // Make sure this is the correct image property
+                handle: product.handle
+              }}
               size="small"
               className="w-10 h-10 bg-[#334155] hover:bg-[#c4b5fd] hover:text-[#0f172a] rounded-full transition-colors !p-0"
             >

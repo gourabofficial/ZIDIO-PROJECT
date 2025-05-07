@@ -59,7 +59,16 @@ export const CartProvider = ({ children }) => {
       setError(null);
       
       // Check if product already exists in cart
-      const existingItemIndex = cartItems.findIndex(item => item.id === product.id);
+      const existingItemIndex = cartItems.findIndex(item => 
+        (item.variantId && product.variantId) 
+          ? item.variantId === product.variantId 
+          : item.id === product.id
+      );
+
+      console.log("Adding to cart:", product);
+      console.log("Product variantId:", product.variantId);
+      console.log("Existing cart items:", cartItems);
+      console.log("Found existing item?", existingItemIndex !== -1);
       
       let updatedCart;
       
@@ -89,18 +98,25 @@ export const CartProvider = ({ children }) => {
   const updateQuantity = async (productId, quantity) => {
     try {
       setLoading(true);
+      console.log("Updating quantity for:", productId, "to", quantity);
       
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 300));
       
       if (quantity <= 0) {
         // Remove item if quantity is zero or negative
-        const updatedCart = cartItems.filter(item => item.id !== productId);
+        const updatedCart = cartItems.filter(item => 
+          (typeof productId === 'string' && productId.includes('-size-')) 
+            ? item.variantId !== productId 
+            : item.id !== productId
+        );
         setCartItems(updatedCart);
       } else {
-        // Update quantity
+        // Update quantity - using variantId OR id
         const updatedCart = cartItems.map(item => 
-          item.id === productId ? { ...item, quantity } : item
+          (typeof productId === 'string' && productId.includes('-size-')) 
+            ? (item.variantId === productId ? { ...item, quantity } : item)
+            : (item.id === productId ? { ...item, quantity } : item)
         );
         setCartItems(updatedCart);
       }
@@ -118,11 +134,19 @@ export const CartProvider = ({ children }) => {
   const removeFromCart = async (productId) => {
     try {
       setLoading(true);
+      console.log("Removing item with ID:", productId);
       
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      const updatedCart = cartItems.filter(item => item.id !== productId);
+      // Fix: Use variantId OR id for removal
+      const updatedCart = cartItems.filter(item => 
+        (typeof productId === 'string' && productId.includes('-size-')) 
+          ? item.variantId !== productId 
+          : item.id !== productId
+      );
+      
+      console.log("Cart after removal:", updatedCart);
       setCartItems(updatedCart);
       
       setLoading(false);
