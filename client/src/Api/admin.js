@@ -6,6 +6,7 @@ export const addProduct = async (formData) => {
     return res.data;
   } catch (error) {
     console.error("Error adding product:", error);
+    console.error("Error details:", error.response?.data);
     return {
       message: error.response?.data?.message || "Failed to add product",
       success: false

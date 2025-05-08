@@ -6,6 +6,8 @@ import { categoryItems, collectionItems } from '../../constant/constant';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useClerk } from "@clerk/clerk-react";
 import { useAuthdata } from '../../context/AuthContext';
+import { useWishlist } from '../../context/WishlistContext';
+import { useCart } from '../../context/CartContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -24,6 +26,9 @@ const Header = () => {
     isLoaded,
     error
   } = useAuthdata();
+
+  const { wishlistItems } = useWishlist();
+  const { itemsCount } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -182,7 +187,11 @@ const Header = () => {
             >
               <div className="relative">
                 <FiHeart size={20} />
-                <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 bg-[#c8a95a] text-[#0c0e16] text-xs rounded-full font-semibold">0</span>
+                {wishlistItems.length > 0 && (
+                  <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 bg-[#c8a95a] text-[#0c0e16] text-xs rounded-full font-semibold">
+                    {wishlistItems.length}
+                  </span>
+                )}
               </div>
             </Link>
             <Link
@@ -192,7 +201,11 @@ const Header = () => {
             >
               <div className="relative">
                 <FiShoppingCart size={20} />
-                <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 bg-[#c8a95a] text-[#0c0e16] text-xs rounded-full font-semibold">0</span>
+                {itemsCount > 0 && (
+                  <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 bg-[#c8a95a] text-[#0c0e16] text-xs rounded-full font-semibold">
+                    {itemsCount}
+                  </span>
+                )}
               </div>
             </Link>
             {!isLoaded ? (

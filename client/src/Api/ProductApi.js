@@ -1,12 +1,6 @@
 import axiosInstance from "./config";
 
-/**
- * Get all products with pagination
- * @param {Object} params - Query parameters
- * @param {number} params.page - Page number
- * @param {number} params.limit - Number of items per page
- * @returns {Promise<Object>} Response object with products array and pagination metadata
- */
+
 export const getAllProducts = async (params = {}) => {
   try {
     const res = await axiosInstance.get('/product', { params });
@@ -20,11 +14,7 @@ export const getAllProducts = async (params = {}) => {
   }
 };
 
-/**
- * Get product by ID
- * @param {string} id - Product ID
- * @returns {Promise<Object>} Response with product object
- */
+
 export const getProductById = async (id) => {
   try {
     const res = await axiosInstance.get(`/product/${id}`);
@@ -38,11 +28,7 @@ export const getProductById = async (id) => {
   }
 };
 
-/**
- * Search products by query
- * @param {string} query - Search query
- * @returns {Promise<Object>} Response with matching products
- */
+
 export const searchProducts = async (query) => {
   try {
     const res = await axiosInstance.get('/product/search', { 
@@ -58,11 +44,7 @@ export const searchProducts = async (query) => {
   }
 };
 
-/**
- * Get hot items (products marked as hot)
- * @param {Object} additionalParams - Additional query parameters
- * @returns {Promise<Object>} Response with hot products
- */
+
 export const getHotItems = async (additionalParams = {}) => {
   try {
     const res = await axiosInstance.get('/product/filter', { 
@@ -87,11 +69,7 @@ export const getHotItems = async (additionalParams = {}) => {
   }
 };
 
-/**
- * Get trending products
- * @param {Object} additionalParams - Additional query parameters
- * @returns {Promise<Object>} Response with trending products
- */
+
 export const getTrendingProducts = async (additionalParams = {}) => {
   try {
     const res = await axiosInstance.get('/product/filter', { 
@@ -145,12 +123,7 @@ export const getNewArrivals = async (additionalParams = {}) => {
   }
 };
 
-/**
- * Get products by category
- * @param {string} category - Category name
- * @param {Object} additionalParams - Additional query parameters
- * @returns {Promise<Object>} Response with category-filtered products
- */
+
 export const getProductsByCategory = async (category, additionalParams = {}) => {
   try {
     if (category === 'all') {
@@ -179,11 +152,7 @@ export const getProductsByCategory = async (category, additionalParams = {}) => 
   }
 };
 
-/**
- * Get products with custom filters
- * @param {Object} filters - Filter criteria
- * @returns {Promise<Object>} Response with filtered products
- */
+
 export const getFilteredProducts = async (filters = {}) => {
   try {
     const res = await axiosInstance.get('/product/filter', { 
@@ -205,11 +174,7 @@ export const getFilteredProducts = async (filters = {}) => {
   }
 };
 
-/**
- * Helper function to transform backend product format to frontend format
- * @param {Object} product - Backend product object
- * @returns {Object} Frontend formatted product
- */
+
 const transformProductForFrontend = (product) => {
   return {
     id: product._id || product.id,

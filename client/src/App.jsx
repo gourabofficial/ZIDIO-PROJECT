@@ -21,8 +21,7 @@ import AccountSettings from "./_root/pages/AccountSettings";
 import EditProfile from "./_root/pages/EditProfile";
 import AddAddress from "./_root/pages/AddAddress";
 
-// import admin
-
+// Admin imports
 import AdminLayout from "./admin/AdminLayout";
 import AdminDashboard from "./admin/components/AdminDashboard";
 import AddProduct from "./admin/components/AddProduct";
@@ -30,19 +29,15 @@ import OrderAdmin from "./admin/components/OrderList";
 import AllProductList from "./admin/components/AllProductList";
 import AdminUser from "./admin/components/AdminUser";
 
-
-
-
-
-
-
+// Import WishlistProvider
+import { WishlistProvider } from './context/WishlistContext';
 
 const App = () => {
   return (
-    <>
+    <WishlistProvider>
       <ScrollToTop />
       <Routes>
-        // root layout
+        {/* Root layout */}
         <Route element={<RootLayout />}>
           <Route index element={<Home />} />
           <Route path="/category/:id" element={<Category />} />
@@ -53,34 +48,29 @@ const App = () => {
           <Route path="/cart" element={<Cart />} />
           <Route path="/account" element={<Account />} />
           <Route path="/account-settings" element={<AccountSettings />} />
-          <Route path="/edit-profile" element={ <EditProfile />} />
-          <Route path="/add-address" element={ <AddAddress />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/add-address" element={<AddAddress />} />
           <Route path="/product/:id" element={<Product />} />
           <Route path="/orders" element={<Order />} />
           <Route path="/offers" element={<Offer />} />
           <Route path="*" element={<NotFound />} />
         </Route>
-        //auth layout
+        {/* Auth layout */}
         <Route element={<AuthLayout />}>
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
         </Route>
 
-        //admin layout
-         <Route path="/admin" element={<AdminLayout />}>
+        {/* Admin layout */}
+        <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="/admin/add-products" element={<AddProduct />} />
           <Route path="/admin/products-list" element={<AllProductList />} />
           <Route path="/admin/all-orders" element={<OrderAdmin />} />
           <Route path="/admin/all-users" element={<AdminUser />} />
-          
-          
-
-         
-        </Route> 
-
+        </Route>
       </Routes>
-    </>
+    </WishlistProvider>
   );
 };
 

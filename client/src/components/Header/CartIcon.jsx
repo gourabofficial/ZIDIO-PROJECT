@@ -14,13 +14,13 @@ const CartIcon = () => {
   return (
     <>
       <button 
-        className="relative p-2 text-white hover:text-purple-400 transition-colors"
+        className="relative p-2 text-white hover:text-[#c8a95a] transition-colors"
         onClick={toggleCart}
         aria-label="Cart"
       >
-        <FiShoppingBag className="w-6 h-6" />
+        <FiShoppingBag size={20} />
         {itemsCount > 0 && (
-          <span className="absolute top-0 right-0 bg-purple-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center transform translate-x-1 -translate-y-1">
+          <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 bg-[#c8a95a] text-[#0c0e16] text-xs rounded-full font-semibold">
             {itemsCount}
           </span>
         )}

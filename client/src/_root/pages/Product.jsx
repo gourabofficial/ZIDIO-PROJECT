@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom' // Import to get URL parameters
 import ProductGallery from '../../components/productDetails/ProductGalery'
 import ProductInfo from '../../components/productDetails/ProductInfo';
 import SizeSelector from '../../components/productDetails/SizeSelector';
-import QuantitySelector from '../../components/productDetails/QuantitySelector';
 import ProductActions from '../../components/productDetails/ProductAction';
 import ProductTabs from '../../components/productDetails/ProductTabs';
  
@@ -16,20 +15,16 @@ const Product = () => {
   const [error, setError] = useState(null);
   
   const [selectedSize, setSelectedSize] = useState('');
-  const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
 
-  // Get product slug from URL
-  const { slug } = useParams();
+  // Get product id from URL
+  const { id } = useParams(); // Changed from slug to id
 
   const handleSizeChange = (size) => setSelectedSize(size);
-  const handleQuantityChange = (newQuantity) => setQuantity(newQuantity);
   const handleAddToCart = () => {
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
-  const toggleFavorite = () => setIsFavorite(!isFavorite);
 
   // Mock data - this will be replaced by backend data
   const mockProductDetails = {
@@ -84,10 +79,10 @@ const Product = () => {
   useEffect(() => {
     // Reset states when product changes
     setSelectedSize('');
-    setQuantity(1);
     
-    // For mock data, just set the product directly
-    setCurrentProduct(mockProductDetails['ashura-t-shirt-preorder']);
+    // For mock data, get product by id (with fallback)
+    const foundProduct = mockProductDetails[id] || Object.values(mockProductDetails)[0];
+    setCurrentProduct(foundProduct);
     setLoading(false);
     
     // BACKEND CODE: Replace the above with this fetch code when connecting to backend
@@ -95,8 +90,8 @@ const Product = () => {
     const fetchProductData = async () => {
       try {
         setLoading(true);
-        // Make API call to get product by slug
-        const response = await fetch(`/api/products/${slug}`);
+        // Make API call to get product by id
+        const response = await fetch(`/api/products/${id}`);
         
         if (!response.ok) {
           throw new Error('Product not found');
@@ -115,7 +110,7 @@ const Product = () => {
     
     fetchProductData();
     */
-  }, [slug]); // Re-run when slug changes
+  }, [id]); // Re-run when id changes
 
   // Show loading state
   if (loading) {
@@ -155,17 +150,14 @@ const Product = () => {
               selectedSize={selectedSize}
               onSizeChange={handleSizeChange}
             />
-            <QuantitySelector
-              quantity={quantity}
-              onChange={handleQuantityChange}
-            />
             <ProductActions
-              product={currentProduct}
+              product={{
+                ...currentProduct,
+                quantity: 1 // Hardcode quantity to 1
+              }}
               selectedSize={selectedSize}
               addedToCart={addedToCart}
-              isFavorite={isFavorite}
               onAddToCart={handleAddToCart}
-              onToggleFavorite={toggleFavorite}
             />
             <ProductTabs product={currentProduct} />
           </div>

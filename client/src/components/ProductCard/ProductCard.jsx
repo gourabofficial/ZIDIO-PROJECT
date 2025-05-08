@@ -2,15 +2,40 @@ import { useState } from "react";
 import { FiHeart, FiShoppingCart, FiEye } from "react-icons/fi";
 import AddToCartButton from "../common/AddToCart";
 import { Link } from "react-router-dom";
-import ScrollToTop from "../common/ScrollToTop";
+import { useWishlist } from "../../context/WishlistContext";
+import { useUser } from "@clerk/clerk-react";
 
 const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+
+  // Use the wishlist context instead
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { isSignedIn } = useUser();
 
   const toggleFavorite = (e) => {
     e.preventDefault();
-    setIsFavorite(!isFavorite);
+    e.stopPropagation(); // Prevent the Link navigation when clicking the heart
+
+    if (!isSignedIn) {
+      // Optional: Show a notification or redirect to login
+      alert("Please sign in to add items to your wishlist");
+      return;
+    }
+
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      // Create a normalized product object with consistent structure
+      const normalizedProduct = {
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        images: [product.image], // Convert single image to images array format
+        slug: product.handle || product.id.toString(), // Ensure slug exists
+        inStock: product.inStock !== false // Default to true if not specified
+      };
+      addToWishlist(normalizedProduct);
+    }
   };
 
   // Handle missing image
@@ -35,7 +60,7 @@ const ProductCard = ({ product }) => {
             </div>
           )}
 
-          {/* Wishlist button */}
+          {/* Wishlist button - now uses isInWishlist from context */}
           <button
             className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center bg-[#1e293b]/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"
             onClick={toggleFavorite}
@@ -43,7 +68,7 @@ const ProductCard = ({ product }) => {
             <FiHeart
               size={16}
               className={
-                isFavorite ? "fill-[#c4b5fd] text-[#c4b5fd]" : "text-white"
+                isInWishlist(product.id) ? "fill-[#c4b5fd] text-[#c4b5fd]" : "text-white"
               }
             />
           </button>
@@ -80,18 +105,15 @@ const ProductCard = ({ product }) => {
               <FiEye size={16} />
             </button>
             <AddToCartButton
-              product={{
-                id: product.id,
-                title: product.title,
-                price: product.price,
-                image: product.image, // Make sure this is the correct image property
-                handle: product.handle
-              }}
-              size="small"
-              className="w-10 h-10 bg-[#334155] hover:bg-[#c4b5fd] hover:text-[#0f172a] rounded-full transition-colors !p-0"
-            >
-              <FiShoppingCart size={16} />
-            </AddToCartButton>
+              product={product}
+              disabled={product.inStock === false}
+              className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${
+                product.inStock === false 
+                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  : 'bg-[#334155] hover:bg-[#c4b5fd] hover:text-[#0f172a]'
+              }`}
+              compact={true}
+            />
           </div>
 
           {/* Product info */}

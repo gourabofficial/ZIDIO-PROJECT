@@ -18,15 +18,18 @@ export const addProduct = async (req, res) => {
       return res.status(400).json({ message: "User id is required" });
     }
     
-    // Upload images to Cloudinary
-    const imagePromises = req.files.map(file => handleImageUpload(file));
-    const uploadedImages = await Promise.all(imagePromises);
-    
-    // Format images using Cloudinary response
-    const images = uploadedImages.map(image => ({
-      imageUrl: image.secure_url,
-      imageId: image.public_id
-    }));
+    // Upload images to Cloudinary (if files exist)
+    let images = [];
+    if (req.files && req.files.length > 0) {
+      const imagePromises = req.files.map(file => handleImageUpload(file));
+      const uploadedImages = await Promise.all(imagePromises);
+      
+      // Format images using Cloudinary response
+      images = uploadedImages.map(image => ({
+        imageUrl: image.secure_url,
+        imageId: image.public_id
+      }));
+    }
 
     const newProduct = new Product({
       name,

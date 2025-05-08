@@ -1,21 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
-import { FiHeart, FiTrash2, FiShoppingCart } from 'react-icons/fi';
+import { FiHeart, FiTrash2 } from 'react-icons/fi';
+import { useWishlist } from '../../context/WishlistContext';
+import AddToCartButton from '../../components/common/AddToCart';
 
 const Wishlist = () => {
   const { user, isLoaded, isSignedIn } = useUser();
-  
-  // Mock wishlist data - replace with actual data fetching
-  const [wishlistItems, setWishlistItems] = useState([]);
-
-  // Mock function to remove item from wishlist
-  const removeFromWishlist = (itemId) => {
-    setWishlistItems(wishlistItems.filter(item => item.id !== itemId));
-  };
-
-  // Mock function to add item to cart
-  
+  const { wishlistItems, removeFromWishlist } = useWishlist();
 
   if (!isLoaded) {
     return (
@@ -44,7 +36,7 @@ const Wishlist = () => {
 
   return (
     <div className="min-h-screen bg-[#0c0e16] p-6 mt-20">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-white">My Wishlist</h1>
           <div className="flex items-center text-purple-400">
@@ -68,46 +60,53 @@ const Wishlist = () => {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {wishlistItems.map(item => (
-              <div key={item.id} className="bg-[#1e293b] rounded-xl overflow-hidden shadow-lg">
-                <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src={item.image} 
-                    alt={item.name} 
-                    className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
-                  />
-                  {!item.inStock && (
+              <div key={item.id} className="bg-[#1e293b] rounded-lg overflow-hidden shadow-lg flex flex-col h-full">
+                <div className="relative h-40 overflow-hidden bg-black/30">
+                  <Link to={`/product/${item.slug || item.id}`}>
+                    <img 
+                      src={item.images?.[0] || item.image || 'https://ext.same-assets.com/1329671863/375037467.gif'} 
+                      alt={item.title} 
+                      className="w-full h-full object-contain transition-transform hover:scale-105 duration-300"
+                      onError={(e) => {
+                        e.target.src = "https://ext.same-assets.com/1329671863/375037467.gif";
+                      }}
+                    />
+                  </Link>
+                  {item.inStock === false && (
                     <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-2 py-1">
                       Out of Stock
                     </div>
                   )}
                 </div>
                 
-                <div className="p-4">
-                  <h3 className="font-semibold text-white text-lg mb-1">{item.name}</h3>
-                  <p className="text-purple-400 font-medium mb-4">{item.price.toFixed(2)}</p>
+                <div className="p-3 flex flex-col flex-grow">
+                  <Link to={`/product/${item.slug || item.id}`} className="mb-1">
+                    <h3 className="font-medium text-white text-sm hover:text-purple-400 line-clamp-2">{item.title}</h3>
+                  </Link>
+                  <p className="text-purple-400 font-medium mb-2 text-sm">₹{item.price?.toFixed(2) || "0.00"}</p>
                   
-                  <div className="flex justify-between items-center">
-                    <button
-                      
-                      disabled={!item.inStock}
-                      className={`flex items-center px-3 py-2 rounded text-sm ${
-                        item.inStock 
-                          ? 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white' 
-                          : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  <div className="flex justify-between items-center mt-auto">
+                    <AddToCartButton
+                      product={item}
+                      disabled={item.inStock === false}
+                      className={`flex items-center justify-center px-2 py-1 rounded text-xs ${
+                        item.inStock === false 
+                          ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white'
                       }`}
+                      compact={true}
                     >
-                      <FiShoppingCart className="mr-1" />
-                      {item.inStock ? 'Add to Cart' : 'Out of Stock'}
-                    </button>
+                      {item.inStock === false ? 'Out of Stock' : 'Add to Cart'}
+                    </AddToCartButton>
                     
                     <button
                       onClick={() => removeFromWishlist(item.id)}
-                      className="flex items-center text-gray-400 hover:text-red-400 transition-colors"
+                      className="flex items-center text-gray-400 hover:text-red-400 transition-colors ml-2"
                       aria-label="Remove from wishlist"
                     >
-                      <FiTrash2 size={18} />
+                      <FiTrash2 size={14} />
                     </button>
                   </div>
                 </div>
