@@ -1,170 +1,112 @@
-import React, { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom' // Import to get URL parameters
-import ProductGallery from '../../components/productDetails/ProductGalery'
-import ProductInfo from '../../components/productDetails/ProductInfo';
-import SizeSelector from '../../components/productDetails/SizeSelector';
-import ProductActions from '../../components/productDetails/ProductAction';
-import ProductTabs from '../../components/productDetails/ProductTabs';
- 
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import ProductGallery from "../../components/productDetails/ProductGalery";
+import ProductInfo from "../../components/productDetails/ProductInfo";
+import SizeSelector from "../../components/productDetails/SizeSelector";
+import ProductActions from "../../components/productDetails/ProductAction";
+import ProductTabs from "../../components/productDetails/ProductTabs";
+import { getProductById } from "../../Api/ProductApi.js";
+
 const Product = () => {
-  // State for product details
-  const [currentProduct, setCurrentProduct] = useState(null);
-  // State for loading
+  const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  // State for error handling
   const [error, setError] = useState(null);
-  
-  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedSize, setSelectedSize] = useState("");
   const [addedToCart, setAddedToCart] = useState(false);
+  const { id } = useParams();
 
-  // Get product id from URL
-  const { id } = useParams(); // Changed from slug to id
-
-  const handleSizeChange = (size) => setSelectedSize(size);
-  const handleAddToCart = () => {
-    setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 2000);
-  };
-
-  // Mock data - this will be replaced by backend data
-  const mockProductDetails = {
-    'ashura-t-shirt-preorder': {
-      id: 1,
-      title: 'Ashura T-shirt (Preorder)',
-      price: 1749.00,
-      images: [
-        'https://ext.same-assets.com/1329671863/2325432086.jpeg',
-        'https://ext.same-assets.com/1329671863/769031796.jpeg',
-        'https://ext.same-assets.com/1881412388/4177231920.jpeg',
-        'https://ext.same-assets.com/1881412388/2575181993.jpeg',
-        'https://ext.same-assets.com/1881412388/3668537975.jpeg'
-      ],
-      sizes: ['S', 'M', 'L', 'XL', '2XL'],
-      sku: 'Nox11S',
-      categories: ['All', 'New Arrival', 'Nox Collection - SS1.0', 'Tshirt']
-    },
-    'my-own-theater': { // Fixed unique key for second product
-      id: 2,
-      title: 'My Own Theater',
-      price: 1749.00,
-      images: [
-        'https://ext.same-assets.com/1329671863/2325432086.jpeg',
-        'https://ext.same-assets.com/1329671863/769031796.jpeg',
-        'https://ext.same-assets.com/1881412388/4177231920.jpeg',
-        'https://ext.same-assets.com/1881412388/2575181993.jpeg',
-        'https://ext.same-assets.com/1881412388/3668537975.jpeg'
-      ],
-      sizes: ['S', 'M', 'L', 'XL', '2XL'],
-      sku: 'Nox11S',
-      categories: ['All', 'New Arrival', 'Nox Collection - SS1.0', 'Tshirt']
-    },
-    'free-tshirt': { // Fixed unique key for third product
-      id: 3,
-      title: 'Free T-shirt',
-      price: 1749.00,
-      images: [
-        'https://ext.same-assets.com/1329671863/2325432086.jpeg',
-        'https://ext.same-assets.com/1329671863/769031796.jpeg',
-        'https://ext.same-assets.com/1881412388/4177231920.jpeg',
-        'https://ext.same-assets.com/1881412388/2575181993.jpeg',
-        'https://ext.same-assets.com/1881412388/3668537975.jpeg'
-      ],
-      sizes: ['S', 'M', 'L', 'XL', '2XL'],
-      sku: 'Nox11S',
-      categories: ['All', 'New Arrival', 'Nox Collection - SS1.0', 'Tshirt']
-    },
-  };
-
-  // BACKEND INTEGRATION: This useEffect will fetch product data from backend
   useEffect(() => {
-    // Reset states when product changes
-    setSelectedSize('');
-    
-    // For mock data, get product by id (with fallback)
-    const foundProduct = mockProductDetails[id] || Object.values(mockProductDetails)[0];
-    setCurrentProduct(foundProduct);
-    setLoading(false);
-    
-    // BACKEND CODE: Replace the above with this fetch code when connecting to backend
-    /*
-    const fetchProductData = async () => {
+    const fetchProduct = async () => {
       try {
         setLoading(true);
-        // Make API call to get product by id
-        const response = await fetch(`/api/products/${id}`);
-        
-        if (!response.ok) {
-          throw new Error('Product not found');
-        }
-        
-        const productData = await response.json();
-        setCurrentProduct(productData);
-        setError(null);
+        const data = await getProductById(id);
+
+        console.log("Product data:", data);
+
+        setProduct(data.product);
       } catch (err) {
-        console.error('Error fetching product:', err);
-        setError(err.message);
+        console.error("Error fetching product:", err);
+        setError(err.message || "Failed to fetch product");
       } finally {
         setLoading(false);
       }
     };
-    
-    fetchProductData();
-    */
-  }, [id]); // Re-run when id changes
 
-  // Show loading state
+    fetchProduct();
+  }, [id]);
+
   if (loading) {
-    return <div className="min-h-[600px] bg-black text-white flex items-center justify-center">Loading product...</div>;
+    return (
+      <div className="min-h-[600px] bg-black text-white flex items-center justify-center">
+        <div className="text-gray-400">Loading product details...</div>
+      </div>
+    );
   }
 
-  // Show error state
   if (error) {
-    return <div className="min-h-[600px] bg-black text-white flex items-center justify-center">Error: {error}</div>;
+    return (
+      <div className="min-h-[600px] bg-black text-white flex items-center justify-center">
+        <div className="text-red-500 text-center">
+          <div className="text-xl mb-2">Error</div>
+          <div>{error}</div>
+        </div>
+      </div>
+    );
   }
 
-  // Show 404 if product not found
-  if (!currentProduct) {
-    return <div className="min-h-[600px] bg-black text-white flex items-center justify-center">Product not found</div>;
+  if (!product) {
+    return (
+      <div className="min-h-[600px] bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl mb-2">Product Not Found</div>
+          <div className="text-gray-400">
+            The product you're looking for doesn't exist.
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-[600px] bg-black text-white">
       <div className="container mx-auto px-4 py-16 mt-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          {/* Product Gallery */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="flex justify-center">
             <div className="w-full max-w-md">
-              <ProductGallery images={currentProduct.images} />
+              <ProductGallery images={product.images} />
             </div>
           </div>
 
-          {/* Product Details */}
           <div className="space-y-6">
             <ProductInfo
-              title={currentProduct.title}
-              price={currentProduct.price}
-              className="text-lg font-semibold"
+              title={product.name}
+              price={product.price}
+              discount={product.discount}
+              originalPrice={
+                product.offerStatus
+                  ? product.price / (1 - product.discount / 100)
+                  : null
+              }
             />
             <SizeSelector
-              sizes={currentProduct.sizes}
-              selectedSize={selectedSize}
-              onSizeChange={handleSizeChange}
+              sizes={product.size}
+              
             />
-            <ProductActions
+            {/* <ProductActions
               product={{
-                ...currentProduct,
-                quantity: 1 // Hardcode quantity to 1
+                ...product,
+                quantity: 1,
               }}
               selectedSize={selectedSize}
               addedToCart={addedToCart}
               onAddToCart={handleAddToCart}
-            />
-            <ProductTabs product={currentProduct} />
+            /> */}
+            {/* <ProductTabs product={product} /> */}
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Product;

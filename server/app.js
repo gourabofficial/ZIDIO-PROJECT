@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import connectDB from "./src/config/mongodb.js";
 import dotenv from "dotenv";
-import connectCloudinary from "./src/config/cloudinary.js";
 import { clerkMiddleware } from '@clerk/express';
 import userRouter from "./src/routes/user.routes.js";
 import productRouter from "./src/routes/product.routes.js"
@@ -14,7 +13,6 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 await connectDB();
-await connectCloudinary();
 
 app.use(clerkMiddleware({
   publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.VITE_CLERK_PUBLISHABLE_KEY,

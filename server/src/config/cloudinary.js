@@ -1,33 +1,30 @@
-import { v2 as cloudinary } from 'cloudinary';
-import multer from 'multer';
+import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
 
-const connectCloudinary = async () => {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_SECRET_KEY,
-  });
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET_KEY,
+});
+
+const uploadOnCloudinary = async (localFilePath, folderName) => {
+  try {
+    if (!localFilePath) {
+      return null;
+    }
+
+    const response = await cloudinary.uploader.upload(localFilePath, {
+      resource_type: "auto",
+      folder: folderName,
+    });
+
+    fs.unlinkSync(localFilePath);
+
+    return response;
+  } catch (error) {
+    fs.unlinkSync(localFilePath);
+    throw new Error("Image upload failed");
+  }
 };
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-// Keep only the working Promise-based implementation
-async function handleImageUpload(file) {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      { resource_type: 'auto' },
-      (error, result) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(result);
-        }
-      }
-    );
-    stream.end(file.buffer);  
-  });
-}
-
-export { upload, handleImageUpload }; 
-export default connectCloudinary;
+export { uploadOnCloudinary };

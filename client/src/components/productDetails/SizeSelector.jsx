@@ -1,4 +1,12 @@
-const SizeSelector = ({ sizes, selectedSize, onSizeChange }) => {
+import { useState } from 'react';
+
+const SizeSelector = ({ sizes }) => {
+  const [selectedSize, setSelectedSize] = useState(null);
+  
+  const handleSizeChange = (size) => {
+    setSelectedSize(size);
+  };
+
   return (
     <div className="mb-6">
       <div className="flex justify-between items-center mb-2">
@@ -14,7 +22,7 @@ const SizeSelector = ({ sizes, selectedSize, onSizeChange }) => {
                 ? 'bg-[#c4b5fd] text-[#0f172a] font-medium' 
                 : 'bg-[#1e293b] text-[#cbd5e1] hover:bg-[#334155]'
             }`}
-            onClick={() => onSizeChange(size)}
+            onClick={() => handleSizeChange(size)}
           >
             {size}
           </button>

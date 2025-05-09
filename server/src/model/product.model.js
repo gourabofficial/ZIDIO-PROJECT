@@ -53,12 +53,10 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-
   collections: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Collection',
   },
-
   offerStatus: {
     type: Boolean,
     default: false,
@@ -67,8 +65,6 @@ const productSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-
-
 }, { timestamps: true });
 
 export const Product = mongoose.model("Product", productSchema);

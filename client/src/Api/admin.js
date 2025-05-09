@@ -1,67 +1,66 @@
 import axiosInstance from "./config";
 
-export const addProduct = async (formData) => {
+export const AdminAddProduct = async (productData) => {
   try {
-    const res = await axiosInstance.post('/admin/add-product', formData);
-    return res.data;
+    const formData = new FormData();
+
+    Object.keys(productData).forEach((key) => {
+      if (key !== "images") {
+        if (Array.isArray(productData[key])) {
+          productData[key].forEach((item) => {
+            formData.append(key, item);
+          });
+        } else {
+          formData.append(key, productData[key]);
+        }
+      }
+    });
+
+    if (productData.images && Array.isArray(productData.images)) {
+      productData.images.forEach((image, index) => {
+        if (image instanceof File) {
+          formData.append("images", image);
+        } else if (image && image.name) {
+          formData.append("images", image);
+        }
+      });
+    }
+
+    for (let pair of formData.entries()) {
+      console.log(
+        pair[0] + ": " + (pair[1] instanceof File ? pair[1].name : pair[1])
+      );
+    }
+
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    const response = await axiosInstance.post(
+      "/admin/add-product",
+      formData,
+      config
+    );
+
+    if (!response.success) {
+      return {
+        message: response.data,
+        success: false,
+      };
+    }
+
+    return {
+      message: response.data.message,
+      success: true,
+    };
   } catch (error) {
     console.error("Error adding product:", error);
     console.error("Error details:", error.response?.data);
     return {
       message: error.response?.data?.message || "Failed to add product",
-      success: false
+      success: false,
     };
   }
-}
-
-export const updateProduct = async (id, formData) => {
-  try {
-    const res = await axiosInstance.put(`/admin/update-product/${id}`, formData);
-    return res.data;
-  } catch (error) {
-    console.error("Error updating product:", error);
-    return {
-      message: error.response?.data?.message || "Failed to update product",
-      success: false
-    };
-  }
-}
-
-export const deleteProduct = async (id) => {
-  try {
-    const res = await axiosInstance.delete(`/admin/delete-product/${id}`);
-    return res.data;
-  } catch (error) {
-    console.error("Error deleting product:", error);
-    return {
-      message: error.response?.data?.message || "Failed to delete product",
-      success: false
-    };
-  }
-}
-
-export const getAllProducts = async () => {
-  try {
-    const res = await axiosInstance.get('/products');
-    return res.data;
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    return {
-      message: error.response?.data?.message || "Failed to fetch products",
-      success: false
-    };
-  }
-}
-
-export const getProduct = async (id) => {
-  try {
-    const res = await axiosInstance.get(`/products/${id}`);
-    return res.data;
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    return {
-      message: error.response?.data?.message || "Failed to fetch product",
-      success: false
-    };
-  }
-}
+};
