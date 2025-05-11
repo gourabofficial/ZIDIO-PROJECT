@@ -3,43 +3,43 @@ import { User } from "../model/user.model.js";
 import { Address } from "../model/address.model.js";
 
 export const updateAvatar = async (req, res) => {
-  try {
-    const { avatarUrl } = req.body;
-    const userId = req.userId;
+   try {
+      const { avatarUrl } = req.body;
+      const userId = req.userId;
 
-    if (!avatarUrl) {
-      return res.status(400).json({
-        message: "Avatar URL is required",
-        success: false
+      if (!avatarUrl) {
+         return res.status(400).json({
+            message: "Avatar URL is required",
+            success: false
+         });
+      }
+
+      const updatedUser = await User.findOneAndUpdate(
+         { clerkId: userId },
+         { avatar: avatarUrl },
+         { new: true }
+      );
+
+      if (!updatedUser) {
+         return res.status(404).json({
+            message: "User not found",
+            success: false
+         });
+      }
+
+      return res.status(200).json({
+         message: "Avatar updated successfully",
+         success: true,
+         user: updatedUser
       });
-    }
-
-    const updatedUser = await User.findOneAndUpdate(
-      { clerkId: userId },
-      { avatar: avatarUrl },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      return res.status(404).json({
-        message: "User not found",
-        success: false
+   } catch (error) {
+      console.error("Error updating avatar:", error);
+      return res.status(500).json({
+         message: "Internal server error",
+         success: false
       });
-    }
-
-    return res.status(200).json({
-      message: "Avatar updated successfully",
-      success: true,
-      user: updatedUser
-    });
-  } catch (error) {
-    console.error("Error updating avatar:", error);
-    return res.status(500).json({
-      message: "Internal server error",
-      success: false
-    });
-  }
-}
+   }
+};
 
 export const updateUser = async (req, res) => {
   try {

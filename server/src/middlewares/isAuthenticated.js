@@ -5,7 +5,7 @@ import { User } from '../model/user.model.js';
 export const isLogedin = async (req, res, next) => {
   try {
     const userId = req.auth?.userId;
-    console.log("userId : ", userId);
+   
 
     if (!userId) {
       return res.status(401).json({ 
@@ -43,10 +43,7 @@ export const isLogedin = async (req, res, next) => {
 export const isAdmin = async (req, res, next) => {
   try {
     const userId = req.auth?.userId;
-    console.log("userId : ", userId);
-    console.log("req.auth : ", req.auth);
-    console.log("req.headers : ", req.headers);
-    console.log("req.body : ", req.body);
+    
   
 
     if (!userId) {
@@ -57,7 +54,7 @@ export const isAdmin = async (req, res, next) => {
     }
 
     try {
-      console.log("Received headers:", req.headers);
+      
 
       // Verify with Clerk - REMOVE the headers parameter
       const clerkUser = await clerkClient.users.getUser(userId);

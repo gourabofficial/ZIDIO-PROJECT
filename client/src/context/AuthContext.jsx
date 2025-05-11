@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
       const response = await isLogin({ _t: timestamp });
 
       if (response.success && response.user) {
-        console.log("User data refreshed:", response.user);
+        
         const updatedUser = {
           id: response.user._id,
           clerkId: response.user.clerkId,

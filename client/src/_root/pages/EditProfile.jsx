@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthdata } from "../../context/AuthContext";
 import { FiUser, FiArrowLeft } from "react-icons/fi";
-import { updateUserDetails, updateAccount } from "../../Api/user";
+import { updateUserDetails, updateAvatarUrl } from "../../Api/user";
 import MiniLoader from "../../components/Loader/MiniLoader";
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -50,82 +50,50 @@ const EditProfile = () => {
   };
 
   const handleUpdateProfile = async () => {
-    // Check if anything has changed
-    if (profileForm.fullName === currentUser.fullName && 
-        profileForm.avatar === currentUser.avatar) {
-      toast.info("No changes to save");
-      return;
-    }
-    
-    const loadingToast = toast.loading('Updating your profile...');
-    
     try {
-      let hasUpdates = false;
-      let userUpdates = {};
+      let updatedItems = [];
       
-      // Update full name if changed
-      if (profileForm.fullName !== currentUser.fullName) {
-        console.log("Updating name from:", currentUser.fullName, "to:", profileForm.fullName);
-        const nameResponse = await updateUserDetails({
-          fullName: profileForm.fullName
-        });
+      // For avatar URL updates
+      if (profileForm.avatar && profileForm.avatar !== currentUser.avatar) {
         
-        if (!nameResponse.success) {
-          toast.error(`Failed to update name: ${nameResponse.message || 'Unknown error'}`, {
-            id: loadingToast
-          });
+        
+        const avatarResult = await updateAvatarUrl(profileForm.avatar);
+        
+        if (!avatarResult.success) {
+          console.error(avatarResult.message);
+          toast.error("Failed to update avatar");
           return;
         }
-        hasUpdates = true;
-        userUpdates.fullName = profileForm.fullName;
+        
+        updatedItems.push("avatar");
+        toast.success("Avatar updated successfully");
       }
       
-      // Update avatar if changed
-      if (profileForm.avatar !== currentUser.avatar) {
-        console.log("Updating avatar from:", currentUser.avatar, "to:", profileForm.avatar);
-        
-        const avatarResponse = await updateAccount({
-          avatarUrl: profileForm.avatar
-        });
-        
-        if (!avatarResponse.success) {
-          toast.error(`Failed to update avatar: ${avatarResponse.message || 'Unknown error'}`, {
-            id: loadingToast
-          });
+      // For name updates
+      if (profileForm.fullName && profileForm.fullName !== currentUser.fullName) {
+        const nameResult = await updateUserDetails({ fullName: profileForm.fullName });
+        if (!nameResult.success) {
+          console.error("Failed to update name:", nameResult.message);
+          toast.error("Failed to update name");
           return;
         }
-        hasUpdates = true;
-        userUpdates.avatar = profileForm.avatar;
+        
+        updatedItems.push("name");
+        toast.success("Name updated successfully");
       }
       
-      if (hasUpdates) {
-        try {
-          // First update the context state directly with the changes
-          updateUserState(userUpdates);
-          
-          // Also trigger a refetch for good measure
-          await refetchUserData();
-          
-          toast.success('Profile updated successfully!', {
-            id: loadingToast,
-            duration: 3000 
-          });
-          
-          // Navigate without relying on router state
-          navigate("/account");
-        } catch (error) {
-          console.error("Error during data refresh:", error);
-          toast.error("Error refreshing data");
-        }
-      } else {
-        toast.dismiss(loadingToast);
+      // If nothing was updated
+      if (updatedItems.length === 0) {
+        toast.info("No changes detected");
+        return;
       }
       
+      // Refresh user data and navigate
+      await refetchUserData();
+      navigate("/account");
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error(`An error occurred: ${error.message || 'Unknown error'}`, {
-        id: loadingToast
-      });
+      toast.error("Failed to update profile");
     }
   };
 
