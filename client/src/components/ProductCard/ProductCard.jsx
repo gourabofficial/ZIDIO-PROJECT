@@ -7,6 +7,7 @@ import { useUser } from "@clerk/clerk-react";
 
 const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
+  
 
   // Use the wishlist context instead
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -31,7 +32,7 @@ const ProductCard = ({ product }) => {
         title: product.title,
         price: product.price,
         images: [product.image], // Convert single image to images array format
-        slug: product.handle || product.id.toString(), // Ensure slug exists
+        slug:  product.handle, // Ensure slug exists
         inStock: product.inStock !== false // Default to true if not specified
       };
       addToWishlist(normalizedProduct);

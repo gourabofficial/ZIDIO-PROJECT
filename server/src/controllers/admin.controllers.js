@@ -103,40 +103,51 @@ export const updateHomeContent = async (req, res) => {
 
     // Check if at least one field is provided and is a valid array
     if (
-      (!newArrivals || !Array.isArray(newArrivals) || newArrivals.length === 0) &&
+      (!newArrivals ||
+        !Array.isArray(newArrivals) ||
+        newArrivals.length === 0) &&
       (!hotItems || !Array.isArray(hotItems) || hotItems.length === 0) &&
-      (!trendingItems || !Array.isArray(trendingItems) || trendingItems.length === 0)
+      (!trendingItems ||
+        !Array.isArray(trendingItems) ||
+        trendingItems.length === 0)
     ) {
       return res.status(400).json({
         success: false,
-        message: "Please provide at least one field with valid product IDs to update",
+        message:
+          "Please provide at least one field with valid product IDs to update",
       });
     }
 
     // Validate MongoDB ObjectIDs and check products exist
-    const allIds = [...(newArrivals || []), ...(hotItems || []), ...(trendingItems || [])];
-    const invalidIds = allIds.filter(id => !mongoose.Types.ObjectId.isValid(id));
-    
+    const allIds = [
+      ...(newArrivals || []),
+      ...(hotItems || []),
+      ...(trendingItems || []),
+    ];
+    const invalidIds = allIds.filter(
+      (id) => !mongoose.Types.ObjectId.isValid(id)
+    );
+
     if (invalidIds.length > 0) {
       return res.status(400).json({
         success: false,
         message: "Invalid product ID format detected",
-        invalidIds
+        invalidIds,
       });
     }
 
     // Check if products exist
     const uniqueIds = [...new Set(allIds)];
     const existingProducts = await Product.find({ _id: { $in: uniqueIds } });
-    
+
     if (existingProducts.length !== uniqueIds.length) {
-      const foundIds = existingProducts.map(p => p._id.toString());
-      const nonExistentIds = uniqueIds.filter(id => !foundIds.includes(id));
-      
+      const foundIds = existingProducts.map((p) => p._id.toString());
+      const nonExistentIds = uniqueIds.filter((id) => !foundIds.includes(id));
+
       return res.status(404).json({
         success: false,
         message: "Some product IDs do not exist in the database",
-        nonExistentIds
+        nonExistentIds,
       });
     }
 
@@ -153,23 +164,31 @@ export const updateHomeContent = async (req, res) => {
     // Append new product IDs to existing arrays (no duplicates)
     if (newArrivals && Array.isArray(newArrivals)) {
       // Get existing product IDs
-      const existingIds = homeContent.newArrival.map(item => item.productId.toString());
+      const existingIds = homeContent.newArrival.map((item) =>
+        item.productId.toString()
+      );
       // Filter out IDs that already exist
-      const newIds = newArrivals.filter(id => !existingIds.includes(id));
+      const newIds = newArrivals.filter((id) => !existingIds.includes(id));
       // Add new items to the array
-      homeContent.newArrival.push(...newIds.map(id => ({ productId: id })));
+      homeContent.newArrival.push(...newIds.map((id) => ({ productId: id })));
     }
-    
+
     if (hotItems && Array.isArray(hotItems)) {
-      const existingIds = homeContent.hotItems.map(item => item.productId.toString());
-      const newIds = hotItems.filter(id => !existingIds.includes(id));
-      homeContent.hotItems.push(...newIds.map(id => ({ productId: id })));
+      const existingIds = homeContent.hotItems.map((item) =>
+        item.productId.toString()
+      );
+      const newIds = hotItems.filter((id) => !existingIds.includes(id));
+      homeContent.hotItems.push(...newIds.map((id) => ({ productId: id })));
     }
-    
+
     if (trendingItems && Array.isArray(trendingItems)) {
-      const existingIds = homeContent.trandingItems.map(item => item.productId.toString());
-      const newIds = trendingItems.filter(id => !existingIds.includes(id));
-      homeContent.trandingItems.push(...newIds.map(id => ({ productId: id })));
+      const existingIds = homeContent.trandingItems.map((item) =>
+        item.productId.toString()
+      );
+      const newIds = trendingItems.filter((id) => !existingIds.includes(id));
+      homeContent.trandingItems.push(
+        ...newIds.map((id) => ({ productId: id }))
+      );
     }
 
     await homeContent.save();
@@ -190,28 +209,43 @@ export const updateHomeContent = async (req, res) => {
 
 export const getHomeContent = async (req, res) => {
   try {
-    const homeContent = await HomeContent.findOne()
-      .populate("newArrival")
-      .populate("hotItems")
-      .populate("trandingItems");
+    let homeContent = await HomeContent.findOne()
+      .populate({
+        path: "newArrival.productId",
+        model: "Product",
+        select: "_id id name description price images category size offerStatus discount" // Added id field
+      })
+      .populate({
+        path: "hotItems.productId",
+        model: "Product",
+        select: "_id id name description price images category size offerStatus discount" // Added id field
+      })
+      .populate({
+        path: "trandingItems.productId",
+        model: "Product",
+        select: "_id id name description price images category size offerStatus discount" // Added id field
+      });
+    
+    console.log("Home content:", homeContent);
 
     if (!homeContent) {
       homeContent = await HomeContent.create({
-        newArrivals: [],
+        newArrival: [],
         hotItems: [],
-        trendingItems: [],
+        trandingItems: [],
       });
     }
 
-    const responce = {
-      newArrivals: homeContent.newArrival,
-      hotItems: homeContent.hotItems,
-      trendingItems: homeContent.trandingItems,
+    const response = {
+      newArrivals: homeContent.newArrival.map(item => item.productId),
+      hotItems: homeContent.hotItems.map(item => item.productId),
+      trendingItems: homeContent.trandingItems.map(item => item.productId)
     };
+
     return res.status(200).json({
       success: true,
       message: "Home content fetched successfully",
-      data: responce,
+      data: response,
     });
   } catch (error) {
     return res.status(500).json({

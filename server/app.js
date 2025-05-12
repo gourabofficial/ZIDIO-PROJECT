@@ -6,6 +6,7 @@ import { clerkMiddleware } from '@clerk/express';
 import userRouter from "./src/routes/user.routes.js";
 import productRouter from "./src/routes/product.routes.js"
 import adminRouter from "./src/routes/admin.routes.js";
+import publicRouter from "./src/routes/public.routes.js";
 
 dotenv.config();
 
@@ -57,7 +58,8 @@ app.use('/api/product', productRouter)
 //admin routes
 app.use('/api/admin', adminRouter)
 
-
+//public routes
+app.use('/api/public', publicRouter)
 
 
 

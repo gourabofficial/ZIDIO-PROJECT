@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import HeroSection from "../../components/Hero/HeroSection";
 import FeaturedProducts from "../../components/FeaturedProducts/FeatureProduct";
 import TrendingProductsPage from "../../components/TrandingProducts/TrandingProductsPage";
@@ -6,11 +6,12 @@ import HotProduct from "../../components/FeaturedProducts/Hotlist";
 import { getHomeContent } from "../../Api/public";
 
 const Home = () => {
-  // fetchHomeContent
+  const [homeContent, setHomeContent] = useState();
 
+  // fetchHomeContent
   const FetcHomeContent = async () => {
     const res = await getHomeContent();
-    console.log(res);
+    setHomeContent(res.data);
   };
 
   useEffect(() => {
@@ -21,9 +22,9 @@ const Home = () => {
     <div>
       <div className="min-h-screen">
         <HeroSection />
-        <FeaturedProducts />
-        <TrendingProductsPage />
-        <HotProduct />
+        <FeaturedProducts newArrival={homeContent?.newArrivals} />
+        <TrendingProductsPage trendingProduct={homeContent?.trendingItems} />
+        <HotProduct HotProduct={homeContent?.hotItems} />
       </div>
     </div>
   );

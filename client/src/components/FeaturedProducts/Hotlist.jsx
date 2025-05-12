@@ -1,137 +1,91 @@
-import React, { useState, useEffect } from 'react';
-import SectionHeading from '../common/SectionHeading';
-import CategoryFilter from './CategoryFilter';
-import ProductGrid from './ProductGrid';
+import React, { useState, useEffect, useRef } from 'react';
+import ProductCard from '../ProductCard/ProductCard';
+import ViewAllButton from './ViewAllButton';
 
-// Sample hotlist products data - expanded
-const hotlistProductsData = [
-  // {
-  //   id: 1,
-  //   title: "Cosmic Guardian Helmet",
-  //   price: 1299.99,
-  //   compareAtPrice: 1799.99,
-  //   image: "https://images.unsplash.com/photo-1578269174936-2709b6aeb913?q=80&w=500",
-  //   category: "armor",
-  //   rating: 4.8,
-  //   inStock: true,
-  // },
-  {
-    id: 2,
-    title: "Stellar Force Shield",
-    price: 899.99,
-    compareAtPrice: 1299.99, 
-    image: "https://images.unsplash.com/photo-1614728263952-84ea256f9679?q=80&w=500",
-    category: "weapons",
-    rating: 4.7,
-    inStock: true,
-  },
-  {
-    id: 3,
-    title: "Nebula Blade 3000",
-    price: 1599.99,
-    compareAtPrice: null,
-    image: "https://images.unsplash.com/photo-1623501097816-03faeef1ad34?q=80&w=500",
-    category: "weapons",
-    rating: 5.0,
-    inStock: true,
-  },
-  {
-    id: 4,
-    title: "Quantum Gauntlets",
-    price: 799.99,
-    compareAtPrice: 999.99,
-    image: "https://images.unsplash.com/photo-1532188362424-afbbaaa4aa1e?q=80&w=500",
-    category: "armor",
-    rating: 4.5,
-    inStock: true,
-  },
-  {
-    id: 5,
-    title: "Galactic Ranger Boots",
-    price: 649.99,
-    compareAtPrice: null,
-    image: "https://images.unsplash.com/photo-1531310197839-ccf54634509e?q=80&w=500",
-    category: "gear",
-    rating: 4.3,
-    inStock: false,
-  },
-  {
-    id: 6,
-    title: "Astral Soul Enhancer",
-    price: 2499.99,
-    compareAtPrice: 2999.99,
-    image: "https://images.unsplash.com/photo-1626285061836-2158fb0e72f3?q=80&w=500",
-    category: "consumables",
-    rating: 4.9,
-    inStock: true,
-  },
-];
+const Hotlist = ({ HotProduct }) => {
+  console.log("hotProduct: ", HotProduct);
+  const starsContainerRef = useRef(null);
 
-const HotItems = () => {
-  const [products, setProducts] = useState([]);
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
+  // Create stars effect on component mount
   useEffect(() => {
-    // Simulate loading data
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      setTimeout(() => {
-        // Filter products based on category
-        let filteredProducts = 
-          activeCategory === 'all' 
-            ? hotlistProductsData 
-            : hotlistProductsData.filter(product => product.category === activeCategory);
-        
-            
-        setProducts(filteredProducts);
-        setIsLoading(false);
-      }, 500);
-    } catch (err) {
-      setError('Failed to load hot items. Please try again later.');
-      setIsLoading(false);
-    }
-  }, [activeCategory]);
+    if (starsContainerRef.current) {
+      const container = starsContainerRef.current;
+      container.innerHTML = "";
 
-  const handleCategoryChange = (category) => {
-    setActiveCategory(category);
-  };
+      // Create stars
+      for (let i = 0; i < 100; i++) {
+        const star = document.createElement("div");
+        star.classList.add("star");
+        star.style.width = `${Math.random() * 2}px`;
+        star.style.height = star.style.width;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.opacity = `${Math.random() * 0.5 + 0.1}`;
+        star.style.position = "absolute";
+        star.style.borderRadius = "50%";
+        star.style.backgroundColor = "rgba(255, 255, 255, 0.7)";
+        container.appendChild(star);
+      }
+    }
+
+    return () => {
+      if (starsContainerRef.current) {
+        starsContainerRef.current.innerHTML = "";
+      }
+    };
+  }, []);
+
+  // Transform products to match ProductCard expected format
+  const formattedProducts = 
+  HotProduct?.map((product) => ({
+      id: product._id,
+      title: product.name,
+      price: product.price,
+      image: product.images[0]?.imageUrl || "",
+      hoverImage: product.images[1]?.imageUrl || "",
+      handle: product.id, // Using id as handle for navigation
+      compareAtPrice: product.offerStatus
+        ? Math.round(product.price * (1 + product.discount / 100))
+        : null,
+      inStock: true, // Assuming products are in stock by default
+      category: product.category,
+    })) || [];
 
   return (
-    <section className="py-16 relative overflow-hidden bg-[#0c0e16]">
-      {/* Decorative elements */}
-      <div className="absolute inset-0 starry-bg opacity-20 pointer-events-none"></div>
-      <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-900/10 blur-3xl rounded-full"></div>
-      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-900/10 blur-3xl rounded-full"></div>
-      
+    <section className="py-16 relative overflow-hidden bg-[#0c0e16] border-t border-[#334155]">
+      <div ref={starsContainerRef} className="absolute inset-0 starry-bg opacity-20"></div>
+
+      {/* Nebula effects */}
+      <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-[#0c0e16] blur-3xl"></div>
+      <div className="absolute -bottom-40 -left-40 w-[30rem] h-[30rem] rounded-full bg-[#0c0e16] blur-3xl"></div>
+      <div className="absolute top-40 left-1/4 w-60 h-60 rounded-full bg-[#0c0e16] blur-3xl"></div>
+
       <div className="container mx-auto px-4 relative z-10">
-        <SectionHeading 
-          title="HOT ITEMS" 
-          description="Check out our hottest items that are trending right now. Don't miss out on these must-have pieces!" 
-        />
-        
-        <CategoryFilter 
-          activeCategory={activeCategory} 
-          onCategoryChange={handleCategoryChange} 
-        />
-        
-        {error ? (
-          <div className="text-center py-10 bg-red-900/20 rounded-lg">
-            <p className="text-red-400">{error}</p>
+        <div className="flex flex-col items-center mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold mb-3 relative inline-block">
+            <span className="text-white">Hot Products</span>
+            <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500"></span>
+          </h2>
+          <p className="text-gray-400 text-center max-w-2xl">
+            Discover our most popular items that everyone's talking about. These trending products are flying off the shelves - get them while they're hot!
+          </p>
+        </div>
+
+        {/* Product grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
+          {formattedProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+
+        {formattedProducts.length > 0 && (
+          <div className="mt-12 flex justify-center">
+            <ViewAllButton />
           </div>
-        ) : (
-          <ProductGrid 
-            products={products} 
-            isLoading={isLoading} 
-          />
         )}
-        
       </div>
     </section>
   );
 };
 
-export default HotItems;
+export default Hotlist;

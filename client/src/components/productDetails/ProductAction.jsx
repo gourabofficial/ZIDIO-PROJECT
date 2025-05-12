@@ -12,6 +12,8 @@ const ProductActions = ({ product, selectedSize, addedToCart }) => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
   
+
+  
   const handleToggleFavorite = (e) => {
     e.preventDefault();
     
