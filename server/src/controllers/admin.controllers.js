@@ -1,6 +1,8 @@
 import { uploadOnCloudinary } from "../config/cloudinary.js";
 import { Product } from "../model/product.model.js";
+import { HomeContent } from "../model/homeContent.model.js";
 import { v4 as uuidv4 } from "uuid";
+import mongoose from "mongoose";
 
 export const addProduct = async (req, res) => {
   try {
@@ -90,6 +92,131 @@ export const addProduct = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to add product",
+      error: error.message,
+    });
+  }
+};
+
+export const updateHomeContent = async (req, res) => {
+  try {
+    const { newArrivals, hotItems, trendingItems } = req.body;
+
+    // Check if at least one field is provided and is a valid array
+    if (
+      (!newArrivals || !Array.isArray(newArrivals) || newArrivals.length === 0) &&
+      (!hotItems || !Array.isArray(hotItems) || hotItems.length === 0) &&
+      (!trendingItems || !Array.isArray(trendingItems) || trendingItems.length === 0)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide at least one field with valid product IDs to update",
+      });
+    }
+
+    // Validate MongoDB ObjectIDs and check products exist
+    const allIds = [...(newArrivals || []), ...(hotItems || []), ...(trendingItems || [])];
+    const invalidIds = allIds.filter(id => !mongoose.Types.ObjectId.isValid(id));
+    
+    if (invalidIds.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID format detected",
+        invalidIds
+      });
+    }
+
+    // Check if products exist
+    const uniqueIds = [...new Set(allIds)];
+    const existingProducts = await Product.find({ _id: { $in: uniqueIds } });
+    
+    if (existingProducts.length !== uniqueIds.length) {
+      const foundIds = existingProducts.map(p => p._id.toString());
+      const nonExistentIds = uniqueIds.filter(id => !foundIds.includes(id));
+      
+      return res.status(404).json({
+        success: false,
+        message: "Some product IDs do not exist in the database",
+        nonExistentIds
+      });
+    }
+
+    let homeContent = await HomeContent.findOne();
+
+    if (!homeContent) {
+      homeContent = await HomeContent.create({
+        newArrival: [],
+        hotItems: [],
+        trandingItems: [],
+      });
+    }
+
+    // Append new product IDs to existing arrays (no duplicates)
+    if (newArrivals && Array.isArray(newArrivals)) {
+      // Get existing product IDs
+      const existingIds = homeContent.newArrival.map(item => item.productId.toString());
+      // Filter out IDs that already exist
+      const newIds = newArrivals.filter(id => !existingIds.includes(id));
+      // Add new items to the array
+      homeContent.newArrival.push(...newIds.map(id => ({ productId: id })));
+    }
+    
+    if (hotItems && Array.isArray(hotItems)) {
+      const existingIds = homeContent.hotItems.map(item => item.productId.toString());
+      const newIds = hotItems.filter(id => !existingIds.includes(id));
+      homeContent.hotItems.push(...newIds.map(id => ({ productId: id })));
+    }
+    
+    if (trendingItems && Array.isArray(trendingItems)) {
+      const existingIds = homeContent.trandingItems.map(item => item.productId.toString());
+      const newIds = trendingItems.filter(id => !existingIds.includes(id));
+      homeContent.trandingItems.push(...newIds.map(id => ({ productId: id })));
+    }
+
+    await homeContent.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Home content updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating home content:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update home content",
+      error: error.message,
+    });
+  }
+};
+
+export const getHomeContent = async (req, res) => {
+  try {
+    const homeContent = await HomeContent.findOne()
+      .populate("newArrival")
+      .populate("hotItems")
+      .populate("trandingItems");
+
+    if (!homeContent) {
+      homeContent = await HomeContent.create({
+        newArrivals: [],
+        hotItems: [],
+        trendingItems: [],
+      });
+    }
+
+    const responce = {
+      newArrivals: homeContent.newArrival,
+      hotItems: homeContent.hotItems,
+      trendingItems: homeContent.trandingItems,
+    };
+    return res.status(200).json({
+      success: true,
+      message: "Home content fetched successfully",
+      data: responce,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get home content",
       error: error.message,
     });
   }

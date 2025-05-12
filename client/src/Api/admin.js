@@ -64,3 +64,33 @@ export const AdminAddProduct = async (productData) => {
     };
   }
 };
+
+export const updateHomeContent = async (data) => {
+  console.log("updateHomeContentData in admin.js", data);
+  try {
+    const response = await axiosInstance.patch(
+      "/admin/update-homecontent",
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (!response.data.success) {
+      return {
+        message: response.data.message,
+        success: false,
+      };
+    }
+    return {
+      message: response.data.message,
+      success: true,
+    };
+  } catch (error) {
+    return {
+      message: error.message,
+      success: false,
+    };
+  }
+};

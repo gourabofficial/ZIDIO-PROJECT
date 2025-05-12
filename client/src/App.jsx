@@ -28,6 +28,7 @@ import AddProduct from "./admin/components/AddProduct";
 import OrderAdmin from "./admin/components/OrderList";
 import AllProductList from "./admin/components/AllProductList";
 import AdminUser from "./admin/components/AdminUser";
+import AdminSettings from "./admin/components/AdminSettings";
 
 // Import WishlistProvider
 import { WishlistProvider } from './context/WishlistContext';
@@ -68,6 +69,7 @@ const App = () => {
           <Route path="/admin/products-list" element={<AllProductList />} />
           <Route path="/admin/all-orders" element={<OrderAdmin />} />
           <Route path="/admin/all-users" element={<AdminUser />} />
+          <Route path="/admin/settings" element={ <AdminSettings/>} />
         </Route>
       </Routes>
     </WishlistProvider>

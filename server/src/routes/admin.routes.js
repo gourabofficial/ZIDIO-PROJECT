@@ -1,5 +1,5 @@
 import express from "express";
-import { addProduct } from "../controllers/admin.controllers.js";
+import { addProduct,updateHomeContent } from "../controllers/admin.controllers.js";
 import { isAdmin } from "../middlewares/isAuthenticated.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -11,5 +11,12 @@ adminRouter.post(
   upload.array("images", 12),
   addProduct
 );
+adminRouter.patch(
+  "/update-homecontent",
+  isAdmin,
+  updateHomeContent
+
+);
+
 
 export default adminRouter;
