@@ -1,18 +1,16 @@
 import React from 'react';
-import { FiHeart, FiShoppingCart, FiCheck, FiZap } from 'react-icons/fi';
-import AddToCartButton from '../common/AddToCart';
+import { FiHeart, FiZap } from 'react-icons/fi';
 import { useWishlist } from '../../context/WishlistContext';
 import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import AddToCartButton from '../common/AddToCart';
 
-const ProductActions = ({ product, selectedSize, addedToCart }) => {
+const ProductActions = ({ product, selectedSize, addedToCart, onAddToCart }) => {
   const { isSignedIn } = useUser();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
   const navigate = useNavigate();
-  
-
   
   const handleToggleFavorite = (e) => {
     e.preventDefault();
@@ -35,7 +33,8 @@ const ProductActions = ({ product, selectedSize, addedToCart }) => {
   };
 
   const handleBuyNow = () => {
-    if (!selectedSize) {
+    if (!selectedSize && product.size && product.size.length > 0) {
+      alert("Please select a size");
       return;
     }
     
@@ -54,29 +53,21 @@ const ProductActions = ({ product, selectedSize, addedToCart }) => {
         <AddToCartButton
           product={product}
           selectedSize={selectedSize}
-          disabled={!selectedSize}
+          disabled={!selectedSize && product.size && product.size.length > 0}
           className={`flex-1 py-3 px-4 rounded font-semibold ${
-            !selectedSize
+            (!selectedSize && product.size && product.size.length > 0)
               ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
               : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700'
           }`}
         >
-          {addedToCart ? (
-            <>
-              <FiCheck className="mr-2" /> ADDED
-            </>
-          ) : (
-            <>
-              <FiShoppingCart className="mr-2" /> ADD TO CART
-            </>
-          )}
+          ADD TO CART
         </AddToCartButton>
         
         <button
           onClick={handleBuyNow}
-          disabled={!selectedSize}
+          disabled={!selectedSize && product.size && product.size.length > 0}
           className={`flex-1 py-3 px-4 rounded font-semibold flex items-center justify-center ${
-            !selectedSize
+            (!selectedSize && product.size && product.size.length > 0)
               ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
               : 'bg-gradient-to-r from-red-500 to-pink-600 text-white hover:from-red-600 hover:to-pink-700'
           }`}
@@ -100,7 +91,7 @@ const ProductActions = ({ product, selectedSize, addedToCart }) => {
         </button>
       </div>
 
-      {!selectedSize && (
+      {!selectedSize && product.size && product.size.length > 0 && (
         <p className="text-red-500 text-sm">Please select a size first</p>
       )}
     </div>

@@ -232,7 +232,7 @@ const Cart = () => {
                             className="w-full sm:w-28 h-28 object-cover rounded-lg group-hover:scale-105 transition-transform"
                           />
                           <Link
-                            to={`/product/${item.id}`}
+                            to={`/product/${item.handle}`}
                             className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
                           >
                             <span className="text-white text-sm font-medium">View Product</span>
@@ -243,11 +243,11 @@ const Cart = () => {
                         <div className="sm:ml-6 flex-1">
                           <div className="flex justify-between">
                             <Link to={`/product/${item.id}`} className="hover:text-purple-400 transition-colors">
-                              <h3 className="text-lg font-medium text-white">{item.title}</h3>
+                              <h3 className="text-lg font-medium text-white">{item.title || item.name}</h3>
                             </Link>
                             <button
                               onClick={() => handleRemoveItem(item.id)}
-                              className="text-gray-400 hover:text-red-400  hover:rotate-90 transition-transform"
+                              className="text-gray-400 hover:text-red-400 hover:rotate-90 transition-transform"
                             >
                               <FiX />
                             </button>

@@ -1,12 +1,6 @@
 import { useState } from 'react';
 
-const SizeSelector = ({ sizes }) => {
-  const [selectedSize, setSelectedSize] = useState(null);
-  
-  const handleSizeChange = (size) => {
-    setSelectedSize(size);
-  };
-
+const SizeSelector = ({ sizes, selectedSize, onSizeSelect }) => {
   return (
     <div className="mb-6">
       <div className="flex justify-between items-center mb-2">
@@ -14,15 +8,18 @@ const SizeSelector = ({ sizes }) => {
         {selectedSize && <p className="text-sm text-[#c4b5fd]">Selected: {selectedSize}</p>}
       </div>
       <div className="flex flex-wrap gap-2">
-        {sizes.map(size => (
+        {Array.isArray(sizes) && sizes.map((size) => (
           <button
             key={size}
-            className={`w-14 h-10 flex items-center justify-center rounded transition-all duration-200 ${
+            onClick={() => {
+              console.log("Size button clicked:", size);
+              onSizeSelect(size);
+            }}
+            className={`px-4 py-2 border ${
               selectedSize === size 
-                ? 'bg-[#c4b5fd] text-[#0f172a] font-medium' 
-                : 'bg-[#1e293b] text-[#cbd5e1] hover:bg-[#334155]'
-            }`}
-            onClick={() => handleSizeChange(size)}
+                ? "border-purple-500 bg-purple-900/20" 
+                : "border-gray-700 hover:border-gray-500"
+            } rounded-md text-sm transition-colors`}
           >
             {size}
           </button>

@@ -9,7 +9,8 @@ const AddToCartButton = ({
   children, 
   disabled = false, 
   selectedSize,
-  compact = false
+  compact = false,
+  onAddedToCart
 }) => {
   const { addToCart, cartItems } = useCart();
   const [added, setAdded] = useState(false);
@@ -19,33 +20,32 @@ const AddToCartButton = ({
     e.preventDefault();
     e.stopPropagation();
     
-    if (added || loading || disabled) return;
+    if (added || loading || disabled) {
+      console.log("Early return due to:", { added, loading, disabled });
+      return;
+    }
 
     if (!product) {
       console.error("Cannot add undefined product to cart");
       return;
     }
 
-    console.log("Adding product to cart:", product);
-    console.log("Product price:", product.price);
-    console.log("Selected size:", selectedSize);
-
-    const productToAdd = selectedSize 
-      ? {...product, selectedVariant: { size: selectedSize }}
-      : product;
+    // Create normalized product with consistent structure
+    const productToAdd = {
+      ...product,
+      // Ensure we use _id if available
+      id: product._id || product.id,
+      // Normalize image property structure
+      image: product.image || (product.images && product.images[0]?.imageUrl) || '',
+      // Add selected size if applicable
+      ...(selectedSize ? { selectedVariant: { size: selectedSize } } : {})
+    };
     
     const variantId = selectedSize 
       ? `${productToAdd.id}-size-${selectedSize}`
       : productToAdd.id;
     
-    console.log("Generated variantId:", variantId);
-    console.log("Current cart items:", cartItems);
-
     productToAdd.variantId = variantId;
-    
-    if (!productToAdd.id) {
-      productToAdd.id = `product-${Date.now()}`;
-    }
     
     const existingProductIndex = cartItems?.findIndex(item => 
       item.variantId === variantId
@@ -56,12 +56,14 @@ const AddToCartButton = ({
     
     result = await addToCart(productToAdd, 1);
     
-    console.log("Result from addToCart:", result);
 
     setLoading(false);
 
     if (result && result.success) {
       setAdded(true);
+      if (typeof onAddedToCart === 'function') {
+        onAddedToCart();
+      }
       setTimeout(() => setAdded(false), 2000);
     }
   };
