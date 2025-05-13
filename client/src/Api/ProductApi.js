@@ -178,9 +178,10 @@ export const getFilteredProducts = async (filters = {}) => {
   }
 };
 
+// Updated to handle the new product_id field
 const transformProductForFrontend = (product) => {
   return {
-    id: product._id || product.id,
+    id: product._id || product.product_id || product.id,
     title: product.name,
     price: product.price,
     compareAtPrice: product.discount ? product.price + product.discount : null,

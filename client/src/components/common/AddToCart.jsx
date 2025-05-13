@@ -33,8 +33,10 @@ const AddToCartButton = ({
     // Create normalized product with consistent structure
     const productToAdd = {
       ...product,
-      // Ensure we use _id if available
-      id: product._id || product.id,
+      // Ensure we preserve all possible identifiers
+      id: product.product_id || product._id || product.id,
+      handle: product.handle || product.slug || product.id, // Add this line
+      product_id: product.product_id, // Preserve MongoDB product_id explicitly
       // Normalize image property structure
       image: product.image || (product.images && product.images[0]?.imageUrl) || '',
       // Add selected size if applicable

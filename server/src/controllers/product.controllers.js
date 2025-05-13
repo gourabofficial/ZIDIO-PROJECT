@@ -35,12 +35,12 @@ export const getAllProducts = async (req, res) => {
   }
 };
 
-// get product by id
+// get product by id - updated to use product_id
 export const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const product = await Product.findOne({ id: id });
+    const product = await Product.findOne({ product_id: id });
 
     if (!product) {
       return res.status(404).json({

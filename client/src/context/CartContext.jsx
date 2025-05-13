@@ -8,49 +8,63 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { currentUser } = useAuthdata();
-
-  // When user changes, load their cart
+  
+  // Initial load from localStorage when component mounts
   useEffect(() => {
-    const fetchCart = async () => {
-      if (currentUser) {
-        try {
-          setLoading(true);
+    try {
+      // Load cart regardless of user status first for immediate display
+      const localCart = localStorage.getItem('cart_items');
+      if (localCart) {
+        setCartItems(JSON.parse(localCart));
+      }
+    } catch (err) {
+      console.error('Error loading initial cart:', err);
+    }
+  }, []);
+  
+  // Load user-specific cart when user changes
+  useEffect(() => {
+    const loadCart = () => {
+      try {
+        setLoading(true);
+        
+        if (currentUser) {
+          const userId = currentUser.id;
+          const savedCart = localStorage.getItem(`cart_${userId}`);
           
-          // Mock cart fetch - will be replaced with actual API call when backend is ready
-          await new Promise(resolve => setTimeout(resolve, 800));
-          
-          // Simulated cart data
-          const mockCartData = [
-            // {
-            //   id: 'product1',
-            //   title: 'Cosmic Guardian Helmet',
-            //   price: 1299.99,
-            //   image: 'https://images.unsplash.com/photo-1578269174936-2709b6aeb913?q=80&w=500',
-            //   quantity: 1
-            // },
-            // {
-            //   id: 'product2',
-            //   title: 'Nebula Blade 3000',
-            //   price: 1599.99,
-            //   image: 'https://images.unsplash.com/photo-1623501097816-03faeef1ad34?q=80&w=500',
-            //   quantity: 2
-            // }
-          ];
-          
-          setCartItems(mockCartData);
-          setLoading(false);
-        } catch (err) {
-          setError('Failed to load cart');
-          setLoading(false);
+          if (savedCart) {
+            setCartItems(JSON.parse(savedCart));
+            // Also update the general cart storage
+            localStorage.setItem('cart_items', savedCart);
+          }
         }
-      } else {
-        // Clear cart when user logs out
-        setCartItems([]);
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('Failed to load cart from storage:', err);
+        setError('Failed to load cart from storage');
+        setLoading(false);
       }
     };
 
-    fetchCart();
+    loadCart();
   }, [currentUser]);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      // Always save to a general cart storage for persistence through refreshes
+      localStorage.setItem('cart_items', JSON.stringify(cartItems));
+      
+      // Also save to user-specific storage if logged in
+      if (currentUser) {
+        const userId = currentUser.id;
+        localStorage.setItem(`cart_${userId}`, JSON.stringify(cartItems));
+      }
+    } catch (err) {
+      console.error('Error saving cart:', err);
+    }
+  }, [cartItems, currentUser]);
 
   // Add item to cart
   const addToCart = async (product, quantity = 1) => {
@@ -64,11 +78,6 @@ export const CartProvider = ({ children }) => {
           ? item.variantId === product.variantId 
           : item.id === product.id
       );
-
-      console.log("Adding to cart:", product);
-      console.log("Product variantId:", product.variantId);
-      console.log("Existing cart items:", cartItems);
-      console.log("Found existing item?", existingItemIndex !== -1);
       
       let updatedCart;
       
@@ -80,9 +89,6 @@ export const CartProvider = ({ children }) => {
         // Add new product to cart
         updatedCart = [...cartItems, { ...product, quantity }];
       }
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
       
       setCartItems(updatedCart);
       setLoading(false);
@@ -98,10 +104,6 @@ export const CartProvider = ({ children }) => {
   const updateQuantity = async (productId, quantity) => {
     try {
       setLoading(true);
-      console.log("Updating quantity for:", productId, "to", quantity);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 300));
       
       if (quantity <= 0) {
         // Remove item if quantity is zero or negative
@@ -134,19 +136,14 @@ export const CartProvider = ({ children }) => {
   const removeFromCart = async (productId) => {
     try {
       setLoading(true);
-      console.log("Removing item with ID:", productId);
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Fix: Use variantId OR id for removal
+      // Use variantId OR id for removal
       const updatedCart = cartItems.filter(item => 
         (typeof productId === 'string' && productId.includes('-size-')) 
           ? item.variantId !== productId 
           : item.id !== productId
       );
       
-      console.log("Cart after removal:", updatedCart);
       setCartItems(updatedCart);
       
       setLoading(false);
@@ -163,10 +160,12 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
       setCartItems([]);
+      
+      if (currentUser) {
+        // Also clear from localStorage
+        localStorage.removeItem(`cart_${currentUser.id}`);
+      }
       
       setLoading(false);
       return { success: true };
