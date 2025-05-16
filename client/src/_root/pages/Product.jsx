@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   FiShoppingCart,
   FiPlus,
   FiMinus,
   FiCheck,
   FiAlertTriangle,
+  FiShoppingBag
 } from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast"; // Add this import
 import ProductGallery from "../../components/productDetails/ProductGalery";
@@ -16,7 +17,8 @@ import { addToCart } from "../../Api/user.js";
 import { useAuthdata } from "../../context/AuthContext.jsx";
 
 const Product = () => {
-  const { refetchUserData } = useAuthdata();
+  const { refetchUserData, currentUser } = useAuthdata();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -96,6 +98,21 @@ const Product = () => {
   const handleQuantityChange = (newQuantity) => {
     console.log("Changing quantity to:", newQuantity);
     setQuantity(newQuantity);
+  };
+
+  // Check if product is already in cart
+  const isInCart = () => {
+    if (!currentUser || !currentUser.cartData || !currentUser.cartData.items) {
+      return false;
+    }
+    
+    return currentUser.cartData.items.some(item => 
+      item.productId._id === product._id || item.productId === product._id
+    );
+  };
+  
+  const handleViewCart = () => {
+    navigate('/cart');
   };
 
   if (loading) {
@@ -195,56 +212,64 @@ const Product = () => {
 
             {/* Quantity and Add to Cart Section */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-8">
-              {/* Quantity Selector */}
-              <div className="flex items-center border border-gray-700 rounded-md bg-gray-800/50 w-fit">
+              {/* Quantity Selector - only show if not in cart */}
+              {!isInCart() && (
+                <div className="flex items-center border border-gray-700 rounded-md bg-gray-800/50 w-fit">
+                  <button
+                    onClick={() => handleQuantityChange(Math.max(1, quantity - 1))}
+                    className={`px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-l-md transition-colors ${
+                      quantity <= 1 ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    disabled={quantity <= 1 || addToCartLoading}
+                    aria-label="Decrease quantity"
+                  >
+                    <FiMinus size={16} />
+                  </button>
+                  <span className="px-4 py-2 text-white font-medium min-w-[40px] text-center">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => handleQuantityChange(quantity + 1)}
+                    className="px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-r-md transition-colors"
+                    disabled={addToCartLoading}
+                    aria-label="Increase quantity"
+                  >
+                    <FiPlus size={16} />
+                  </button>
+                </div>
+              )}
+
+              {/* Conditional Button: Add to Cart or View Cart */}
+              {isInCart() ? (
                 <button
-                  onClick={() =>
-                    handleQuantityChange(Math.max(1, quantity - 1))
-                  }
-                  className={`px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-l-md transition-colors ${
-                    quantity <= 1 ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  disabled={quantity <= 1 || addToCartLoading}
-                  aria-label="Decrease quantity"
+                  onClick={handleViewCart}
+                  className="flex items-center justify-center bg-gradient-to-r from-green-600 to-emerald-600 text-white font-medium px-6 py-3 rounded-md shadow-lg hover:from-green-700 hover:to-emerald-700 active:shadow-inner transition-all w-full sm:w-auto"
                 >
-                  <FiMinus size={16} />
+                  <FiShoppingBag className="mr-2" size={18} />
+                  View in Cart
                 </button>
-                <span className="px-4 py-2 text-white font-medium min-w-[40px] text-center">
-                  {quantity}
-                </span>
+              ) : (
                 <button
-                  onClick={() => handleQuantityChange(quantity + 1)}
-                  className="px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-r-md transition-colors"
+                  onClick={handleAddToCart}
                   disabled={addToCartLoading}
-                  aria-label="Increase quantity"
+                  className={`flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium px-6 py-3 rounded-md shadow-lg hover:from-purple-700 hover:to-indigo-700 active:shadow-inner transition-all w-full sm:w-auto ${
+                    addToCartLoading ? "opacity-70 cursor-wait" : ""
+                  }`}
                 >
-                  <FiPlus size={16} />
+                  {addToCartLoading ? (
+                    <>
+                      <span className="mr-2">Adding...</span>
+                      <MiniLoader size="small" />
+                    </>
+                  ) : (
+                    <>
+                      <FiShoppingCart className="mr-2" size={18} />
+                      Add to Cart
+                    </>
+                  )}
                 </button>
-              </div>
-
-              {/* Add to Cart Button */}
-              <button
-                onClick={handleAddToCart}
-                disabled={addToCartLoading}
-                className={`flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium px-6 py-3 rounded-md shadow-lg hover:from-purple-700 hover:to-indigo-700 active:shadow-inner transition-all w-full sm:w-auto ${
-                  addToCartLoading ? "opacity-70 cursor-wait" : ""
-                }`}
-              >
-                {addToCartLoading ? (
-                  <>
-                    <span className="mr-2">Adding...</span>
-                    <MiniLoader size="small" />
-                  </>
-                ) : (
-                  <>
-                    <FiShoppingCart className="mr-2" size={18} />
-                    Add to Cart
-                  </>
-                )}
-              </button>
+              )}
             </div>
-
-            {/* Success/Error Messages */}
           </div>
         </div>
       </div>
