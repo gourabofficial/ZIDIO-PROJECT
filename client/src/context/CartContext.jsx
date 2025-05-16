@@ -9,34 +9,23 @@ export const CartProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const { currentUser } = useAuthdata();
   
-  // Initial load from localStorage when component mounts
-  useEffect(() => {
-    try {
-      // Load cart regardless of user status first for immediate display
-      const localCart = localStorage.getItem('cart_items');
-      if (localCart) {
-        setCartItems(JSON.parse(localCart));
-      }
-    } catch (err) {
-      console.error('Error loading initial cart:', err);
-    }
-  }, []);
-  
-  // Load user-specific cart when user changes
+  // Load user-specific cart when user changes (login/logout)
   useEffect(() => {
     const loadCart = () => {
       try {
         setLoading(true);
         
         if (currentUser) {
+          // User logged in - load their specific cart
           const userId = currentUser.id;
           const savedCart = localStorage.getItem(`cart_${userId}`);
           
           if (savedCart) {
             setCartItems(JSON.parse(savedCart));
-            // Also update the general cart storage
-            localStorage.setItem('cart_items', savedCart);
           }
+        } else {
+          // User logged out - clear visible cart
+          setCartItems([]);
         }
         
         setLoading(false);
@@ -53,11 +42,8 @@ export const CartProvider = ({ children }) => {
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     try {
-      // Always save to a general cart storage for persistence through refreshes
-      localStorage.setItem('cart_items', JSON.stringify(cartItems));
-      
-      // Also save to user-specific storage if logged in
-      if (currentUser) {
+      // Only save to user-specific storage if logged in
+      if (currentUser && cartItems.length > 0) {
         const userId = currentUser.id;
         localStorage.setItem(`cart_${userId}`, JSON.stringify(cartItems));
       }

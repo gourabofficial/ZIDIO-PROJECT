@@ -26,6 +26,8 @@ const Header = () => {
     isLoaded,
     error
   } = useAuthdata();
+  
+  // console.log('Current User:', currentUser?.cartData);
 
   const { wishlistItems } = useWishlist();
   const { itemsCount } = useCart();

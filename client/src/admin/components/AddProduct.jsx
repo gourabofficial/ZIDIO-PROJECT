@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { AdminAddProduct } from "../../Api/admin";
 import { toast } from "react-toastify";
 
@@ -20,6 +20,45 @@ const AddProduct = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Category options
+  const categoryOptions = [
+    "Oversized",
+    "Acid Wash",
+    "Graphic Printed",
+    "Solid Color",
+    "Polo T-Shirts",
+    "Sleeveless",
+    "Long Sleeve",
+    "Henley",
+    "Hooded"
+  ];
+
+  // Collection options
+  const collectionOptions = [
+    "Marvel Universe",
+    "DC Comics",
+    "Anime Superheroes",
+    "Classic Comics (Superman, Batman, Spiderman, etc.)",
+    "Sci-Fi & Fantasy (Star Wars, LOTR, etc.)",
+    "Video Game Characters",
+    "Custom Fan Art"
+  ];
+
+  // Calculate discounted price
+  const discountedPrice = useMemo(() => {
+    if (!formData.price || isNaN(formData.price) || Number(formData.price) <= 0) {
+      return null;
+    }
+    
+    const price = Number(formData.price);
+    const discount = formData.offerStatus ? Number(formData.discount) : 0;
+    
+    if (discount <= 0) return null;
+    
+    const discounted = price - (price * discount / 100);
+    return discounted.toFixed(2);
+  }, [formData.price, formData.discount, formData.offerStatus]);
 
   // Handle form input changes (keep existing function)
   const handleChange = (e) => {
@@ -321,8 +360,7 @@ const AddProduct = () => {
             <label htmlFor="category" className="block mb-1 font-medium">
               Category *
             </label>
-            <input
-              type="text"
+            <select
               id="category"
               name="category"
               value={formData.category}
@@ -332,7 +370,14 @@ const AddProduct = () => {
                   ? "border-red-500"
                   : "border-gray-700 focus:border-blue-500"
               }`}
-            />
+            >
+              <option value="">Select Category</option>
+              {categoryOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
             {errors.category && (
               <p className="text-red-400 text-sm mt-1">{errors.category}</p>
             )}
@@ -341,21 +386,26 @@ const AddProduct = () => {
 
         <div className="form-group">
           <label htmlFor="collections" className="block mb-1 font-medium">
-            Collection ID *
+            Collection *
           </label>
-          <input
-            type="text"
+          <select
             id="collections"
             name="collections"
             value={formData.collections}
             onChange={handleChange}
-            placeholder="Enter collection ID"
             className={`w-full p-2 bg-gray-800 border rounded text-white focus:outline-none ${
               errors.collections
                 ? "border-red-500"
                 : "border-gray-700 focus:border-blue-500"
             }`}
-          />
+          >
+            <option value="">Select Collection</option>
+            {collectionOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
           {errors.collections && (
             <p className="text-red-400 text-sm mt-1">{errors.collections}</p>
           )}
@@ -404,7 +454,7 @@ const AddProduct = () => {
 
           <div className="form-group">
             <label htmlFor="discount" className="block mb-1 font-medium">
-              Discount (%){" "}
+              Discount (%)
             </label>
             <input
               type="number"
@@ -423,6 +473,14 @@ const AddProduct = () => {
             />
             {errors.discount && (
               <p className="text-red-400 text-sm mt-1">{errors.discount}</p>
+            )}
+            
+            {/* Add discounted price preview */}
+            {discountedPrice && formData.offerStatus && (
+              <div className="mt-2 text-green-400 text-sm">
+                Price after {formData.discount}% discount: ₹{discountedPrice}
+                <span className="ml-2 line-through text-gray-400">₹{formData.price}</span>
+              </div>
             )}
           </div>
         </div>

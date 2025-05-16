@@ -62,7 +62,7 @@ export const checkedUserLogin = async (req, res) => {
           userByEmail._id,
           { clerkId },  // Don't update fullName here
           { new: true }
-        );
+        );z
       }
     }
 
@@ -82,10 +82,20 @@ export const checkedUserLogin = async (req, res) => {
         });
       }
 
+      // Populate the newly created user's cart
+      const populatedUser = await User.findById(newUser._id).populate({
+        path: 'cart',
+        model: 'Cart',
+        populate: {
+          path: 'items.productId',
+          model: 'Product'
+        }
+      });
+
       return res.status(201).json({
         message: "User created successfully",
         success: true,
-        user: newUser
+        user: populatedUser
       });
     } else {
       // For existing users, only update email and role, NOT the name
@@ -97,7 +107,16 @@ export const checkedUserLogin = async (req, res) => {
           // fullName is intentionally not updated here
         },
         { new: true }
-      );
+      ).populate({
+        path: 'cart',
+        model: 'Cart',
+        populate: {
+          path: 'items.productId',
+          model: 'Product'
+        }
+      });
+
+      console.log("Updated user:", updatedUser);
 
       return res.status(200).json({
         message: "User already exists",
@@ -139,8 +158,15 @@ export const adminLogin = async (req, res) => {
       });
     }
 
-    // Get user from database
-    const user = await User.findOne({ clerkId });
+    // Get user from database with populated cart
+    const user = await User.findOne({ clerkId }).populate({
+      path: 'cart',
+      model: 'Cart',
+      populate: {
+        path: 'items.productId',
+        model: 'Product'
+      }
+    });
 
     if (!user) {
       return res.status(404).json({
@@ -165,7 +191,8 @@ export const adminLogin = async (req, res) => {
         clerkId: user.clerkId,
         fullName: user.fullName,
         email: user.email,
-        role: user.role
+        role: user.role,
+        cart: user.cart
       }
     });
   } catch (error) {

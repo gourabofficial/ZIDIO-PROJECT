@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { isLogin } from "../Api/user";
-import {useUser} from '@clerk/clerk-react';
+import { useUser } from "@clerk/clerk-react";
 
 const AuthContext = createContext();
 
@@ -11,36 +11,35 @@ export const AuthProvider = ({ children }) => {
   const [isAuth, setIsAuth] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const { user, isLoaded:isUserLoading } = useUser();
+  const { user, isLoaded: isUserLoading } = useUser();
 
-  // Function to fetch latest user data
   const refetchUserData = async () => {
     try {
       setIsLoaded(false);
-      
-      // Add a random query parameter to prevent caching
+
       const timestamp = Date.now();
       const response = await isLogin({ _t: timestamp });
 
+      // console.log("Auth check response:", response);
+
       if (response.success && response.user) {
-        
         const updatedUser = {
           id: response.user._id,
           clerkId: response.user.clerkId,
           fullName: response.user.fullName,
           email: response.user.email,
-          role: response.user.role || 'user',
+          role: response.user.role || "user",
           avatar: response.user.avatar,
           address: response.user.address,
           createdAt: response.user.createdAt,
-          updatedAt: response.user.updatedAt
+          updatedAt: response.user.updatedAt,
+          cartData: response?.user.cart || null,
         };
-        
+
         setCurrentUser(updatedUser);
         setIsAuth(true);
         setError(null);
-        
-        // Return the updated user data
+
         return updatedUser;
       } else {
         setCurrentUser(null);
@@ -61,20 +60,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Add this new function to directly update the user state with override
   const updateUserState = (updates) => {
     if (!currentUser) return;
-    
-    // Create the updated user object
+
     const updatedUser = {
       ...currentUser,
-      ...updates
+      ...updates,
     };
-    
-    // Update the user state directly
+
     setCurrentUser(updatedUser);
-    
-    // Also store in overrideData to ensure it persists until backend catches up
+
     setOverrideData(updatedUser);
   };
 
@@ -83,16 +78,17 @@ export const AuthProvider = ({ children }) => {
   }, [user, isUserLoading]);
 
   const authValues = {
-    // If we have override data, use it, otherwise use currentUser
     currentUser: overrideData || currentUser,
     isAuth,
     isLoaded,
     error,
     refetchUserData,
-    updateUserState
+    updateUserState,
   };
 
-  return <AuthContext.Provider value={authValues}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={authValues}>{children}</AuthContext.Provider>
+  );
 };
 
 export const useAuthdata = () => {

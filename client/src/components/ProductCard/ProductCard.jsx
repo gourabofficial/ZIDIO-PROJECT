@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { FiHeart, FiShoppingCart, FiEye } from "react-icons/fi";
-import AddToCartButton from "../common/AddToCart";
 import { Link } from "react-router-dom";
 import { useWishlist } from "../../context/WishlistContext";
 import { useUser } from "@clerk/clerk-react";
+import AddToCartButton from "../../components/common/AddToCartButton";
 
 const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
-  
 
   // Use the wishlist context instead
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -32,8 +31,8 @@ const ProductCard = ({ product }) => {
         title: product.title,
         price: product.price,
         images: [product.image], // Convert single image to images array format
-        slug:  product.handle, // Ensure slug exists
-        inStock: product.inStock !== false // Default to true if not specified
+        slug: product.handle, // Ensure slug exists
+        inStock: product.inStock !== false, // Default to true if not specified
       };
       addToWishlist(normalizedProduct);
     }
@@ -45,9 +44,7 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <Link
-      to={`/product/${product.handle}`}
-    >
+    <Link to={`/product/${product.handle}`}>
       <div
         className="product-card group hover:translate-y-[-8px] transition-transform duration-300"
         onMouseEnter={() => setIsHovered(true)}
@@ -69,7 +66,9 @@ const ProductCard = ({ product }) => {
             <FiHeart
               size={16}
               className={
-                isInWishlist(product.id) ? "fill-[#c4b5fd] text-[#c4b5fd]" : "text-white"
+                isInWishlist(product.id)
+                  ? "fill-[#c4b5fd] text-[#c4b5fd]"
+                  : "text-white"
               }
             />
           </button>
@@ -97,24 +96,16 @@ const ProductCard = ({ product }) => {
 
           {/* Quick view & add to cart buttons */}
           <div
-            className={`absolute bottom-0 inset-x-0 flex justify-center space-x-2 bg-gradient-to-t from-[#0f172a] py-4 transform transition-all duration-300 ${isHovered
-              ? "translate-y-0 opacity-100"
-              : "translate-y-full opacity-0"
-              }`}
+            className={`absolute bottom-0 inset-x-0 flex justify-center space-x-2 bg-gradient-to-t from-[#0f172a] py-4 transform transition-all duration-300 ${
+              isHovered
+                ? "translate-y-0 opacity-100"
+                : "translate-y-full opacity-0"
+            }`}
           >
             <button className="w-10 h-10 flex items-center justify-center bg-[#334155] hover:bg-[#c4b5fd] hover:text-[#0f172a] rounded-full transition-colors">
               <FiEye size={16} />
             </button>
-            <AddToCartButton
-              product={product}
-              disabled={product.inStock === false}
-              className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${
-                product.inStock === false 
-                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  : 'bg-[#334155] hover:bg-[#c4b5fd] hover:text-[#0f172a]'
-              }`}
-              compact={true}
-            />
+            <AddToCartButton product={product} />
           </div>
 
           {/* Product info */}
@@ -125,17 +116,21 @@ const ProductCard = ({ product }) => {
             <div className="flex justify-between items-center mt-2">
               <div className="flex items-center">
                 <span className="product-price text-[#c4b5fd] font-medium">
-                  ₹{product.price.toLocaleString('en-IN')}
+                  ₹{product.price.toLocaleString("en-IN")}
                 </span>
                 {product.compareAtPrice && (
                   <span className="product-price line-through text-[#94a3b8] text-xs ml-2">
-                    ₹{product.compareAtPrice.toLocaleString('en-IN')}
+                    ₹{product.compareAtPrice.toLocaleString("en-IN")}
                   </span>
                 )}
               </div>
               {product.compareAtPrice && (
                 <span className="text-xs font-medium text-[#c4b5fd]">
-                  Save {Math.round((1 - product.price / product.compareAtPrice) * 100)}%
+                  Save{" "}
+                  {Math.round(
+                    (1 - product.price / product.compareAtPrice) * 100
+                  )}
+                  %
                 </span>
               )}
             </div>

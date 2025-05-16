@@ -248,8 +248,6 @@ export const getHomeContent = async (req, res) => {
         model: "Product",
         select: "_id product_id name description price images category size offerStatus discount"
       });
-    
-    console.log("Home content:", homeContent);
 
     if (!homeContent) {
       homeContent = await HomeContent.create({

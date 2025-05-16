@@ -7,6 +7,7 @@ import userRouter from "./src/routes/user.routes.js";
 import productRouter from "./src/routes/product.routes.js"
 import adminRouter from "./src/routes/admin.routes.js";
 import publicRouter from "./src/routes/public.routes.js";
+import cartRouter from "./src/routes/cart.routes.js";
 
 dotenv.config();
 
@@ -60,6 +61,9 @@ app.use('/api/admin', adminRouter)
 
 //public routes
 app.use('/api/public', publicRouter)
+
+//cart routes
+app.use('/api/cart', cartRouter);
 
 
 
