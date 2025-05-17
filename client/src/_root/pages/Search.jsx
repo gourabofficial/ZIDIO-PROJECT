@@ -1,33 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { FiSearch, FiFilter, FiX, FiPackage } from 'react-icons/fi';
-// import { getSearchProducts } from '../../Api/product';
+import { FiSearch } from 'react-icons/fi';
+import { searchProducts } from '../../Api/ProductApi'; 
 import ProductCard from '../../components/ProductCard/ProductCard';
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [collections, setCollections] = useState([]);
-  const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  
-  // Filter states
-  const [filters, setFilters] = useState({
-    category: '',
-    minPrice: '',
-    maxPrice: '',
-    sortBy: 'relevance'
-  });
-  
-  // Categories for filter dropdown
-  const categories = ['Gaming', 'Audio', 'Accessories', 'Laptops', 'Phones'];
   
   const query = searchParams.get('q') || '';
   
   useEffect(() => {
     if (query) {
-      performSearch(query, filters);
+      performSearch(query);
     }
   }, [query]);
   
@@ -42,57 +29,29 @@ const Search = () => {
     }
   };
   
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-  
-  const applyFilters = () => {
-    performSearch(query, filters);
-    setShowFilters(false);
-  };
-  
-  const resetFilters = () => {
-    setFilters({
-      category: '',
-      minPrice: '',
-      maxPrice: '',
-      sortBy: 'relevance'
-    });
-  };
-  
-  const performSearch = async (searchQuery, filterOptions) => {
+  const performSearch = async (searchQuery) => {
     if (!searchQuery.trim()) return;
     
     setLoading(true);
     try {
-      // Create params object for API
-      const params = {
-        query: searchQuery,
-        ...filterOptions
-      };
-      
-      // Call search API
-      const response = await getSearchProducts(params);
+      // Pass only the search query
+      const response = await searchProducts({
+        query: searchQuery
+      });
       
       if (response.success) {
-        setProducts(response.data || []);
+        console.log('Search response:', response);
+        setProducts(response.products || []);
         setCollections(response.collections || []);
-        setOffers(response.offers || []);
       } else {
         console.error("Search failed:", response.message);
         setProducts([]);
         setCollections([]);
-        setOffers([]);
       }
     } catch (error) {
       console.error("Error searching products:", error);
       setProducts([]);
       setCollections([]);
-      setOffers([]);
     } finally {
       setLoading(false);
     }
@@ -107,7 +66,7 @@ const Search = () => {
             type="text"
             name="search"
             defaultValue={query}
-            placeholder="Search products, collections, offers..."
+            placeholder="Search products, collections..."
             className="flex-1 p-3 bg-transparent border-none rounded-full focus:outline-none text-white placeholder-gray-400"
             autoFocus
           />
@@ -126,108 +85,7 @@ const Search = () => {
           <h1 className="text-2xl font-bold text-white">
             {query ? `Search results for "${query}"` : 'Search Products'}
           </h1>
-          
-          {query && products.length > 0 && (
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1e293b] rounded-md text-white hover:bg-[#2d3748] transition-colors"
-            >
-              <FiFilter />
-              <span>Filters</span>
-            </button>
-          )}
         </div>
-        
-        {/* Filter Panel */}
-        {showFilters && (
-          <div className="bg-[#1e293b] rounded-lg p-4 mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-white font-medium">Filter Products</h3>
-              <button 
-                onClick={() => setShowFilters(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                <FiX />
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Category Filter */}
-              <div>
-                <label className="block text-gray-300 mb-1 text-sm">Category</label>
-                <select
-                  name="category"
-                  value={filters.category}
-                  onChange={handleFilterChange}
-                  className="w-full bg-[#121828] border border-gray-700 rounded-md px-3 py-2 text-white"
-                >
-                  <option value="">All Categories</option>
-                  {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
-              </div>
-              
-              {/* Price Range Filters */}
-              <div>
-                <label className="block text-gray-300 mb-1 text-sm">Min Price</label>
-                <input
-                  type="number"
-                  name="minPrice"
-                  value={filters.minPrice}
-                  onChange={handleFilterChange}
-                  className="w-full bg-[#121828] border border-gray-700 rounded-md px-3 py-2 text-white"
-                  placeholder="Min"
-                  min="0"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-gray-300 mb-1 text-sm">Max Price</label>
-                <input
-                  type="number"
-                  name="maxPrice"
-                  value={filters.maxPrice}
-                  onChange={handleFilterChange}
-                  className="w-full bg-[#121828] border border-gray-700 rounded-md px-3 py-2 text-white"
-                  placeholder="Max"
-                  min="0"
-                />
-              </div>
-              
-              {/* Sort By Filter */}
-              <div>
-                <label className="block text-gray-300 mb-1 text-sm">Sort By</label>
-                <select
-                  name="sortBy"
-                  value={filters.sortBy}
-                  onChange={handleFilterChange}
-                  className="w-full bg-[#121828] border border-gray-700 rounded-md px-3 py-2 text-white"
-                >
-                  <option value="relevance">Relevance</option>
-                  <option value="price_low_high">Price: Low to High</option>
-                  <option value="price_high_low">Price: High to Low</option>
-                  <option value="newest">Newest First</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="flex justify-end gap-3 mt-4">
-              <button
-                onClick={resetFilters}
-                className="px-4 py-2 text-white hover:text-gray-300"
-              >
-                Reset
-              </button>
-              <button
-                onClick={applyFilters}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md text-white"
-              >
-                Apply Filters
-              </button>
-            </div>
-          </div>
-        )}
         
         {/* Results Sections */}
         {loading ? (
@@ -241,9 +99,23 @@ const Search = () => {
           <div className="mb-10">
             <h2 className="text-xl font-semibold mb-4 text-purple-400">Products ({products.length})</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {products.map(product => (
-                <ProductCard key={product._id || product.id} product={product} />
-              ))}
+              {products.map(product => {
+                // Transform product data to match ProductCard expectations
+                const transformedProduct = {
+                  id: product._id || product.product_id,
+                  title: product.name,
+                  price: product.price,
+                  compareAtPrice: product.discount ? product.price + product.discount : null,
+                  image: product.images && product.images.length > 0 
+                    ? product.images[0].imageUrl 
+                    : "https://via.placeholder.com/300",
+                  category: product.category,
+                  inStock: true,
+                  handle: product.id || product.product_id // Add the handle property
+                };
+                
+                return <ProductCard key={transformedProduct.id} product={transformedProduct} />;
+              })}
             </div>
 
             {collections?.length > 0 && (
@@ -274,30 +146,6 @@ const Search = () => {
                 </div>
               </div>
             )}
-
-            {offers?.length > 0 && (
-              <div className="mt-10">
-                <h2 className="text-xl font-semibold mb-6 text-purple-400">Offers ({offers.length})</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {offers.map(offer => (
-                    <div
-                      key={offer._id || offer.id}
-                      className="border border-purple-500/30 bg-[#1e293b] p-5 rounded-lg transition-all hover:scale-[1.02]"
-                    >
-                      <h3 className="text-lg font-bold text-purple-400 mb-2">{offer.offerName}</h3>
-                      {offer.description && (
-                        <p className="text-sm text-gray-400 mb-3">{offer.description}</p>
-                      )}
-                      {offer.discountPercent && (
-                        <div className="inline-block bg-purple-700 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                          {offer.discountPercent}% OFF
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           query ? (
@@ -320,7 +168,7 @@ const Search = () => {
               </svg>
               <h3 className="text-xl font-semibold text-purple-400 mb-2">Start searching</h3>
               <p className="text-gray-400 max-w-md mx-auto">
-                Type in the search box above to discover products, collections and special offers.
+                Type in the search box above to discover products and collections.
               </p>
             </div>
           )

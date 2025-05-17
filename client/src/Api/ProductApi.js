@@ -33,10 +33,10 @@ export const getProductById = async (id) => {
   }
 };
 
-export const searchProducts = async (query) => {
+export const searchProducts = async (queryParams) => {
   try {
     const res = await axiosInstance.get("/product/search", {
-      params: { query },
+      params: queryParams, // Pass parameters directly without nesting them
     });
     return res.data;
   } catch (error) {

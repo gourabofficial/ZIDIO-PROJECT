@@ -1,6 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { FiArrowRight } from 'react-icons/fi';
 
 const HeroSlideItem = ({ slide }) => {
   return (
@@ -16,15 +14,8 @@ const HeroSlideItem = ({ slide }) => {
         
         <div className="p-6 flex flex-col flex-grow">
           <h3 className="text-2xl font-bold mb-2 text-white">{slide.title}</h3>
-          <p className="text-slate-300 mb-4 flex-grow">{slide.description}</p>
-          
-          <Link
-            to={slide.buttonLink}
-            className="inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-medium rounded-md hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300"
-          >
-            <span className="mr-2">{slide.buttonText}</span>
-            <FiArrowRight className="inline-block transition-transform duration-300 group-hover:translate-x-1" />
-          </Link>
+          <p className="text-slate-300 mb-3">{slide.description}</p>
+          <p className="text-slate-400 text-sm italic">{slide.extraDescription}</p>
         </div>
       </div>
     </div>

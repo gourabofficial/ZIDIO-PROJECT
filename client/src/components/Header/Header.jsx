@@ -7,7 +7,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useClerk } from "@clerk/clerk-react";
 import { useAuthdata } from '../../context/AuthContext';
 import { useWishlist } from '../../context/WishlistContext';
-import { useCart } from '../../context/CartContext';
+// import { useCart } from '../../context/CartContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,7 +30,7 @@ const Header = () => {
   // console.log('Current User:', currentUser?.cartData);
 
   const { wishlistItems } = useWishlist();
-  const { itemsCount } = useCart();
+  // const { itemsCount } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -203,9 +203,9 @@ const Header = () => {
             >
               <div className="relative">
                 <FiShoppingCart size={20} />
-                {itemsCount > 0 && (
+                {currentUser?.cartData?.length > 0 && (
                   <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 bg-[#c8a95a] text-[#0c0e16] text-xs rounded-full font-semibold">
-                    {itemsCount}
+                    {currentUser.cartData.length}
                   </span>
                 )}
               </div>

@@ -32,12 +32,11 @@ import AdminSettings from "./admin/components/AdminSettings";
 
 // Import WishlistProvider
 import { WishlistProvider } from './context/WishlistContext';
-// Add this import
-import { CartProvider } from './context/CartContext';
+
 
 const App = () => {
   return (
-    <CartProvider>
+    
       <WishlistProvider>
         <ScrollToTop />
         <Routes>
@@ -76,7 +75,7 @@ const App = () => {
           </Route>
         </Routes>
       </WishlistProvider>
-    </CartProvider>
+    
   );
 };
 

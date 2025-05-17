@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useCart } from '../../context/CartContext';
 import { FiX, FiShoppingBag, FiTrash2 } from 'react-icons/fi';
 
 const CartDrawer = ({ isOpen, onClose }) => {
-  const { cartItems, removeFromCart, subtotal, itemsCount } = useCart();
+  
 
   return (
     <div className={`fixed inset-0 z-50 ${isOpen ? 'visible' : 'invisible'}`}>
@@ -20,22 +19,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        {/* Drawer header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-800">
-          <h2 className="text-xl font-bold text-white">Your Cart</h2>
-          <div className="flex items-center">
-            <div className="flex items-center text-purple-400 mr-4">
-              <FiShoppingBag className="mr-2" />
-              <span>{itemsCount} items</span>
-            </div>
-            <button 
-              onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <FiX className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
+        
         
         {/* Cart items */}
         <div className="h-[calc(100%-10rem)] overflow-y-auto py-4">

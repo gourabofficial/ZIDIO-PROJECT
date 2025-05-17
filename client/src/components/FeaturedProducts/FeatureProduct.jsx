@@ -2,6 +2,7 @@ import React from "react";
 
 import ViewAllButton from "./ViewAllButton";
 import ProductCard from "../ProductCard/ProductCard";
+import MiniLoader from "../Loader/MiniLoader";
 
 const FeaturedProducts = ({ newArrival, loading = false }) => {
   // Guard clause for undefined or null newArrival
@@ -10,7 +11,7 @@ const FeaturedProducts = ({ newArrival, loading = false }) => {
       <section className="py-16 relative overflow-hidden bg-[#0c0e16] border-t border-[#334155]">
         <div className="container mx-auto px-4 relative z-10">
           <div className="col-span-full text-center text-gray-400 py-10">
-            No product data available. Please try again later.
+           <MiniLoader />
           </div>
         </div>
       </section>

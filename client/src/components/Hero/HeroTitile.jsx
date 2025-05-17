@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom'; // Add this import
 
 const HeroTitle = () => {
   const titleRef = useRef(null);
+  const navigate = useNavigate(); // Add this
 
   useEffect(() => {
     if (titleRef.current) {
@@ -49,7 +51,11 @@ const HeroTitle = () => {
           Discover exceptional products crafted for those who appreciate quality and refined elegance
         </p>
 
-        <div className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full relative overflow-hidden group cursor-pointer animate-fadeIn opacity-0" style={{ animationDelay: '1.5s', animationFillMode: 'forwards' }}>
+        <div 
+          onClick={() => navigate('/collections/all')}
+          className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full relative overflow-hidden group cursor-pointer animate-fadeIn opacity-0" 
+          style={{ animationDelay: '1.5s', animationFillMode: 'forwards' }}
+        >
           <span className="relative z-10 text-white font-medium">Explore Our Universe</span>
           <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
           <div className="absolute inset-0 scale-x-0 group-hover:scale-x-100 bg-gradient-to-r from-indigo-600 to-purple-600 origin-left transition-transform duration-500"></div>
