@@ -7,13 +7,14 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useClerk } from "@clerk/clerk-react";
 import { useAuthdata } from '../../context/AuthContext';
 import { useWishlist } from '../../context/WishlistContext';
-// import { useCart } from '../../context/CartContext';
+
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [dropdownTimer, setDropdownTimer] = useState(null);
 
   const categoryRef = useRef(null);
   const collectionRef = useRef(null);
@@ -57,8 +58,9 @@ const Header = () => {
     return () => {
       window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);
+      if (dropdownTimer) clearTimeout(dropdownTimer);
     };
-  }, []);
+  }, [dropdownTimer]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -75,6 +77,18 @@ const Header = () => {
   const handleSignOut = async () => {
     await signOut();
     setIsProfileOpen(false);
+  };
+
+  const handleMouseEnter = (dropdown) => {
+    if (dropdownTimer) clearTimeout(dropdownTimer);
+    setOpenDropdown(dropdown);
+  };
+
+  const handleMouseLeave = () => {
+    const timer = setTimeout(() => {
+      setOpenDropdown(null);
+    }, 50); // Reduced from 200ms to 50ms
+    setDropdownTimer(timer);
   };
 
   return (
@@ -107,7 +121,12 @@ const Header = () => {
             {/* Category and Collection dropdowns - visible only on desktop */}
             <div className="hidden md:flex items-center space-x-5">
               {/* Category Dropdown */}
-              <div ref={categoryRef} className="relative">
+              <div 
+                ref={categoryRef} 
+                className="relative"
+                onMouseEnter={() => handleMouseEnter('category')}
+                onMouseLeave={handleMouseLeave}
+              >
                 <button
                   onClick={() => toggleDropdown('category')}
                   className="text-white hover:text-[#c8a95a] transition-colors p-2 flex items-center"
@@ -116,24 +135,23 @@ const Header = () => {
                 >
                   SHOP BY CATEGORY
                   <span className="ml-1">
-                    {openDropdown === 'category' ? (
-                      <ChevronUp />
-                    ) : (
-                      <ChevronDown />
-                    )}
+                    {openDropdown === 'category' ? <ChevronUp /> : <ChevronDown />}
                   </span>
                 </button>
 
                 {openDropdown === 'category' && (
-                  <div className="absolute left-0 mt-2 w-64 bg-[#0c0e16] shadow-lg rounded-md py-2 z-50 border border-gray-700">
+                  <div className="absolute left-0 mt-2 w-64 bg-[#0c0e16] shadow-lg rounded-md py-2 z-50 border border-gray-700 
+                    transition-all duration-200 animate-fadeIn">
                     {categoryItems.map((item, index) => (
                       <Link
                         key={index}
                         to={item.path}
-                        className="block px-4 py-2 text-sm text-white hover:bg-gray-800 hover:text-[#c8a95a]"
+                        className="block px-4 py-2 text-sm text-white hover:bg-gray-800 hover:text-[#c8a95a] transition-all duration-150 
+                        hover:pl-6 relative overflow-hidden group"
                         onClick={() => setOpenDropdown(null)}
                       >
-                        {item.label}
+                        <span className="relative z-10">{item.label}</span>
+                        <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#c8a95a] transition-all duration-200 group-hover:w-full"></span>
                       </Link>
                     ))}
                   </div>
@@ -141,30 +159,36 @@ const Header = () => {
               </div>
 
               {/* Collection Dropdown */}
-              <div ref={collectionRef} className="relative">
+              <div 
+                ref={collectionRef} 
+                className="relative"
+                onMouseEnter={() => handleMouseEnter('collection')}
+                onMouseLeave={handleMouseLeave}
+              >
                 <button
                   onClick={() => toggleDropdown('collection')}
                   className="text-white hover:text-[#c8a95a] transition-colors p-2 flex items-center"
                   aria-expanded={openDropdown === 'collection'}
                 >
                   SHOP BY COLLECTION
-                  <span className="ml-1">{openDropdown === 'collection' ? (
-                    <ChevronUp />
-                  ) : (
-                    <ChevronDown />
-                  )}</span>
+                  <span className="ml-1">
+                    {openDropdown === 'collection' ? <ChevronUp /> : <ChevronDown />}
+                  </span>
                 </button>
 
                 {openDropdown === 'collection' && (
-                  <div className="absolute left-0 mt-2 w-80 bg-[#0c0e16] shadow-lg rounded-md py-2 z-50 border border-gray-700">
+                  <div className="absolute left-0 mt-2 w-80 bg-[#0c0e16] shadow-lg rounded-md py-2 z-50 border border-gray-700
+                    transition-all duration-200 animate-fadeIn">
                     {collectionItems.map((item, index) => (
                       <Link
                         key={index}
                         to={item.path}
-                        className="block px-4 py-2 text-sm text-white hover:bg-gray-800 hover:text-[#c8a95a]"
+                        className="block px-4 py-2 text-sm text-white hover:bg-gray-800 hover:text-[#c8a95a] transition-all duration-150
+                        hover:pl-6 relative overflow-hidden group"
                         onClick={() => setOpenDropdown(null)}
                       >
-                        {item.label}
+                        <span className="relative z-10">{item.label}</span>
+                        <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#c8a95a] transition-all duration-200 group-hover:w-full"></span>
                       </Link>
                     ))}
                   </div>

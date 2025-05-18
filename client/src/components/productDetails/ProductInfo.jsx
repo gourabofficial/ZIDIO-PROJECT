@@ -29,7 +29,16 @@ const ProductInfo = ({ title, price, description, discount, originalPrice }) => 
         )}
       </div>
       
-    
+      {/* Discount Badge - Appears above description for prominent offers */}
+      {discount > 15 && (
+        <div className="bg-gradient-to-r from-purple-700 to-purple-900 border border-purple-600 rounded-lg p-4 shadow-lg transform hover:scale-[1.02] transition-transform">
+          <p className="text-white flex items-center">
+            <span className="inline-block w-4 h-4 bg-white rounded-full mr-2 animate-pulse"></span>
+            <span className="font-medium">Limited Time Offer:</span>
+            <span className="ml-2 font-bold text-lg">{discount}% OFF</span>
+          </p>
+        </div>
+      )}
       
       {/* Description Section */}
       <div className="mt-4 md:mt-6">

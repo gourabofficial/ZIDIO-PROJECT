@@ -3,6 +3,7 @@ import { useUser } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { FiHeart, FiTrash2 } from 'react-icons/fi';
 import { useWishlist } from '../../context/WishlistContext';
+import AddToCartButton from '../../components/common/AddToCartButton';
 
 const Wishlist = () => {
   const { user, isLoaded, isSignedIn } = useUser();

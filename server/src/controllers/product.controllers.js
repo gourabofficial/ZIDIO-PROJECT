@@ -105,60 +105,73 @@ export const searchProduct = async (req, res) => {
 // filter product
 export const filterProduct = async (req, res) => {
   try {
-    const {
+    let {
       minPrice,
       maxPrice,
       category,
       size,
-      isNewArrival,
-      isTranding,
-      isHotItem,
       offerStatus,
+      page,
+      limit
     } = req.query;
+
+    // Parse pagination parameters
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 5;
+
+    if (page < 1 || limit < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid pagination parameters.",
+      });
+    }
+
+    const skip = (page - 1) * limit;
 
     // Build filter object
     const filter = {};
 
-    // Add price range filter if provided
-    if (minPrice !== undefined || maxPrice !== undefined) {
+    // Apply price filter
+    if (minPrice || maxPrice) {
       filter.price = {};
-      if (minPrice !== undefined) filter.price.$gte = parseFloat(minPrice);
-      if (maxPrice !== undefined) filter.price.$lte = parseFloat(maxPrice);
+      if (minPrice) {
+        filter.price.$gte = parseFloat(minPrice);
+      }
+      if (maxPrice) {
+        filter.price.$lte = parseFloat(maxPrice);
+      }
     }
 
-    // Add category filter if provided
+    // Apply category filter
     if (category) {
       filter.category = category;
     }
 
-    // Add size filter if provided
+    // Apply size filter
     if (size) {
       filter.size = { $in: Array.isArray(size) ? size : [size] };
     }
 
-    // Add boolean filters if provided
-    if (isNewArrival !== undefined) {
-      filter.isNewArrival = isNewArrival === "true";
-    }
-
-    if (isTranding !== undefined) {
-      filter.isTranding = isTranding === "true";
-    }
-
-    if (isHotItem !== undefined) {
-      filter.isHotItem = isHotItem === "true";
-    }
-
+    // Apply offer status filter
     if (offerStatus !== undefined) {
-      filter.offerStatus = offerStatus === "true";
+      filter.offerStatus = offerStatus === 'true';
     }
 
-    // Query the database with filters
-    const products = await Product.find(filter);
+    // Execute the query with filters and pagination
+    const products = await Product.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    // Get total count for pagination metadata
+    const totalFilteredProducts = await Product.countDocuments(filter);
 
     res.status(200).json({
       success: true,
       count: products.length,
+      total: totalFilteredProducts,
+      totalPages: Math.ceil(totalFilteredProducts / limit),
+      currentPage: page,
       products,
     });
   } catch (error) {
