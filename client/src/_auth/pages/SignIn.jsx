@@ -32,8 +32,8 @@ const SignIn = () => {
       });
       
       if (result.status === 'complete') {
-        // User is signed in
         navigate('/');
+        window.location.reload();
       } else {
         // Additional verification may be needed
         setErrorMessage('Additional verification required');

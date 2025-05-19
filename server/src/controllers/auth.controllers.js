@@ -116,7 +116,7 @@ export const checkedUserLogin = async (req, res) => {
         }
       });
 
-      console.log("Updated user:", updatedUser);
+      // console.log("Updated user:", updatedUser);
 
       return res.status(200).json({
         message: "User already exists",

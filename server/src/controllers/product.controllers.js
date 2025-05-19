@@ -161,7 +161,7 @@ export const filterProduct = async (req, res) => {
     const products = await Product.find(filter)
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
 
     // Get total count for pagination metadata
     const totalFilteredProducts = await Product.countDocuments(filter);

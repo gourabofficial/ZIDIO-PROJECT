@@ -22,7 +22,6 @@ export const getProductById = async (id) => {
     });
 
     return res.data;
-
   } catch (error) {
     console.error("Error fetching product details:", error);
     return {
@@ -97,11 +96,6 @@ export const getTrendingProducts = async (additionalParams = {}) => {
   }
 };
 
-/**
- * Get new arrivals
- * @param {Object} additionalParams - Additional query parameters
- * @returns {Promise<Object>} Response with new arrival products
- */
 export const getNewArrivals = async (additionalParams = {}) => {
   try {
     const res = await axiosInstance.get("/product/filter", {
@@ -181,7 +175,7 @@ export const getFilteredProducts = async (filters = {}) => {
 // Updated to handle the new product_id field
 const transformProductForFrontend = (product) => {
   return {
-    id: product._id || product.product_id || product.id,
+    id: product._id,
     title: product.name,
     price: product.price,
     compareAtPrice: product.discount ? product.price + product.discount : null,
@@ -190,8 +184,8 @@ const transformProductForFrontend = (product) => {
         ? product.images[0].imageUrl
         : "https://via.placeholder.com/300",
     category: product.category,
-    // Additional transformations as needed
-    inStock: true, // You might want to add a stock field to your model
-    rating: 4.5, // You might want to add a ratings system
+    inStock: true,
+    rating: 4.5,
+    handle: product.product_id,
   };
 };

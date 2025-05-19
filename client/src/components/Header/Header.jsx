@@ -134,9 +134,7 @@ const Header = () => {
                   aria-controls="category-dropdown"
                 >
                   SHOP BY CATEGORY
-                  <span className="ml-1">
-                    {openDropdown === 'category' ? <ChevronUp /> : <ChevronDown />}
-                  </span>
+                 
                 </button>
 
                 {openDropdown === 'category' && (
@@ -171,9 +169,7 @@ const Header = () => {
                   aria-expanded={openDropdown === 'collection'}
                 >
                   SHOP BY COLLECTION
-                  <span className="ml-1">
-                    {openDropdown === 'collection' ? <ChevronUp /> : <ChevronDown />}
-                  </span>
+                 
                 </button>
 
                 {openDropdown === 'collection' && (

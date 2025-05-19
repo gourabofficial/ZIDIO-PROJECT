@@ -241,12 +241,15 @@ const Category = () => {
     : "All Products";
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-20">
+    <div className="container mx-auto px-4 py-8 mt-20 bg-[#0c0e16]">
       {/* Category header */}
-      <h1 className="text-3xl font-bold text-white mb-8">{pageTitle}</h1>
+      <h2 className="text-2xl md:text-3xl font-bold mb-8 relative inline-block">
+        <span className="text-white">{pageTitle}</span>
+        <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500"></span>
+      </h2>
 
       {/* Filters section */}
-      <div className="bg-gray-800 p-6 rounded-lg mb-8">
+      <div className="bg-[#0c0e16] p-6 rounded-lg mb-8 border border-[#334155]">
         <h2 className="text-xl font-semibold text-white mb-4">
           Filter Products
         </h2>
@@ -261,7 +264,7 @@ const Category = () => {
                 placeholder="Min Price"
                 value={filters.minPrice}
                 onChange={handlePriceInputChange}
-                className="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-[#1a1c2e] text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               <input
                 type="number"
@@ -269,7 +272,7 @@ const Category = () => {
                 placeholder="Max Price"
                 value={filters.maxPrice}
                 onChange={handlePriceInputChange}
-                className="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-[#1a1c2e] text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           </div>
@@ -281,7 +284,7 @@ const Category = () => {
               name="category"
               value={filters.category}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-[#1a1c2e] text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">All Categories</option>
               {categories.map((category) => (
@@ -299,7 +302,7 @@ const Category = () => {
               name="size"
               value={filters.size}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-[#1a1c2e] text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">All Sizes</option>
               {sizes.map((size) => (
@@ -317,7 +320,7 @@ const Category = () => {
               name="offerStatus"
               value={filters.offerStatus}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-[#1a1c2e] text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">Any Status</option>
               <option value="true">On Sale</option>
@@ -330,7 +333,7 @@ const Category = () => {
         <div className="flex justify-end mt-4">
           <button
             onClick={resetFilters}
-            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-[#1a1c2e] text-white rounded hover:bg-[#252840] transition-colors disabled:opacity-50 border border-[#334155]"
             disabled={loading}
           >
             {loading ? "Resetting..." : "Reset Filters"}
@@ -343,7 +346,7 @@ const Category = () => {
         <div className="mb-6">
           <div className="flex flex-wrap gap-2">
             {filters.minPrice && (
-              <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
+              <span className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
                 Min: ${filters.minPrice}
                 <button 
                   className="ml-2 hover:text-gray-200" 
@@ -354,7 +357,7 @@ const Category = () => {
               </span>
             )}
             {filters.maxPrice && (
-              <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
+              <span className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
                 Max: ${filters.maxPrice}
                 <button 
                   className="ml-2 hover:text-gray-200" 
@@ -365,7 +368,7 @@ const Category = () => {
               </span>
             )}
             {filters.category && (
-              <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
+              <span className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
                 {filters.category}
                 <button 
                   className="ml-2 hover:text-gray-200" 
@@ -376,7 +379,7 @@ const Category = () => {
               </span>
             )}
             {filters.size && (
-              <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
+              <span className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
                 Size: {filters.size}
                 <button 
                   className="ml-2 hover:text-gray-200" 
@@ -387,7 +390,7 @@ const Category = () => {
               </span>
             )}
             {filters.offerStatus === "true" && (
-              <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
+              <span className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
                 On Sale
                 <button 
                   className="ml-2 hover:text-gray-200" 
@@ -398,7 +401,7 @@ const Category = () => {
               </span>
             )}
             {filters.offerStatus === "false" && (
-              <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
+              <span className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
                 Regular Price
                 <button 
                   className="ml-2 hover:text-gray-200" 
@@ -415,18 +418,18 @@ const Category = () => {
       {/* Loading state with spinner */}
       {loading && (
         <div className="text-center py-16 flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mb-4"></div>
           <p className="text-gray-400 text-xl">Loading products...</p>
         </div>
       )}
 
       {/* Error state */}
       {error && (
-        <div className="text-center py-16 bg-red-900/30 rounded-lg">
+        <div className="text-center py-16 bg-[#1a1c2e] rounded-lg border border-[#334155]">
           <p className="text-red-400 text-xl">Error: {error}</p>
           <button 
             onClick={resetFilters}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500 transition-colors"
+            className="mt-4 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded hover:opacity-90 transition-colors"
           >
             Try Again
           </button>
@@ -444,13 +447,13 @@ const Category = () => {
 
       {/* Show message if no products found */}
       {!loading && !error && products.length === 0 && (
-        <div className="text-center py-16 bg-gray-800/50 rounded-lg">
+        <div className="text-center py-16 bg-[#1a1c2e] rounded-lg border border-[#334155]">
           <p className="text-gray-400 text-xl">
             No products found matching your criteria.
           </p>
           <button 
             onClick={resetFilters}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors"
+            className="mt-4 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded hover:opacity-90 transition-colors"
           >
             Clear Filters
           </button>
@@ -463,17 +466,17 @@ const Category = () => {
           <button
             onClick={() => handlePageChange(filters.page - 1)}
             disabled={filters.page <= 1 || loading}
-            className="px-4 py-2 bg-gray-700 text-white rounded mr-2 disabled:opacity-50 hover:bg-gray-600 transition-colors"
+            className="px-4 py-2 bg-[#1a1c2e] text-white rounded mr-2 disabled:opacity-50 hover:bg-[#252840] transition-colors border border-[#334155]"
           >
             Previous
           </button>
-          <span className="px-4 py-2 bg-gray-800 text-white rounded">
+          <span className="px-4 py-2 bg-[#1a1c2e] text-white rounded border border-[#334155]">
             Page {filters.page} of {totalPages}
           </span>
           <button
             onClick={() => handlePageChange(filters.page + 1)}
             disabled={filters.page >= totalPages || loading}
-            className="px-4 py-2 bg-gray-700 text-white rounded ml-2 disabled:opacity-50 hover:bg-gray-600 transition-colors"
+            className="px-4 py-2 bg-[#1a1c2e] text-white rounded ml-2 disabled:opacity-50 hover:bg-[#252840] transition-colors border border-[#334155]"
           >
             Next
           </button>

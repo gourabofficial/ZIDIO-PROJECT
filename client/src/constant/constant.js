@@ -1,14 +1,14 @@
 export const categoryItems = [
-   { path: "/category/oversized", label: "OVERSIZED" },
-   { path: "/category/acidwash", label: "ACID WASH" },
-   { path: "/category/graphicprinted", label: "GRAPHIC PRINTED" },
-   { path: "/category/solidcolor", label: "SOLID COLOR" },
-   { path: "/category/polot-shirts", label: "POLO T-SHIRTS" },
-   { path: "/category/sleeveless", label: "SLEEVELESS " },
-   { path: "/category/longsleeve", label: "LONG SLEEVE " },
-   { path: "/category/henley", label: "HENLEY " },
-   { path: "/category/hooded", label: "HOODED " },
-   { path: "/category/croptops", label: "CROP TOPS  " },
+   { path: "/category?category=Oversized&page=1", label: "OVERSIZED" },
+   { path: "/category?category=acidwash&page=1", label: "ACID WASH" },
+   { path: "/category?category=graphicprinted&page=1", label: "GRAPHIC PRINTED" },
+   { path: "/category?category=solidcolor&page=1", label: "SOLID COLOR" },
+   { path: "/category?category=polot-shirts&page=1", label: "POLO T-SHIRTS" },
+   { path: "/category?category=sleeveless&page=1", label: "SLEEVELESS " },
+   { path: "/category?category=longsleeve&page=1", label: "LONG SLEEVE " },
+   { path: "/category?category=henley&page=1", label: "HENLEY " },
+   { path: "/category?category=hooded&page=1", label: "HOODED " },
+   
 ];
 
 export const collectionItems = [
@@ -18,3 +18,5 @@ export const collectionItems = [
    { path: "/collection/winter-2023-collection", label: "WINTER 2023 COLLECTION" },
    { path: "/collection/summer-collection-phase-i-1", label: "SUMMER COLLECTION PHASE I" },
 ];
+
+
