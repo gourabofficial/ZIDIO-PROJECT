@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { updateHomeContent } from '../../Api/admin';
-import AdminSettingsNewArrival from './AdminSettingsNewArrival';
-import AdminSettingsHotItems from './AdminSettingsHotItems';
-import AdminSettingsTrendingItems from './AdminSettingsTrendingItems';
+import React, { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { updateHomeContent } from "../../Api/admin";
+import AdminSettingsNewArrival from "./AdminSettingsNewArrival";
+import AdminSettingsHotItems from "./AdminSettingsHotItems";
+import AdminSettingsTrendingItems from "./AdminSettingsTrendingItems";
+import { getHomeContent } from "../../Api/public";
 
 const AdminSettings = () => {
   const [newArrivals, setNewArrivals] = useState([]);
@@ -18,43 +19,43 @@ const AdminSettings = () => {
 
   const homeContentUpdate = async (section, productIds) => {
     console.log(`Updating ${section} with products:`, productIds);
-    
+
     // Update local state
-    switch(section) {
-      case 'newArrivals':
+    switch (section) {
+      case "newArrivals":
         setNewArrivals(productIds);
         break;
-      case 'hotItems':
+      case "hotItems":
         setHotItems(productIds);
         break;
-      case 'trendingItems':
+      case "trendingItems":
         setTrendingItems(productIds);
         break;
       default:
-        console.error('Unknown section:', section);
+        console.error("Unknown section:", section);
         return;
     }
 
     // Track this section as changed
-    setChangedSections(prev => ({
+    setChangedSections((prev) => ({
       ...prev,
-      [section]: productIds
+      [section]: productIds,
     }));
-    
+
     // Save only the changed section to database
     try {
       setIsLoading(true);
       const data = {
-        [section]: productIds
+        [section]: productIds,
       };
-      
+
       const response = await updateHomeContent(data);
-      
+
       if (response.success) {
         toast.success(`${section} updated successfully!`);
         // Remove this section from changed sections
-        setChangedSections(prev => {
-          const updated = {...prev};
+        setChangedSections((prev) => {
+          const updated = { ...prev };
           delete updated[section];
           return updated;
         });
@@ -62,45 +63,78 @@ const AdminSettings = () => {
         toast.error(response.message || `Failed to update ${section}`);
       }
     } catch (error) {
-      console.error('Error updating home content:', error);
-      toast.error(`Error: ${error.message || 'Failed to update home content'}`);
+      console.error("Error updating home content:", error);
+      toast.error(`Error: ${error.message || "Failed to update home content"}`);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const fetchHomeContent = async () => {
+    try {
+      const response = await getHomeContent();
+      console.log("Home content response:", response);
+      if (response.success) {
+        const { newArrivals, hotItems, trendingItems } = response.data;
+
+        const newArrivalsIds = newArrivals.map((item) => item._id);
+        const hotItemsIds = hotItems.map((item) => item._id);
+        const trendingItemsIds = trendingItems.map((item) => item._id);
+
+        setNewArrivals(newArrivalsIds);
+        setHotItems(hotItemsIds);
+        setTrendingItems(trendingItemsIds);
+      } else {
+        toast.error(response.message || "Failed to fetch home content");
+      }
+
+
+    } catch (error) {
+      console.error("Error fetching home content:", error);
+      toast.error(`Error: ${error.message || "Failed to fetch home content"}`);
+    }
+  };
+
   const saveAllChanges = async () => {
     if (!hasChanges) return;
-    
+
     try {
       setIsLoading(true);
       // Only send the sections that have changes
       const data = changedSections;
-      
+
       const response = await updateHomeContent(data);
-      
+
       if (response.success) {
-        toast.success('All home content sections updated successfully!');
+        toast.success("All home content sections updated successfully!");
         // Clear all changed sections
         setChangedSections({});
       } else {
-        toast.error(response.message || 'Failed to update home content');
+        toast.error(response.message || "Failed to update home content");
       }
     } catch (error) {
-      console.error('Error updating home content:', error);
-      toast.error(`Error: ${error.message || 'Failed to update home content'}`);
+      console.error("Error updating home content:", error);
+      toast.error(`Error: ${error.message || "Failed to update home content"}`);
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchHomeContent();
+  }, []);
 
   return (
     <div className="space-y-8 max-w-[1200px] mx-auto pb-16 h-fit">
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-1">Home Content Settings</h1>
-          <p className="text-gray-400">Customize your homepage sections and featured content</p>
+          <h1 className="text-3xl font-bold text-white mb-1">
+            Home Content Settings
+          </h1>
+          <p className="text-gray-400">
+            Customize your homepage sections and featured content
+          </p>
         </div>
         <div className="text-right text-gray-400">
           {hasChanges && (
@@ -109,26 +143,27 @@ const AdminSettings = () => {
               onClick={saveAllChanges}
               disabled={isLoading}
             >
-              {isLoading ? 'Saving...' : 'Save All Changes'}
+              {isLoading ? "Saving..." : "Save All Changes"}
             </button>
           )}
         </div>
       </div>
 
       <div className="space-y-6">
-        <AdminSettingsNewArrival 
-          selectedIds={newArrivals} 
-          onSave={(ids) => homeContentUpdate('newArrivals', ids)} 
+        <AdminSettingsNewArrival
+          selectedIds={newArrivals}
+          onSave={(ids) => homeContentUpdate("newArrivals", ids)}
         />
-        
-        <AdminSettingsHotItems 
-          selectedIds={hotItems} 
-          onSave={(ids) => homeContentUpdate('hotItems', ids)} 
+
+        <AdminSettingsHotItems
+          selectedIds={hotItems}
+          onSave={(ids) => homeContentUpdate("hotItems", ids)}
         />
-        
-        <AdminSettingsTrendingItems 
-          selectedIds={trendingItems} 
-          onSave={(ids) => homeContentUpdate('trendingItems', ids)} 
+
+        <AdminSettingsTrendingItems
+          selectedIds={trendingItems}
+          
+          onSave={(ids) => homeContentUpdate("trendingItems", ids)}
         />
       </div>
     </div>

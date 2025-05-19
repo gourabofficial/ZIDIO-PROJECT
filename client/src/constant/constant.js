@@ -1,13 +1,13 @@
 export const categoryItems = [
    { path: "/category?category=Oversized&page=1", label: "OVERSIZED" },
-   { path: "/category?category=acidwash&page=1", label: "ACID WASH" },
-   { path: "/category?category=graphicprinted&page=1", label: "GRAPHIC PRINTED" },
-   { path: "/category?category=solidcolor&page=1", label: "SOLID COLOR" },
-   { path: "/category?category=polot-shirts&page=1", label: "POLO T-SHIRTS" },
-   { path: "/category?category=sleeveless&page=1", label: "SLEEVELESS " },
-   { path: "/category?category=longsleeve&page=1", label: "LONG SLEEVE " },
-   { path: "/category?category=henley&page=1", label: "HENLEY " },
-   { path: "/category?category=hooded&page=1", label: "HOODED " },
+   { path: "/category?category=Acid+Wash&page=1", label: "ACID WASH" },
+   { path: "/category?category=Graphic+Printed&page=1", label: "GRAPHIC PRINTED" },
+   { path: "/category?category=Solid+Color&page=1", label: "SOLID COLOR" },
+   { path: "/category?category=Polo+T-Shirts&page=1", label: "POLO T-SHIRTS" },
+   { path: "/category?category=Sleeveless&page=1", label: "SLEEVELESS " },
+   { path: "/category?category=Long+Sleeve&page=1", label: "LONG SLEEVE " },
+   { path: "/category?category=Henley&page=1", label: "HENLEY " },
+   { path: "/category?category=Hooded&page=1", label: "HOODED " },
    
 ];
 

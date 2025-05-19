@@ -178,40 +178,32 @@ export const updateHomeContent = async (req, res) => {
       });
     }
 
-    // Helper function to add products to a collection
-    const addProductsToCollection = (productIds, collection) => {
-      // Get existing product IDs
-      const existingIds = collection.map(item => 
-        item.productId ? item.productId.toString() : item.product_id
-      );
+    // Helper function to convert IDs to the right format for storage
+    const formatProductIds = (productIds) => {
+      if (!productIds || !Array.isArray(productIds)) return [];
       
-      // Filter out IDs that already exist
-      const newIds = productIds.filter(id => !existingIds.includes(id));
-      
-      // Create entries for each ID, handling both ObjectID and product_id formats
-      const newEntries = newIds.map(id => {
+      return productIds.map(id => {
         if (mongoose.Types.ObjectId.isValid(id)) {
           return { productId: id };
         } else {
-          return { product_id: id, productId: existingProductsByProductId.find(p => p.product_id === id)?._id };
+          // Find the corresponding ObjectId for the product_id
+          const product = existingProductsByProductId.find(p => p.product_id === id);
+          return { product_id: id, productId: product?._id };
         }
       });
-      
-      // Add new entries to the collection
-      collection.push(...newEntries);
     };
 
-    // Apply changes to each collection
+    // Replace existing collections with new ones
     if (newArrivals && Array.isArray(newArrivals)) {
-      addProductsToCollection(newArrivals, homeContent.newArrival);
+      homeContent.newArrival = formatProductIds(newArrivals);
     }
 
     if (hotItems && Array.isArray(hotItems)) {
-      addProductsToCollection(hotItems, homeContent.hotItems);
+      homeContent.hotItems = formatProductIds(hotItems);
     }
 
     if (trendingItems && Array.isArray(trendingItems)) {
-      addProductsToCollection(trendingItems, homeContent.trandingItems);
+      homeContent.trandingItems = formatProductIds(trendingItems);
     }
 
     await homeContent.save();
