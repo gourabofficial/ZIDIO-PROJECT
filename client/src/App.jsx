@@ -30,14 +30,13 @@ import AllProductList from "./admin/components/AllProductList";
 import AdminUser from "./admin/components/AdminUser";
 import AdminSettings from "./admin/components/AdminSettings";
 
-// Import WishlistProvider
-import { WishlistProvider } from './context/WishlistContext';
+
 
 
 const App = () => {
   return (
     
-      <WishlistProvider>
+      <>
         <ScrollToTop />
         <Routes>
           {/* Root layout */}
@@ -75,7 +74,7 @@ const App = () => {
             <Route path="/admin/settings" element={ <AdminSettings/>} />
           </Route>
         </Routes>
-      </WishlistProvider>
+      </>
     
   );
 };

@@ -1,42 +1,13 @@
 import { useState } from "react";
-import { FiHeart, FiShoppingCart, FiEye } from "react-icons/fi";
+import { FiEye } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { useWishlist } from "../../context/WishlistContext";
 import { useUser } from "@clerk/clerk-react";
-import AddToCartButton from "../../components/common/AddToCartButton";
+import AddToCartButton from "../common/AddToCartButton";
+import WishlistButton from "../common/WishlistButton";
 
 const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
-
-  // Use the wishlist context instead
-  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { isSignedIn } = useUser();
-
-  const toggleFavorite = (e) => {
-    e.preventDefault();
-    e.stopPropagation(); // Prevent the Link navigation when clicking the heart
-
-    if (!isSignedIn) {
-      // Optional: Show a notification or redirect to login
-      alert("Please sign in to add items to your wishlist");
-      return;
-    }
-
-    if (isInWishlist(product.id)) {
-      removeFromWishlist(product.id);
-    } else {
-      // Create a normalized product object with consistent structure
-      const normalizedProduct = {
-        id: product.id,
-        title: product.title,
-        price: product.price,
-        images: [product.image], // Convert single image to images array format
-        slug: product.handle, // Ensure slug exists
-        inStock: product.inStock !== false, // Default to true if not specified
-      };
-      addToWishlist(normalizedProduct);
-    }
-  };
 
   // Handle missing image
   const handleImageError = (e) => {
@@ -58,20 +29,21 @@ const ProductCard = ({ product }) => {
             </div>
           )}
 
-          {/* Wishlist button - now uses isInWishlist from context */}
-          <button
-            className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center bg-[#1e293b]/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"
-            onClick={toggleFavorite}
-          >
-            <FiHeart
-              size={16}
-              className={
-                isInWishlist(product.id)
-                  ? "fill-[#c4b5fd] text-[#c4b5fd]"
-                  : "text-white"
-              }
+          {/* Wishlist button - now uses WishlistButton component */}
+          <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all duration-300">
+            <WishlistButton
+              product={{
+                id: product.id || product._id,
+                title: product.title,
+                price: product.price,
+                images: product.images || [product.image],
+                slug: product.handle || product.slug,
+                inStock: product.inStock !== false,
+              }}
+              size="small"
+              className="shadow-md"
             />
-          </button>
+          </div>
 
           {/* Product image */}
           <div className="aspect-w-3 aspect-h-4 overflow-hidden bg-[#1e293b]">

@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }) => {
           createdAt: response.user.createdAt,
           updatedAt: response.user.updatedAt,
           cartData: response?.user.cart || null,
+          wishlist: response?.user.wishlist || [],
         };
 
         setCurrentUser(updatedUser);

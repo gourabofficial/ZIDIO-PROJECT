@@ -6,6 +6,9 @@ import {
   updateAvatar,
   updateUser,
   getAddressById,
+  removeFromWishlist,
+  addToWishlist,
+  
 } from "../controllers/user.controllers.js";
 import {
   adminLogin,
@@ -30,5 +33,11 @@ userRouter.get("/address/:addressId", isLogedin, getAddressById);
 userRouter.post("/is-login", checkedUserLogin);
 // admin routes
 userRouter.post("/admin", isAdmin, adminLogin);
+//wishlist routes 
+// Add these routes to your existing user.routes.js
+userRouter.post('/add-to-wishlist', isLogedin, addToWishlist);
+
+userRouter.delete('/remove-from-wishlist/:productId', isLogedin, removeFromWishlist);
+
 
 export default userRouter;

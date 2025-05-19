@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import { getFilteredProducts } from "../../Api/ProductApi";
 
 const Category = () => {
+  // Add this new hook
+  const location = useLocation();
   // Get category id from URL params
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -215,9 +217,29 @@ const Category = () => {
 
   // Initial fetch and URL handling
   useEffect(() => {
+    // Sync filters with URL params when location changes
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      category: id || searchParams.get("category") || "",
+      minPrice: searchParams.get("minPrice") || "",
+      maxPrice: searchParams.get("maxPrice") || "",
+      size: searchParams.get("size") || "",
+      offerStatus: searchParams.get("offerStatus") || "",
+      page: parseInt(searchParams.get("page")) || 1,
+      limit: PRODUCTS_PER_PAGE,
+    }));
+
     // If there are URL params, use them for initial fetch
     if (searchParams.toString()) {
-      fetchProducts(filters);
+      fetchProducts({
+        minPrice: searchParams.get("minPrice") || "",
+        maxPrice: searchParams.get("maxPrice") || "",
+        category: id || searchParams.get("category") || "",
+        size: searchParams.get("size") || "",
+        offerStatus: searchParams.get("offerStatus") || "",
+        page: parseInt(searchParams.get("page")) || 1,
+        limit: PRODUCTS_PER_PAGE,
+      });
     } else {
       // If no params, just fetch based on category ID
       fetchProducts({
@@ -233,7 +255,7 @@ const Category = () => {
         clearTimeout(priceDebounceTimerRef.current);
       }
     };
-  }, [id, fetchProducts]); 
+  }, [id, searchParams, location.pathname, fetchProducts]); 
 
   // Format category name for display
   const pageTitle = id

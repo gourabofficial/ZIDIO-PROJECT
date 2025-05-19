@@ -45,10 +45,10 @@ const userSchema = new mongoose.Schema(
         ref: "Order",
       },
     ],
-    wishlist: {
-      type: mongoose.Schema.Types.ObjectId,
+    wishlist: [{
+      type: mongoose.Schema.Types.ObjectId,  // add []
       ref: "Product",
-    },
+    }],
   },
   { timestamps: true }
 );

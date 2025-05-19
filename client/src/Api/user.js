@@ -309,3 +309,40 @@ export const updateQuantity = async (productId, quantity, action) => {
     };
   }
 };
+
+
+// add wishlist 
+export const addToWishlist = async (productId) => {
+  try {
+    const res = await axiosInstance.post(
+      "/wishlist/add-to-wishlist",
+      { productId },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return res.data;
+  } catch (error) {
+    console.error("Error adding to wishlist:", error);
+    return {
+      message: "Failed to add to wishlist",
+      success: false,
+    };
+  }
+}
+
+// remove from wishlist
+export const removeFromWishlist = async (productId) => {
+  try {
+    const res = await axiosInstance.delete(`/wishlist/remove-from-wishlist/${productId}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error removing from wishlist:", error);
+    return {
+      message: error.response?.data?.message || "Failed to remove from wishlist",
+      success: false,
+    };
+  }
+}

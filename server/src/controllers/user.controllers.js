@@ -222,3 +222,101 @@ export const getAddressById = async (req, res) => {
     });
   }
 }
+
+// add product wishlist
+export const addToWishlist = async (req, res) => {
+  try {
+    const { productId } = req.body;
+    const clerkId = req.userId;
+
+    if (!productId) {
+      return res.status(400).json({
+        message: "Product ID is required",
+        success: false
+      });
+    }
+
+    // Find user
+    const user = await User.findOne({ clerkId });
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false
+      });
+    }
+
+    // Check if product already in wishlist
+    if (user.wishlist.includes(productId)) {
+      return res.status(200).json({
+        message: "Product already in wishlist",
+        success: true
+      });
+    }
+
+    // Add product to wishlist
+    user.wishlist.push(productId);
+    await user.save();
+
+    // Get updated user with populated wishlist
+    const updatedUser = await User.findById(user._id).populate('wishlist');
+
+    return res.status(200).json({
+      message: "Product added to wishlist",
+      success: true,
+      wishlist: updatedUser.wishlist
+    });
+  } catch (error) {
+    console.error("Error adding to wishlist:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+      error: error.message
+    });
+  }
+}
+
+// remove product from wishlist
+export const removeFromWishlist = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const clerkId = req.userId;
+
+    if (!productId) {
+      return res.status(400).json({
+        message: "Product ID is required",
+        success: false
+      });
+    }
+
+    // Find user
+    const user = await User.findOne({ clerkId });
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false
+      });
+    }
+
+    // Remove product from wishlist
+    user.wishlist = user.wishlist.filter(
+      item => item.toString() !== productId.toString()
+    );
+    await user.save();
+
+    // Get updated user with populated wishlist
+    const updatedUser = await User.findById(user._id).populate('wishlist');
+
+    return res.status(200).json({
+      message: "Product removed from wishlist",
+      success: true,
+      wishlist: updatedUser.wishlist
+    });
+  } catch (error) {
+    console.error("Error removing from wishlist:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+      error: error.message
+    });
+  }
+}

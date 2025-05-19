@@ -1,13 +1,19 @@
-import { useState, useEffect, useRef } from 'react';
-import MobileNav from './ModileNav';
-import { Link } from 'react-router-dom';
-import { FiHeart, FiSearch, FiShoppingCart, FiUser, FiChevronDown, FiSettings, FiPackage, FiLogOut } from 'react-icons/fi';
-import { categoryItems, collectionItems } from '../../constant/constant';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useEffect, useRef } from "react";
+import MobileNav from "./ModileNav";
+import { Link } from "react-router-dom";
+import {
+  FiHeart,
+  FiSearch,
+  FiShoppingCart,
+  FiUser,
+  FiChevronDown,
+  FiSettings,
+  FiPackage,
+  FiLogOut,
+} from "react-icons/fi";
+import { categoryItems, collectionItems } from "../../constant/constant";
 import { useClerk } from "@clerk/clerk-react";
-import { useAuthdata } from '../../context/AuthContext';
-import { useWishlist } from '../../context/WishlistContext';
-
+import { useAuthdata } from "../../context/AuthContext";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,16 +27,10 @@ const Header = () => {
   const profileRef = useRef(null);
 
   const { signOut } = useClerk();
-  const {
-    currentUser,
-    isAuth,
-    isLoaded,
-    error
-  } = useAuthdata();
-  
+  const { currentUser, isAuth, isLoaded, error } = useAuthdata();
+
   // console.log('Current User:', currentUser?.cartData);
 
-  const { wishlistItems } = useWishlist();
   // const { itemsCount } = useCart();
 
   useEffect(() => {
@@ -52,12 +52,12 @@ const Header = () => {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener("scroll", handleScroll);
+    document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("mousedown", handleClickOutside);
       if (dropdownTimer) clearTimeout(dropdownTimer);
     };
   }, [dropdownTimer]);
@@ -92,7 +92,11 @@ const Header = () => {
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'bg-[#0c0e16] shadow-lg' : 'bg-transparent'}`}>
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        isScrolled ? "bg-[#0c0e16] shadow-lg" : "bg-transparent"
+      }`}
+    >
       <div className="container mx-auto">
         <div className="flex items-center justify-between py-4 px-4 md:px-6">
           {/* Mobile menu button */}
@@ -112,8 +116,12 @@ const Header = () => {
             {/* Logo */}
             <Link to="/" className="flex-shrink-0 mr-6 flex items-center">
               <div className="logo-container relative">
-                <span className="text-xl md:text-2xl font-bold tracking-wider cosmic-gradient">COSMIC</span>
-                <span className="text-xl md:text-2xl font-bold tracking-wider ml-2 heroes-gradient">HEROS</span>
+                <span className="text-xl md:text-2xl font-bold tracking-wider cosmic-gradient">
+                  COSMIC
+                </span>
+                <span className="text-xl md:text-2xl font-bold tracking-wider ml-2 heroes-gradient">
+                  HEROS
+                </span>
                 <div className="absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c8a95a] to-transparent"></div>
               </div>
             </Link>
@@ -121,32 +129,44 @@ const Header = () => {
             {/* Category and Collection dropdowns - visible only on desktop */}
             <div className="hidden md:flex items-center space-x-5">
               {/* Category Dropdown */}
-              <div 
-                ref={categoryRef} 
+              <div
+                ref={categoryRef}
                 className="relative"
-                onMouseEnter={() => handleMouseEnter('category')}
+                onMouseEnter={() => handleMouseEnter("category")}
                 onMouseLeave={handleMouseLeave}
               >
                 <button
-                  onClick={() => toggleDropdown('category')}
+                  onClick={() => toggleDropdown("category")}
                   className="text-white hover:text-[#c8a95a] transition-colors p-2 flex items-center"
-                  aria-expanded={openDropdown === 'category'}
+                  aria-expanded={openDropdown === "category"}
                   aria-controls="category-dropdown"
                 >
                   SHOP BY CATEGORY
-                 
                 </button>
 
-                {openDropdown === 'category' && (
-                  <div className="absolute left-0 mt-2 w-64 bg-[#0c0e16] shadow-lg rounded-md py-2 z-50 border border-gray-700 
-                    transition-all duration-200 animate-fadeIn">
+                {openDropdown === "category" && (
+                  <div
+                    className="absolute left-0 mt-2 w-64 bg-[#0c0e16] shadow-lg rounded-md py-2 z-50 border border-gray-700 
+                    transition-all duration-200 animate-fadeIn"
+                  >
                     {categoryItems.map((item, index) => (
                       <Link
                         key={index}
                         to={item.path}
                         className="block px-4 py-2 text-sm text-white hover:bg-gray-800 hover:text-[#c8a95a] transition-all duration-150 
                         hover:pl-6 relative overflow-hidden group"
-                        onClick={() => setOpenDropdown(null)}
+                        onClick={() => {
+                          setOpenDropdown(null);
+                          // Force component refresh when clicking on a category
+                          if (window.location.pathname.includes("/category/")) {
+                            // If we're already on a category page, use this approach
+                            const currentPath = window.location.pathname;
+                            if (currentPath !== item.path) {
+                              // Only do this if we're navigating to a different category
+                              window.location.href = item.path;
+                            }
+                          }
+                        }}
                       >
                         <span className="relative z-10">{item.label}</span>
                         <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#c8a95a] transition-all duration-200 group-hover:w-full"></span>
@@ -157,24 +177,25 @@ const Header = () => {
               </div>
 
               {/* Collection Dropdown */}
-              <div 
-                ref={collectionRef} 
+              <div
+                ref={collectionRef}
                 className="relative"
-                onMouseEnter={() => handleMouseEnter('collection')}
+                onMouseEnter={() => handleMouseEnter("collection")}
                 onMouseLeave={handleMouseLeave}
               >
                 <button
-                  onClick={() => toggleDropdown('collection')}
+                  onClick={() => toggleDropdown("collection")}
                   className="text-white hover:text-[#c8a95a] transition-colors p-2 flex items-center"
-                  aria-expanded={openDropdown === 'collection'}
+                  aria-expanded={openDropdown === "collection"}
                 >
                   SHOP BY COLLECTION
-                 
                 </button>
 
-                {openDropdown === 'collection' && (
-                  <div className="absolute left-0 mt-2 w-80 bg-[#0c0e16] shadow-lg rounded-md py-2 z-50 border border-gray-700
-                    transition-all duration-200 animate-fadeIn">
+                {openDropdown === "collection" && (
+                  <div
+                    className="absolute left-0 mt-2 w-80 bg-[#0c0e16] shadow-lg rounded-md py-2 z-50 border border-gray-700
+                    transition-all duration-200 animate-fadeIn"
+                  >
                     {collectionItems.map((item, index) => (
                       <Link
                         key={index}
@@ -200,33 +221,47 @@ const Header = () => {
               className="text-white hover:text-[#c8a95a] transition-colors p-2"
               aria-label="Search"
             >
-              <FiSearch size={20} />
+              <div className="w-5 h-5 flex items-center justify-center">
+                <FiSearch size={20} />
+              </div>
             </Link>
+            
+            {/* For the wishlist badge */}
             <Link
               to="/wishlist"
               className="text-white hover:text-[#c8a95a] transition-colors p-2 hidden md:block"
               aria-label="Wishlist"
             >
-              <div className="relative">
+              <div className="relative w-5 h-5 flex items-center justify-center">
                 <FiHeart size={20} />
-                {wishlistItems.length > 0 && (
-                  <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 bg-[#c8a95a] text-[#0c0e16] text-xs rounded-full font-semibold">
-                    {wishlistItems.length}
-                  </span>
+                {isLoaded && currentUser?.wishlist?.length > 0 && (
+                  <div
+                    className="absolute -top-2 -right-2 min-w-[16px] h-4 rounded-full bg-[#c8a95a] flex items-center justify-center px-1"
+                  >
+                    <span className="text-[10px] font-bold text-black">
+                      {currentUser.wishlist.length > 99 ? '99+' : currentUser.wishlist.length}
+                    </span>
+                  </div>
                 )}
               </div>
             </Link>
+
+            {/* For the cart badge */}
             <Link
               to="/cart"
               className="text-white hover:text-[#c8a95a] transition-colors p-2"
               aria-label="Cart"
             >
-              <div className="relative">
+              <div className="relative w-5 h-5 flex items-center justify-center">
                 <FiShoppingCart size={20} />
-                {currentUser?.cartData?.length > 0 && (
-                  <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 bg-[#c8a95a] text-[#0c0e16] text-xs rounded-full font-semibold">
-                    {currentUser.cartData.length}
-                  </span>
+                {isLoaded && currentUser?.cartData?.items?.length > 0 && (
+                  <div
+                    className="absolute -top-2 -right-2 min-w-[16px] h-4 rounded-full bg-[#c8a95a] flex items-center justify-center px-1"
+                  >
+                    <span className="text-[10px] font-bold text-black">
+                      {currentUser.cartData.items.length > 99 ? '99+' : currentUser.cartData.items.length}
+                    </span>
+                  </div>
                 )}
               </div>
             </Link>
@@ -247,10 +282,17 @@ const Header = () => {
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-[#c8a95a] flex items-center justify-center text-[#0c0e16] text-xs font-bold">
-                      {currentUser.firstName?.[0] || currentUser.fullName?.[0] || 'U'}
+                      {currentUser.firstName?.[0] ||
+                        currentUser.fullName?.[0] ||
+                        "U"}
                     </div>
                   )}
-                  <FiChevronDown size={16} className={`transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+                  <FiChevronDown
+                    size={16}
+                    className={`transition-transform ${
+                      isProfileOpen ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
 
                 {isProfileOpen && (
@@ -264,15 +306,21 @@ const Header = () => {
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-[#c8a95a] flex items-center justify-center text-[#0c0e16] text-sm font-bold mr-3">
-                          {currentUser.firstName?.[0] || currentUser.fullName?.[0] || 'U'}
+                          {currentUser.firstName?.[0] ||
+                            currentUser.fullName?.[0] ||
+                            "U"}
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="text-white font-medium truncate">{currentUser.fullName || 'User'}</p>
-                        <p className="text-gray-400 text-xs truncate max-w-[120px]">{currentUser.email}</p>
+                        <p className="text-white font-medium truncate">
+                          {currentUser.fullName || "User"}
+                        </p>
+                        <p className="text-gray-400 text-xs truncate max-w-[120px]">
+                          {currentUser.email}
+                        </p>
                       </div>
                     </div>
-                    
+
                     {/* Profile menu items */}
                     <Link
                       to="/account"
@@ -284,7 +332,7 @@ const Header = () => {
                     </Link>
 
                     {/* Show admin link if user has admin role */}
-                    {currentUser.role === 'admin' && (
+                    {currentUser.role === "admin" && (
                       <Link
                         to="/admin"
                         className="flex items-center px-4 py-2 text-sm text-white hover:bg-gray-800 hover:text-[#c8a95a]"
@@ -340,12 +388,12 @@ const Header = () => {
       </div>
 
       {/* Mobile navigation */}
-      <MobileNav 
-  isOpen={isMenuOpen} 
-  onClose={toggleMenu} 
-  currentUser={currentUser}
-  isAuth={isAuth}
-/>
+      <MobileNav
+        isOpen={isMenuOpen}
+        onClose={toggleMenu}
+        currentUser={currentUser}
+        isAuth={isAuth}
+      />
     </header>
   );
 };

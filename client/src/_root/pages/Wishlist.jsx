@@ -1,15 +1,165 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
-import { FiHeart, FiTrash2 } from 'react-icons/fi';
-import { useWishlist } from '../../context/WishlistContext';
+import { FiHeart, FiTrash2, FiX, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
+import { useAuthdata } from '../../context/AuthContext';
+import { removeFromWishlist } from '../../Api/user';
 import AddToCartButton from '../../components/common/AddToCartButton';
+import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Toast component with Framer Motion (copied from Cart.jsx)
+const Toast = ({ notification, onClose }) => {
+  if (!notification) return null;
+
+  const { message, type } = notification;
+
+  return (
+    <AnimatePresence>
+      {notification && (
+        <motion.div
+          initial={{ opacity: 0, y: -20, x: 20 }}
+          animate={{ opacity: 1, y: 0, x: 0 }}
+          exit={{ opacity: 0, y: -20, x: 20 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className={`fixed top-24 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center ${
+            type === "success"
+              ? "bg-purple-900/90 text-purple-200 border border-purple-700"
+              : "bg-red-900/90 text-red-200 border border-red-700"
+          }`}
+        >
+          <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.2, delay: 0.1 }}
+            className="mr-3"
+          >
+            {type === "success" ? (
+              <FiCheckCircle className="text-green-400 text-xl" />
+            ) : (
+              <FiAlertCircle className="text-red-400 text-xl" />
+            )}
+          </motion.div>
+          <p>{message}</p>
+          <button
+            onClick={onClose}
+            className="ml-3 text-gray-400 hover:text-white transition-colors"
+          >
+            <FiX />
+          </button>
+
+          <motion.div
+            initial={{ width: "100%" }}
+            animate={{ width: "0%" }}
+            transition={{ duration: 3, ease: "linear" }}
+            className={`absolute bottom-0 left-0 h-1 ${
+              type === "success" ? "bg-purple-500" : "bg-red-500"
+            }`}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 const Wishlist = () => {
-  const { user, isLoaded, isSignedIn } = useUser();
-  const { wishlistItems, removeFromWishlist } = useWishlist();
+  const { user, isLoaded: clerkLoaded, isSignedIn } = useUser();
+  const { currentUser, refetchUserData, isLoaded: authLoaded } = useAuthdata();
+  const [isLoading, setIsLoading] = useState(true);
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [notification, setNotification] = useState(null);
+  
+  // More granular loading states for different operations
+  const [loadingStates, setLoadingStates] = useState({
+    removeItem: false,
+    removeItemId: null
+  });
 
-  if (!isLoaded) {
+  // Clear notification after 3 seconds
+  const clearNotification = () => {
+    setNotification(null);
+  };
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(clearNotification, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
+  useEffect(() => {
+    if (authLoaded && currentUser) {
+      // Process wishlist items from the database
+      const processedItems = (currentUser.wishlist || []).map(item => {
+        return {
+          id: item._id,
+          productId: item._id,
+          title: item.name || item.title || "Product",
+          price: item.price || 0,
+          // Handle different image formats - nested array or direct URL
+          image: item.images && item.images.length > 0 
+            ? item.images[0].imageUrl || item.images[0] 
+            : item.image || 'https://ext.same-assets.com/1329671863/375037467.gif',
+          inStock: item.inStock !== false,
+          // For navigation - handle different property names
+          handle: item.product_id || item.handle || item.slug || item._id,
+        };
+      });
+      
+      setWishlistItems(processedItems);
+      setIsLoading(false);
+    } else if (authLoaded) {
+      setIsLoading(false);
+    }
+  }, [authLoaded, currentUser]);
+
+  const handleRemoveFromWishlist = async (productId) => {
+    // Set loading state for this specific item
+    setLoadingStates({
+      removeItem: true,
+      removeItemId: productId
+    });
+    
+    try {
+      const response = await removeFromWishlist(productId);
+      
+      if (response.success) {
+        // Update local state first for immediate UI feedback
+        setWishlistItems(prev => prev.filter(item => item.id !== productId));
+        
+        // Show success notification
+        setNotification({
+          type: "success",
+          message: "Item removed from wishlist"
+        });
+        
+        // Refetch user data in the background
+        refetchUserData();
+      } else {
+        // Show error notification
+        setNotification({
+          type: "error",
+          message: response.message || "Failed to remove item"
+        });
+      }
+    } catch (error) {
+      console.error('Error removing from wishlist:', error);
+      
+      // Show error notification
+      setNotification({
+        type: "error",
+        message: "Failed to remove item from wishlist"
+      });
+    } finally {
+      // Reset loading state
+      setLoadingStates({
+        removeItem: false,
+        removeItemId: null
+      });
+    }
+  };
+
+  if (!clerkLoaded || isLoading) {
     return (
       <div className="min-h-screen bg-[#0c0e16] flex items-center justify-center">
         <p className="text-white">Loading...</p>
@@ -36,6 +186,9 @@ const Wishlist = () => {
 
   return (
     <div className="min-h-screen bg-[#0c0e16] p-6 mt-20">
+      {/* Toast Notification */}
+      <Toast notification={notification} onClose={clearNotification} />
+      
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-white">My Wishlist</h1>
@@ -62,11 +215,19 @@ const Wishlist = () => {
         ) : (
           <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {wishlistItems.map(item => (
-              <div key={item.id} className="bg-[#1e293b] rounded-lg overflow-hidden shadow-lg flex flex-col h-full">
+              <div 
+                key={item.id} 
+                className={`bg-[#1e293b] rounded-lg overflow-hidden shadow-lg flex flex-col h-full ${
+                  loadingStates.removeItem && loadingStates.removeItemId === item.id 
+                    ? "opacity-50" 
+                    : ""
+                }`}
+              >
                 <div className="relative h-40 overflow-hidden bg-black/30">
-                  <Link to={`/product/${item.slug || item.id}`}>
+                  {/* Product image with link to product detail */}
+                  <Link to={`/product/${item.handle}`}>
                     <img 
-                      src={item.images?.[0] || item.image || 'https://ext.same-assets.com/1329671863/375037467.gif'} 
+                      src={item.image} 
                       alt={item.title} 
                       className="w-full h-full object-contain transition-transform hover:scale-105 duration-300"
                       onError={(e) => {
@@ -82,28 +243,31 @@ const Wishlist = () => {
                 </div>
                 
                 <div className="p-3 flex flex-col flex-grow">
-                  <Link to={`/product/${item.slug || item.id}`} className="mb-1">
-                    <h3 className="font-medium text-white text-sm hover:text-purple-400 line-clamp-2">{item.title}</h3>
+                  {/* Product title with link to product detail */}
+                  <Link to={`/product/${item.handle}`} className="mb-1">
+                    <h3 className="font-medium text-white text-sm hover:text-purple-400 line-clamp-2">
+                      {item.title}
+                    </h3>
                   </Link>
-                  <p className="text-purple-400 font-medium mb-2 text-sm">₹{item.price?.toFixed(2) || "0.00"}</p>
+                  <p className="text-purple-400 font-medium mb-2 text-sm">
+                    ₹{(item.price || 0).toFixed(2)}
+                  </p>
                   
                   <div className="flex justify-between items-center mt-auto">
                     <AddToCartButton
-                      product={item}
-                      disabled={item.inStock === false}
-                      className={`flex items-center justify-center px-2 py-1 rounded text-xs ${
-                        item.inStock === false 
-                          ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                          : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white'
-                      }`}
-                      compact={true}
-                    >
-                      {item.inStock === false ? 'Out of Stock' : 'Add to Cart'}
-                    </AddToCartButton>
+                      product={{...item, id: item.productId}}
+                      disabled={item.inStock === false || 
+                        (loadingStates.removeItem && loadingStates.removeItemId === item.id)}
+                    />
                     
                     <button
-                      onClick={() => removeFromWishlist(item.id)}
-                      className="flex items-center text-gray-400 hover:text-red-400 transition-colors ml-2"
+                      onClick={() => handleRemoveFromWishlist(item.id)}
+                      disabled={loadingStates.removeItem && loadingStates.removeItemId === item.id}
+                      className={`flex items-center text-gray-400 hover:text-red-400 transition-colors ml-2 ${
+                        loadingStates.removeItem && loadingStates.removeItemId === item.id 
+                          ? "opacity-50 cursor-not-allowed" 
+                          : ""
+                      }`}
                       aria-label="Remove from wishlist"
                     >
                       <FiTrash2 size={14} />

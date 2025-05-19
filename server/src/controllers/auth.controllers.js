@@ -83,14 +83,16 @@ export const checkedUserLogin = async (req, res) => {
       }
 
       // Populate the newly created user's cart
-      const populatedUser = await User.findById(newUser._id).populate({
-        path: 'cart',
-        model: 'Cart',
-        populate: {
-          path: 'items.productId',
-          model: 'Product'
-        }
-      });
+      const populatedUser = await User.findById(newUser._id)
+        .populate({
+          path: 'cart',
+          model: 'Cart',
+          populate: {
+            path: 'items.productId',
+            model: 'Product'
+          }
+        })
+        .populate('wishlist'); // Add this line to populate wishlist
 
       return res.status(201).json({
         message: "User created successfully",
@@ -114,7 +116,8 @@ export const checkedUserLogin = async (req, res) => {
           path: 'items.productId',
           model: 'Product'
         }
-      });
+      })
+      .populate('wishlist'); // Add this line to populate wishlist
 
       // console.log("Updated user:", updatedUser);
 
@@ -159,14 +162,16 @@ export const adminLogin = async (req, res) => {
     }
 
     // Get user from database with populated cart
-    const user = await User.findOne({ clerkId }).populate({
-      path: 'cart',
-      model: 'Cart',
-      populate: {
-        path: 'items.productId',
-        model: 'Product'
-      }
-    });
+    const user = await User.findOne({ clerkId })
+      .populate({
+        path: 'cart',
+        model: 'Cart',
+        populate: {
+          path: 'items.productId',
+          model: 'Product'
+        }
+      })
+      .populate('wishlist'); // Add this line for admin too
 
     if (!user) {
       return res.status(404).json({
