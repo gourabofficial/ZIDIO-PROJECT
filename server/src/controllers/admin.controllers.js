@@ -372,3 +372,68 @@ export const getAllSearchProducts = async (req, res) => {
     });
   }
 };
+
+//return image and title and input productId of the product 
+export const getProductsbyMultipleIds = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+    const { productIds } = req.body;
+
+    if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide an array of product IDs",
+      });
+    }
+
+    // Check if ids are valid MongoDB ObjectIDs
+    const validMongoIds = productIds.filter(id => 
+      mongoose.Types.ObjectId.isValid(id)
+    );
+    
+    // Query for both MongoDB _id and product_id
+    const products = await Product.find({
+      $or: [
+        { _id: { $in: validMongoIds } },
+        { product_id: { $in: productIds } }
+      ]
+    }).select("_id product_id name images");
+
+    if (!products || products.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No products found for the provided IDs",
+      });
+    }
+
+    const formattedProducts = products.map((product) => ({
+      _id: product._id,
+      id: product.product_id,
+      name: product.name,
+      image:
+        product.images && product.images.length > 0
+          ? product.images[0].imageUrl
+          : null,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      message: "Products fetched successfully",
+      products: formattedProducts,
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch products",
+      error: error.message,
+    });
+  }
+};
+
