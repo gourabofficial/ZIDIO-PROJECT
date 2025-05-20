@@ -1,6 +1,7 @@
 import axiosInstance from "./config";
 
 export const AdminAddProduct = async (productData) => {
+  console.log("productData in admin.js", productData);
   try {
     const formData = new FormData();
 

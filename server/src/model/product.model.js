@@ -55,8 +55,8 @@ const productSchema = new mongoose.Schema({
     default: false,
   },
   collections: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Collection',
+    type:"String",
+    required: true,
   },
   offerStatus: {
     type: Boolean,

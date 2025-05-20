@@ -52,7 +52,7 @@ const HeroTitle = () => {
         </p>
 
         <div 
-          onClick={() => navigate('/collections/all')}
+          onClick={() => navigate('/category')}
           className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full relative overflow-hidden group cursor-pointer animate-fadeIn opacity-0" 
           style={{ animationDelay: '1.5s', animationFillMode: 'forwards' }}
         >

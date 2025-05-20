@@ -5,7 +5,7 @@ const ViewAllButton = () => {
   return (
     <div className="flex justify-center mt-12">
       <Link 
-        to="/collections/all" 
+        to="/category" 
         className="px-6 py-3 bg-[#1e293b] text-white rounded-md hover:bg-[#334155] transition-all duration-300 flex items-center group"
         style={{ color: '#ffffff' }}
       >

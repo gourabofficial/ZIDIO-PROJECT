@@ -14,9 +14,10 @@ export const addProduct = async (req, res) => {
       });
     }
 
-    const { name, description, price, category, discount, size, offerStatus } =
+    const { name, description, price, category,collections, discount, size, offerStatus } =
       req.body;
-    if (!name || !description || !price || !category) {
+    console.log("Request body:", req.body);
+    if (!name || !description || !price || !category || !collections) {
       return res.status(400).json({
         message: "Please provide all required fields",
         success: false,
@@ -65,6 +66,7 @@ export const addProduct = async (req, res) => {
       description,
       price,
       category,
+      collections,
       discount,
       size,
       offerStatus,

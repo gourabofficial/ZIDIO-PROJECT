@@ -60,44 +60,111 @@ const AdminSettingsNewArrival = ({ selectedIds = [], onSave }) => {
         Select products for the new arrivals section
       </p>
 
-      <div className="mb-4">
-        <div className="flex flex-wrap gap-3 mb-4 min-h-[60px] p-2 bg-gray-700 rounded-md">
+      <div className="mb-6">
+        <div className="flex flex-wrap gap-4 mb-5 min-h-[80px] p-5 bg-gray-800 rounded-lg border border-gray-700 shadow-md">
           {loading ? (
-            <p className="text-gray-400">Loading products...</p>
+            <div className="w-full flex justify-center items-center py-4">
+              <svg
+                className="animate-spin h-5 w-5 text-blue-500 mr-3"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <p className="text-gray-300 font-medium">Loading products...</p>
+            </div>
           ) : selectedProductIds.length > 0 ? (
             productDetails.map((product) => (
               <div
                 key={product._id}
-                className="bg-gray-600 p-2 rounded-md flex items-center gap-10"
+                className="bg-gray-750 rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-650 flex items-center group"
               >
-                <div className="flex items-center gap-5">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-10 h-10 rounded mr-2"
-                  />
-                  <div className="flex flex-col">
-                    <p className="text-white text-sm font-medium">
+                <div className="flex items-center p-3">
+                  <div className="h-14 w-14 rounded-md overflow-hidden flex-shrink-0 border border-gray-600 shadow-sm">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col ml-4 mr-6">
+                    <p className="text-white text-sm font-semibold line-clamp-1 tracking-wide">
                       {product.name}
                     </p>
-                    <p className="text-gray-400 text-xs">{product.id}</p>
+                    <p className="text-gray-400 text-xs mt-1 font-mono">
+                      {product.id}
+                    </p>
                   </div>
                 </div>
-                <Trash
+                <button
                   onClick={() => removeProduct(product._id)}
-                  className="text-red-500 cursor-pointer ml-auto"
-                />
+                  className="bg-gray-750 p-3 transition-all duration-200 h-full flex items-center justify-center border-l border-gray-650 group-hover:bg-gray-700 w-12"
+                  title="Remove product"
+                >
+                  <Trash
+                    size={18}
+                    className="text-gray-400 group-hover:text-red-400 transition-colors duration-200"
+                  />
+                </button>
               </div>
             ))
           ) : (
-            <p className="text-gray-400">No products selected</p>
+            <div className="w-full flex flex-col items-center justify-center py-8 text-center">
+              <div className="bg-gray-750 p-4 rounded-full mb-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-gray-400"
+                >
+                  <rect x="2" y="5" width="20" height="14" rx="2" />
+                  <line x1="2" y1="10" x2="22" y2="10" />
+                </svg>
+              </div>
+              <p className="text-gray-300 font-medium">No products selected</p>
+              <p className="text-gray-500 text-sm mt-1">
+                Click "Add Products" to showcase your new arrivals
+              </p>
+            </div>
           )}
         </div>
 
         <button
-          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md mb-4"
+          className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-md mb-4 transition-all duration-200 flex items-center gap-2 font-medium shadow-sm hover:shadow"
           onClick={() => setIsPopupOpen(true)}
         >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
           Add Products
         </button>
       </div>
