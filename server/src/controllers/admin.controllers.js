@@ -86,8 +86,8 @@ export const addProduct = async (req, res) => {
       product: {
         _id: newProduct._id,
         product_id: newProduct.product_id,
-        name: newProduct.name
-      }
+        name: newProduct.name,
+      },
     });
   } catch (error) {
     console.error("Error adding product:", error);
@@ -126,9 +126,11 @@ export const updateHomeContent = async (req, res) => {
       ...(hotItems || []),
       ...(trendingItems || []),
     ];
-    
+
     // Check for invalid MongoDB ObjectIDs (only for IDs that look like they should be ObjectIDs)
-    const potentialObjectIds = allIds.filter(id => /^[0-9a-fA-F]{24}$/.test(id));
+    const potentialObjectIds = allIds.filter((id) =>
+      /^[0-9a-fA-F]{24}$/.test(id)
+    );
     const invalidIds = potentialObjectIds.filter(
       (id) => !mongoose.Types.ObjectId.isValid(id)
     );
@@ -143,24 +145,29 @@ export const updateHomeContent = async (req, res) => {
 
     // Check if products exist - by _id or product_id
     const uniqueIds = [...new Set(allIds)];
-    const existingProductsByObjectId = await Product.find({ 
-      _id: { $in: uniqueIds.filter(id => mongoose.Types.ObjectId.isValid(id)) } 
+    const existingProductsByObjectId = await Product.find({
+      _id: {
+        $in: uniqueIds.filter((id) => mongoose.Types.ObjectId.isValid(id)),
+      },
     });
-    
-    const existingProductsByProductId = await Product.find({ 
-      product_id: { $in: uniqueIds } 
+
+    const existingProductsByProductId = await Product.find({
+      product_id: { $in: uniqueIds },
     });
-    
-    const existingProducts = [...existingProductsByObjectId, ...existingProductsByProductId];
-    const foundIds = [
-      ...existingProductsByObjectId.map(p => p._id.toString()), 
-      ...existingProductsByProductId.map(p => p.product_id)
+
+    const existingProducts = [
+      ...existingProductsByObjectId,
+      ...existingProductsByProductId,
     ];
-    
+    const foundIds = [
+      ...existingProductsByObjectId.map((p) => p._id.toString()),
+      ...existingProductsByProductId.map((p) => p.product_id),
+    ];
+
     // Check if all IDs were found
     if (new Set(foundIds).size !== new Set(uniqueIds).size) {
-      const nonExistentIds = uniqueIds.filter(id => !foundIds.includes(id));
-      
+      const nonExistentIds = uniqueIds.filter((id) => !foundIds.includes(id));
+
       return res.status(404).json({
         success: false,
         message: "Some product IDs do not exist in the database",
@@ -181,13 +188,15 @@ export const updateHomeContent = async (req, res) => {
     // Helper function to convert IDs to the right format for storage
     const formatProductIds = (productIds) => {
       if (!productIds || !Array.isArray(productIds)) return [];
-      
-      return productIds.map(id => {
+
+      return productIds.map((id) => {
         if (mongoose.Types.ObjectId.isValid(id)) {
           return { productId: id };
         } else {
           // Find the corresponding ObjectId for the product_id
-          const product = existingProductsByProductId.find(p => p.product_id === id);
+          const product = existingProductsByProductId.find(
+            (p) => p.product_id === id
+          );
           return { product_id: id, productId: product?._id };
         }
       });
@@ -228,17 +237,20 @@ export const getHomeContent = async (req, res) => {
       .populate({
         path: "newArrival.productId",
         model: "Product",
-        select: "_id product_id name description price images category size offerStatus discount"
+        select:
+          "_id product_id name description price images category size offerStatus discount",
       })
       .populate({
         path: "hotItems.productId",
         model: "Product",
-        select: "_id product_id name description price images category size offerStatus discount"
+        select:
+          "_id product_id name description price images category size offerStatus discount",
       })
       .populate({
         path: "trandingItems.productId",
         model: "Product",
-        select: "_id product_id name description price images category size offerStatus discount"
+        select:
+          "_id product_id name description price images category size offerStatus discount",
       });
 
     if (!homeContent) {
@@ -254,14 +266,16 @@ export const getHomeContent = async (req, res) => {
       if (!item || !item.productId) return null;
       return {
         ...item.productId._doc,
-        id: item.productId.product_id || item.productId._id
+        id: item.productId.product_id || item.productId._id,
       };
     };
 
     const response = {
       newArrivals: homeContent.newArrival.map(transformProduct).filter(Boolean),
       hotItems: homeContent.hotItems.map(transformProduct).filter(Boolean),
-      trendingItems: homeContent.trandingItems.map(transformProduct).filter(Boolean)
+      trendingItems: homeContent.trandingItems
+        .map(transformProduct)
+        .filter(Boolean),
     };
 
     return res.status(200).json({
@@ -273,6 +287,87 @@ export const getHomeContent = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to get home content",
+      error: error.message,
+    });
+  }
+};
+
+//
+export const getAllSearchProducts = async (req, res) => {
+  try {
+    // Check if the user is authenticated
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    // Extract pagination parameters with defaults
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Accept either 'query' or 'search' parameter for compatibility
+    const searchTerm = req.query.query || req.query.search || '';
+    let filter = {};
+
+    // If search term is provided, create a search filter for name and product_id only
+    if (searchTerm && searchTerm.trim() !== '') {
+      const searchRegex = new RegExp(searchTerm, 'i');
+      filter = {
+        $or: [
+          { name: searchRegex },
+          { product_id: searchRegex }
+        ],
+      };
+    }
+
+    // Count total results for pagination info
+    const totalProducts = await Product.countDocuments(filter);
+
+    // console.log("Total products found:", totalProducts);
+
+    // Fetch paginated results with only required fields
+    const products = await Product.find(filter)
+      .select("name product_id images")
+      .skip(skip)
+      .limit(limit);
+
+    // Format the response to include only name and first image
+    const formattedProducts = products.map((product) => ({
+      _id: product._id,
+      product_id: product.product_id,
+      name: product.name,
+      image:
+        product.images && product.images.length > 0
+          ? product.images[0].imageUrl
+          : null,
+    }));
+
+    // Pagination information
+    const totalPages = Math.ceil(totalProducts / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    res.status(200).json({
+      success: true,
+      count: formattedProducts.length,
+      pagination: {
+        totalProducts,
+        totalPages,
+        currentPage: page,
+        hasNextPage,
+        hasPrevPage,
+      },
+      products: formattedProducts,
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch products",
       error: error.message,
     });
   }

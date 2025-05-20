@@ -162,7 +162,6 @@ const AdminSettings = () => {
 
         <AdminSettingsTrendingItems
           selectedIds={trendingItems}
-          
           onSave={(ids) => homeContentUpdate("trendingItems", ids)}
         />
       </div>

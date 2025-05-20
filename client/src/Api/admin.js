@@ -94,3 +94,30 @@ export const updateHomeContent = async (data) => {
     };
   }
 };
+
+export const getAllSearchProducts = async (query = '', page = 1, limit = 10) => {
+  try {
+    const response = await axiosInstance.get(
+      `/admin/get-search-all-products?query=${query}&page=${page}&limit=${limit}`
+    );
+    
+    if (!response.data.success) {
+      return {
+        message: response.data.message,
+        success: false,
+      };
+    }
+    
+    return {
+      message: response.data.message,
+      success: true,
+      data: response.data.products,
+      pagination: response.data.pagination,
+    };
+  } catch (error) {
+    return {
+      message: error.message,
+      success: false,
+    };
+  }
+};

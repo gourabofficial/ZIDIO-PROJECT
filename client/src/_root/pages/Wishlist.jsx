@@ -8,7 +8,7 @@ import AddToCartButton from '../../components/common/AddToCartButton';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Toast component with Framer Motion (copied from Cart.jsx)
+// Toast component with Framer Motion
 const Toast = ({ notification, onClose }) => {
   if (!notification) return null;
 
@@ -69,11 +69,8 @@ const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [notification, setNotification] = useState(null);
   
-  // More granular loading states for different operations
-  const [loadingStates, setLoadingStates] = useState({
-    removeItem: false,
-    removeItemId: null
-  });
+  // Optimistic removal tracking
+  const [pendingRemovals, setPendingRemovals] = useState({});
 
   // Clear notification after 3 seconds
   const clearNotification = () => {
@@ -82,7 +79,7 @@ const Wishlist = () => {
 
   useEffect(() => {
     if (notification) {
-      const timer = setTimeout(clearNotification, 3000);
+      const timer = setTimeout(clearNotification, 2000); // Shorter duration for snappier feel
       return () => clearTimeout(timer);
     }
   }, [notification]);
@@ -114,47 +111,69 @@ const Wishlist = () => {
   }, [authLoaded, currentUser]);
 
   const handleRemoveFromWishlist = async (productId) => {
-    // Set loading state for this specific item
-    setLoadingStates({
-      removeItem: true,
-      removeItemId: productId
-    });
+    // Already being removed
+    if (pendingRemovals[productId]) return;
+    
+    // Optimistically update UI immediately
+    setPendingRemovals(prev => ({ ...prev, [productId]: true }));
+    setWishlistItems(prev => prev.filter(item => item.id !== productId));
+    
+    // Show success toast immediately for perceived speed
+    const toastId = toast.loading("Removing...", { duration: 1000 });
     
     try {
-      const response = await removeFromWishlist(productId);
-      
-      if (response.success) {
-        // Update local state first for immediate UI feedback
-        setWishlistItems(prev => prev.filter(item => item.id !== productId));
-        
-        // Show success notification
-        setNotification({
-          type: "success",
-          message: "Item removed from wishlist"
+      // Execute API call in background
+      removeFromWishlist(productId)
+        .then(response => {
+          if (response.success) {
+            toast.success("Item removed", { id: toastId, duration: 1500 });
+            // Silently refresh data
+            refetchUserData();
+          } else {
+            // Handle failure - revert UI
+            toast.error(response.message || "Failed to remove item", { id: toastId });
+            setPendingRemovals(prev => {
+              const newState = { ...prev };
+              delete newState[productId];
+              return newState;
+            });
+            // Re-fetch data to restore correct state
+            refetchUserData().then(() => {
+              if (currentUser?.wishlist) {
+                const revertedItem = currentUser.wishlist.find(item => (item._id || item) === productId);
+                if (revertedItem) {
+                  setWishlistItems(prev => [...prev, {
+                    id: revertedItem._id,
+                    productId: revertedItem._id,
+                    title: revertedItem.name || revertedItem.title || "Product",
+                    price: revertedItem.price || 0,
+                    image: revertedItem.images?.[0]?.imageUrl || revertedItem.images?.[0] || revertedItem.image,
+                    inStock: revertedItem.inStock !== false,
+                    handle: revertedItem.product_id || revertedItem.handle || revertedItem.slug || revertedItem._id,
+                  }]);
+                }
+              }
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error removing from wishlist:', error);
+          toast.error("Failed to remove item", { id: toastId });
+        })
+        .finally(() => {
+          setPendingRemovals(prev => {
+            const newState = { ...prev };
+            delete newState[productId];
+            return newState;
+          });
         });
-        
-        // Refetch user data in the background
-        refetchUserData();
-      } else {
-        // Show error notification
-        setNotification({
-          type: "error",
-          message: response.message || "Failed to remove item"
-        });
-      }
     } catch (error) {
       console.error('Error removing from wishlist:', error);
-      
-      // Show error notification
-      setNotification({
-        type: "error",
-        message: "Failed to remove item from wishlist"
-      });
-    } finally {
-      // Reset loading state
-      setLoadingStates({
-        removeItem: false,
-        removeItemId: null
+      toast.error("Failed to remove item", { id: toastId });
+      setPendingRemovals(prev => {
+        const newState = { ...prev };
+        delete newState[productId];
+        return newState;
       });
     }
   };
@@ -215,16 +234,14 @@ const Wishlist = () => {
         ) : (
           <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {wishlistItems.map(item => (
-              <div 
-                key={item.id} 
-                className={`bg-[#1e293b] rounded-lg overflow-hidden shadow-lg flex flex-col h-full ${
-                  loadingStates.removeItem && loadingStates.removeItemId === item.id 
-                    ? "opacity-50" 
-                    : ""
-                }`}
+              <motion.div 
+                key={item.id}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3 }}
+                layout
+                className={`bg-[#1e293b] rounded-lg overflow-hidden shadow-lg flex flex-col h-full`}
               >
                 <div className="relative h-40 overflow-hidden bg-black/30">
-                  {/* Product image with link to product detail */}
                   <Link to={`/product/${item.handle}`}>
                     <img 
                       src={item.image} 
@@ -243,7 +260,6 @@ const Wishlist = () => {
                 </div>
                 
                 <div className="p-3 flex flex-col flex-grow">
-                  {/* Product title with link to product detail */}
                   <Link to={`/product/${item.handle}`} className="mb-1">
                     <h3 className="font-medium text-white text-sm hover:text-purple-400 line-clamp-2">
                       {item.title}
@@ -256,17 +272,14 @@ const Wishlist = () => {
                   <div className="flex justify-between items-center mt-auto">
                     <AddToCartButton
                       product={{...item, id: item.productId}}
-                      disabled={item.inStock === false || 
-                        (loadingStates.removeItem && loadingStates.removeItemId === item.id)}
+                      disabled={item.inStock === false || pendingRemovals[item.id]}
                     />
                     
                     <button
                       onClick={() => handleRemoveFromWishlist(item.id)}
-                      disabled={loadingStates.removeItem && loadingStates.removeItemId === item.id}
+                      disabled={pendingRemovals[item.id]}
                       className={`flex items-center text-gray-400 hover:text-red-400 transition-colors ml-2 ${
-                        loadingStates.removeItem && loadingStates.removeItemId === item.id 
-                          ? "opacity-50 cursor-not-allowed" 
-                          : ""
+                        pendingRemovals[item.id] ? "opacity-50 cursor-not-allowed" : ""
                       }`}
                       aria-label="Remove from wishlist"
                     >
@@ -274,7 +287,7 @@ const Wishlist = () => {
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
