@@ -12,11 +12,13 @@ export const categoryItems = [
 ];
 
 export const collectionItems = [
-   { path: "/collection/nox-collection-ss1-0", label: "NOX SS1.0 COLLECTION" },
-   { path: "/collection/yuki-collection", label: "YUKI COLLECTION" },
-   { path: "/collection/takeover-collection-summer-phase-ii", label: "TAKEOVER SUMMER PHASE II" },
-   { path: "/collection/winter-2023-collection", label: "WINTER 2023 COLLECTION" },
-   { path: "/collection/summer-collection-phase-i-1", label: "SUMMER COLLECTION PHASE I" },
+   { path: "/collection/Marvel-Universe?page=1", label: "Marvel Universe" },
+   { path: "/collection/DC-Comics?page=1", label: "DC Comics" },
+   { path: "/collection/Anime-Superheroes?page=1", label: "Anime Superheroes" },
+   { path: "/collection/Classic-Comics?page=1", label: "Classic Comics" },
+   { path: "/collection/Sci-Fi-Fantasy?page=1", label: "Sci-Fi & Fantasy" },
+   { path: "/collection/Video-Game-Characters?page=1", label: "Video Game Characters" },
+   { path: "/collection/Custom-Fan-Art?page=1", label: "Custom Fan Art" },
 ];
 
 

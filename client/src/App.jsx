@@ -43,7 +43,8 @@ const App = () => {
           <Route element={<RootLayout />}>
             <Route index element={<Home />} />
             <Route path="/category/:id" element={<Category />} />
-            <Route path="/category" element={<Category />} />
+          <Route path="/category" element={<Category />} />
+            <Route path="/collection" element={<Collection />} />
             <Route path="/collection/:id" element={<Collection />} />
             <Route path="/track-order" element={<TrackOrder />} />
             <Route path="/search" element={<Search />} />
