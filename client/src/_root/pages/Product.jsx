@@ -106,9 +106,13 @@ const Product = () => {
       return false;
     }
     
-    return currentUser.cartData.items.some(item => 
-      item.productId._id === product._id || item.productId === product._id
-    );
+    return currentUser.cartData.items.some(item => {
+      // First check if productId exists and is not null
+      if (!item.productId) return false;
+      
+      // Then safely access properties or compare values
+      return item.productId._id === product._id || item.productId === product._id;
+    });
   };
   
   const handleViewCart = () => {
@@ -201,13 +205,14 @@ const Product = () => {
             <ProductInfo
               title={product.name}
               description={product.description}
-              price={product.price}
-              discount={product.discount}
-              originalPrice={
-                product.offerStatus
-                  ? product.price / (1 - product.discount / 100)
-                  : null
+              price={
+                // Calculate the discounted price if discount exists
+                product.discount > 0
+                  ? product.price - (product.price * product.discount / 100)
+                  : product.price
               }
+              discount={product.discount}
+              originalPrice={product.discount > 0 ? product.price : null}
             />
 
             {/* Quantity and Add to Cart Section */}

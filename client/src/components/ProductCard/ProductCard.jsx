@@ -14,6 +14,18 @@ const ProductCard = ({ product }) => {
     e.target.src = "https://ext.same-assets.com/1329671863/375037467.gif"; // Fallback image
   };
 
+  // Determine if product has a discount
+  const hasDiscount = product.discount > 0 || product.compareAtPrice;
+  
+  // Get discount percentage
+  const discountPercentage = product.discount || 
+    (product.compareAtPrice ? Math.round((1 - product.price / product.compareAtPrice) * 100) : 0);
+  
+  // Calculate the actual discounted price
+  const discountedPrice = hasDiscount ? 
+    product.price - (product.price * discountPercentage / 100) : 
+    product.price;
+
   return (
     <Link to={`/product/${product.handle}`}>
       <div
@@ -22,10 +34,10 @@ const ProductCard = ({ product }) => {
         onMouseLeave={() => setIsHovered(false)}
       >
         <div className="block relative overflow-hidden rounded-lg bg-[#1e293b]">
-          {/* Sale badge */}
-          {product.compareAtPrice && (
+          {/* Sale badge - updated to show actual discount percentage */}
+          {hasDiscount && (
             <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-semibold px-2 py-1 rounded">
-              SALE
+              {discountPercentage}% OFF
             </div>
           )}
 
@@ -88,21 +100,17 @@ const ProductCard = ({ product }) => {
             <div className="flex justify-between items-center mt-2">
               <div className="flex items-center">
                 <span className="product-price text-[#c4b5fd] font-medium">
-                  ₹{product.price.toLocaleString("en-IN")}
+                  ₹{discountedPrice.toLocaleString("en-IN")}
                 </span>
-                {product.compareAtPrice && (
+                {hasDiscount && (
                   <span className="product-price line-through text-[#94a3b8] text-xs ml-2">
-                    ₹{product.compareAtPrice.toLocaleString("en-IN")}
+                    ₹{product.price.toLocaleString("en-IN")}
                   </span>
                 )}
               </div>
-              {product.compareAtPrice && (
+              {hasDiscount && (
                 <span className="text-xs font-medium text-[#c4b5fd]">
-                  Save{" "}
-                  {Math.round(
-                    (1 - product.price / product.compareAtPrice) * 100
-                  )}
-                  %
+                  Save {discountPercentage}%
                 </span>
               )}
             </div>

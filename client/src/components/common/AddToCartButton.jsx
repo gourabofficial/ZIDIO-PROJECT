@@ -18,9 +18,19 @@ const AddToCartButton = ({ product }) => {
       return false;
     }
     
-    return currentUser.cartData.items.some(item => 
-      item.productId._id === product.id || item.productId === product.id
-    );
+    return currentUser.cartData.items.some(item => {
+      // First check if item.productId exists
+      if (!item || item.productId === null || item.productId === undefined) {
+        return false;
+      }
+      
+      // Now safely check the id match based on the type of productId
+      if (typeof item.productId === 'object') {
+        return item.productId._id === product.id;
+      } else {
+        return item.productId === product.id;
+      }
+    });
   };
   
   const handleViewCart = () => {

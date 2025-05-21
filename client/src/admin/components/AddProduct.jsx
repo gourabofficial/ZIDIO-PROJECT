@@ -274,22 +274,31 @@ const AddProduct = () => {
   const sizeOptions = ["S", "M", "L", "XL", "XXL"];
 
   return (
-    <div className="add-product-container bg-gray-900 text-white p-6 rounded-lg max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Add New Product</h2>
+    <div className="add-product-container bg-gradient-to-b from-gray-900 to-gray-950 text-white p-8 rounded-xl max-w-4xl mx-auto shadow-2xl border border-gray-800">
+      <h2 className="text-3xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
+        Add New Product
+      </h2>
 
       {success && (
-        <div className="success-message bg-green-900 border border-green-600 text-green-200 px-4 py-3 rounded mb-4">
+        <div className="success-message bg-green-900/40 backdrop-blur-sm border border-green-500 text-green-200 px-4 py-3 rounded-lg mb-6 flex items-center">
+          <svg className="w-5 h-5 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+          </svg>
           Product added successfully!
         </div>
       )}
 
       {errors.general && (
-        <div className="error-message bg-red-900 border border-red-600 text-red-200 px-4 py-3 rounded mb-4">
+        <div className="error-message bg-red-900/40 backdrop-blur-sm border border-red-500 text-red-200 px-4 py-3 rounded-lg mb-6 flex items-center">
+          <svg className="w-5 h-5 mr-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
           {errors.general}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="product-form space-y-6">
+      {/* Rest of your form with improved styling */}
+      <form onSubmit={handleSubmit} className="product-form space-y-8">
         <div className="form-group">
           <label htmlFor="name" className="block mb-1 font-medium">
             Product Name *
@@ -300,7 +309,7 @@ const AddProduct = () => {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className={`w-full p-2 bg-gray-800 border rounded text-white focus:outline-none ${
+            className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${
               errors.name
                 ? "border-red-500"
                 : "border-gray-700 focus:border-blue-500"
@@ -320,7 +329,7 @@ const AddProduct = () => {
             name="description"
             value={formData.description}
             onChange={handleChange}
-            className={`w-full p-2 bg-gray-800 border rounded text-white focus:outline-none ${
+            className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${
               errors.description
                 ? "border-red-500"
                 : "border-gray-700 focus:border-blue-500"
@@ -343,7 +352,7 @@ const AddProduct = () => {
               name="price"
               value={formData.price}
               onChange={handleChange}
-              className={`w-full p-2 bg-gray-800 border rounded text-white focus:outline-none ${
+              className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${
                 errors.price
                   ? "border-red-500"
                   : "border-gray-700 focus:border-blue-500"
@@ -365,7 +374,7 @@ const AddProduct = () => {
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className={`w-full p-2 bg-gray-800 border rounded text-white focus:outline-none ${
+              className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${
                 errors.category
                   ? "border-red-500"
                   : "border-gray-700 focus:border-blue-500"
@@ -393,7 +402,7 @@ const AddProduct = () => {
             name="collections"
             value={formData.collections}
             onChange={handleChange}
-            className={`w-full p-2 bg-gray-800 border rounded text-white focus:outline-none ${
+            className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${
               errors.collections
                 ? "border-red-500"
                 : "border-gray-700 focus:border-blue-500"
@@ -414,20 +423,20 @@ const AddProduct = () => {
         <div className="form-group">
           <label className="block mb-1 font-medium">Size *</label>
           <div
-            className={`size-options flex flex-wrap gap-3 p-3 bg-gray-800 border rounded ${
+            className={`size-options flex flex-wrap gap-3 p-3 bg-gray-800 border rounded-lg transition-all duration-300 ${
               errors.size ? "border-red-500" : "border-gray-700"
             }`}
           >
             {sizeOptions.map((size) => (
               <label
                 key={size}
-                className="size-checkbox inline-flex items-center cursor-pointer bg-gray-700 px-3 py-1 rounded hover:bg-gray-600"
+                className="size-checkbox inline-flex items-center cursor-pointer bg-gray-700 px-3 py-1 rounded-lg hover:bg-gray-600 transition-all duration-300"
               >
                 <input
                   type="checkbox"
                   checked={formData.size.includes(size)}
                   onChange={() => handleSizeChange(size)}
-                  className="mr-1 bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-500 focus:ring-opacity-25"
+                  className="mr-2 bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-500 focus:ring-opacity-25"
                 />
                 <span>{size}</span>
               </label>
@@ -462,7 +471,7 @@ const AddProduct = () => {
               name="discount"
               value={formData.discount}
               onChange={handleChange}
-              className={`w-full p-2 bg-gray-800 border rounded text-white focus:outline-none ${
+              className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${
                 errors.discount
                   ? "border-red-500"
                   : "border-gray-700 focus:border-blue-500"
@@ -475,69 +484,108 @@ const AddProduct = () => {
               <p className="text-red-400 text-sm mt-1">{errors.discount}</p>
             )}
             
-            {/* Add discounted price preview */}
+            {/* Add enhanced discounted price preview with saved amount */}
             {discountedPrice && formData.offerStatus && (
-              <div className="mt-2 text-green-400 text-sm">
-                Price after {formData.discount}% discount: ₹{discountedPrice}
-                <span className="ml-2 line-through text-gray-400">₹{formData.price}</span>
+              <div className="mt-2 bg-green-900/20 backdrop-blur-sm border border-green-600/20 rounded-lg p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center">
+                    <span className="text-green-400 font-medium">₹{discountedPrice}</span>
+                    <span className="ml-2 line-through text-gray-400 text-sm">₹{formData.price}</span>
+                  </div>
+                  <div className="bg-green-500/30 px-2 py-1 rounded text-xs text-green-300 font-medium">
+                    {formData.discount}% OFF
+                  </div>
+                </div>
+                <div className="text-green-400 text-sm mt-1">
+                  Customer saves: 
+                  <span className="font-medium ml-1">
+                    ₹{(Number(formData.price) * Number(formData.discount) / 100).toFixed(2)}
+                  </span>
+                </div>
               </div>
             )}
           </div>
         </div>
 
         <div className="form-group">
-          <label htmlFor="images" className="block mb-1 font-medium">
+          <label htmlFor="images" className="block mb-2 font-medium text-gray-200">
             Product Images *
           </label>
-          <input
-            type="file"
-            id="images"
-            name="images"
-            onChange={handleImageChange}
-            className={`w-full p-2 bg-gray-800 border rounded text-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 ${
-              errors.images ? "border-red-500" : "border-gray-700"
-            }`}
-            multiple
-            accept="image/*"
-          />
+          <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 hover:border-blue-500 transition-colors duration-200">
+            <input
+              type="file"
+              id="images"
+              name="images"
+              onChange={handleImageChange}
+              className="hidden"
+              multiple
+              accept="image/*"
+            />
+            <label htmlFor="images" className="flex flex-col items-center justify-center cursor-pointer">
+              <svg className="w-10 h-10 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+              <span className="text-base font-medium text-gray-300">Drop files or click to upload</span>
+              <span className="text-sm mt-1 text-gray-400">
+                Upload high-quality product images (PNG, JPG)
+              </span>
+            </label>
+          </div>
           {errors.images && (
-            <p className="text-red-400 text-sm mt-1">{errors.images}</p>
+            <p className="text-red-400 text-sm mt-2">{errors.images}</p>
           )}
 
           {formData.images.length > 0 && (
-            <div className="image-preview mt-3 p-3 bg-gray-800 border border-gray-700 rounded">
-              <p className="text-sm text-gray-300 mb-2">
-                {formData.images.length} file(s) selected
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div className="image-preview mt-5 p-4 bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-md font-medium text-blue-400">
+                  <span className="bg-blue-500/20 text-blue-300 px-2 py-1 rounded-md mr-2">
+                    {formData.images.length}
+                  </span>
+                  Selected Images
+                </h3>
+                {formData.images.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, images: []})}
+                    className="text-sm text-red-400 hover:text-red-300 transition-colors duration-200"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {formData.images.map((image, index) => (
-                  <div key={index} className="relative bg-gray-700 p-2 rounded">
-                    <div className="flex items-center">
-                      <svg
-                        className="w-5 h-5 text-gray-400 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        ></path>
-                      </svg>
-                      <span className="text-sm truncate flex-1">
-                        {image.name}
-                      </span>
+                  <div key={index} className="group relative overflow-hidden rounded-lg bg-gray-750 transition-all duration-300 hover:shadow-md hover:shadow-blue-900/30">
+                    <div className="aspect-square relative overflow-hidden bg-gray-800 rounded-t-lg">
+                      {/* Image preview */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-900/30">
+                        <img
+                          src={URL.createObjectURL(image)}
+                          alt={`Preview ${index}`}
+                          className="h-full w-full object-cover"
+                          onLoad={(e) => URL.revokeObjectURL(e.target.src)}
+                        />
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)}
-                      className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-700"
-                    >
-                      ×
-                    </button>
+                    <div className="p-2 bg-gray-800">
+                      <p className="text-xs text-gray-300 truncate" title={image.name}>
+                        {image.name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {(image.size / 1024).toFixed(1)} KB
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="absolute top-2 right-2 bg-black/60 text-gray-300 hover:text-white hover:bg-red-600 p-1 rounded-full transition-colors duration-200 opacity-0 group-hover:opacity-100"
+                        title="Remove image"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -547,7 +595,7 @@ const AddProduct = () => {
 
         <button
           type="submit"
-          className="submit-button bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition w-full md:w-auto"
+          className="submit-button bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-8 rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-300 shadow-lg shadow-blue-900/30 font-medium"
           disabled={loading}
         >
           {loading ? (

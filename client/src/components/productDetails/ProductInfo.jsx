@@ -4,6 +4,10 @@ const ProductInfo = ({ title, price, description, discount, originalPrice }) => 
     return `₹${value?.toLocaleString('en-IN')}`;
   };
 
+  // Calculate discount percentage - no change needed here
+  const discountPercentage = discount || 
+    (originalPrice ? Math.round((1 - price / originalPrice) * 100) : 0);
+
   return (
     <div className="space-y-6 md:space-y-8">
       {/* Product Title */}
@@ -23,24 +27,24 @@ const ProductInfo = ({ title, price, description, discount, originalPrice }) => 
               {formatPrice(originalPrice)}
             </p>
             <span className="bg-green-600 text-white text-xs md:text-sm font-medium px-2 py-1 rounded-md">
-              {discount}% OFF
+              {discountPercentage}% OFF
             </span>
           </>
         )}
       </div>
       
       {/* Discount Badge - Appears above description for prominent offers */}
-      {discount > 15 && (
+      {discountPercentage > 15 && (
         <div className="bg-gradient-to-r from-purple-700 to-purple-900 border border-purple-600 rounded-lg p-4 shadow-lg transform hover:scale-[1.02] transition-transform">
           <p className="text-white flex items-center">
             <span className="inline-block w-4 h-4 bg-white rounded-full mr-2 animate-pulse"></span>
             <span className="font-medium">Limited Time Offer:</span>
-            <span className="ml-2 font-bold text-lg">{discount}% OFF</span>
+            <span className="ml-2 font-bold text-lg">{discountPercentage}% OFF</span>
           </p>
         </div>
       )}
       
-      {/* Description Section */}
+      {/* Description Section - No changes needed */}
       <div className="mt-4 md:mt-6">
         <h3 className="text-lg md:text-xl font-medium text-purple-300 mb-3">Product Description</h3>
         <div className="bg-gray-800/50 rounded-lg p-4 md:p-5 text-gray-300 shadow-inner">
@@ -53,10 +57,10 @@ const ProductInfo = ({ title, price, description, discount, originalPrice }) => 
       </div>
       
       {/* Additional Details - For smaller discounts */}
-      {discount > 0 && discount <= 15 && (
+      {discountPercentage > 0 && discountPercentage <= 15 && (
         <div className="bg-purple-900/30 border border-purple-800 rounded-lg p-3 md:p-4">
           <p className="text-purple-200">
-            <span className="font-medium">Special Offer:</span> Save {discount}% on this product!
+            <span className="font-medium">Special Offer:</span> Save {discountPercentage}% on this product!
           </p>
         </div>
       )}

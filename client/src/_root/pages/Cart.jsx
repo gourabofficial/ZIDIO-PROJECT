@@ -102,16 +102,19 @@ const Cart = () => {
 
   // Extract cart data
   const cartItems =
-    currentUser?.cartData?.items.map((item) => ({
-      id: item._id,
-      productId: item.productId._id,
-      title: item.productId.name,
-      price: item.productId.price,
-      image: item.productId.images[0]?.imageUrl,
-      quantity: item.quantity,
-      discount: item.productId.discount,
-      handle: item.productId.product_id,
-    })) || [];
+    currentUser?.cartData?.items
+      // Filter out items with null productId before mapping
+      .filter(item => item && item.productId)
+      .map((item) => ({
+        id: item._id,
+        productId: item.productId._id,
+        title: item.productId.name,
+        price: item.productId.price,
+        image: item.productId.images[0]?.imageUrl,
+        quantity: item.quantity,
+        discount: item.productId.discount,
+        handle: item.productId.product_id,
+      })) || [];
 
   // Calculate cart metrics
   const itemsCount = cartItems.reduce(
