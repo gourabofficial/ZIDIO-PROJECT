@@ -151,6 +151,37 @@ export const getProductsByCategory = async (
   }
 };
 
+export const getProductsByCollection = async (
+  collection,
+  additionalParams = {}
+) => {
+  try {
+    if (!collection) {
+      return getAllProducts(additionalParams);
+    }
+
+    const res = await axiosInstance.get("/product/filter", {
+      params: {
+        collection, // This is the key parameter
+        ...additionalParams,
+      },
+    });
+
+    // Transform the data to match frontend component expectations
+    if (res.data.success) {
+      res.data.products = res.data.products.map(transformProductForFrontend);
+    }
+
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching products by collection:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to fetch collection products",
+    };
+  }
+};
+
 export const getFilteredProducts = async (filters = {}) => {
   try {
     const res = await axiosInstance.get("/product/filter", {

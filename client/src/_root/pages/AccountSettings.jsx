@@ -7,10 +7,16 @@ import {
   FiEdit,
   FiPlus,
   FiArrowLeft,
+  FiCheck,
+  FiX,
+  FiHome,
+  FiMail,
+  FiPhone,
 } from "react-icons/fi";
 import { updateAddress, addAddress, getAddressById } from "../../Api/user";
 import MiniLoader from "../../components/Loader/MiniLoader";
 import toast, { Toaster } from 'react-hot-toast';
+import { motion, AnimatePresence } from "framer-motion";
 
 const AccountSettings = () => {
   const { currentUser, isAuth, isLoaded, refetchUserData } = useAuthdata();
@@ -67,17 +73,33 @@ const AccountSettings = () => {
   }, [currentUser?.address, isAuth]);
 
   // Handle loading state for the entire component
-  if (!isLoaded) return <div className="min-h-screen bg-[#0c0e16] flex items-center justify-center"><MiniLoader /></div>;
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#0c0e16] to-[#161927] flex items-center justify-center">
+        <MiniLoader />
+      </div>
+    );
+  }
 
   // Redirect if not authenticated
   if (!isAuth) {
     return (
-      <div className="bg-[#0c0e16] p-6 flex flex-col items-center justify-center min-h-screen">
-        <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold text-white mb-4">You're not signed in</h2>
+      <div className="min-h-screen bg-gradient-to-b from-[#0c0e16] to-[#161927] p-6 flex flex-col items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center max-w-md bg-[#13141f]/70 backdrop-blur-md p-8 rounded-xl border border-purple-500/20"
+        >
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 text-transparent bg-clip-text mb-4">You're not signed in</h2>
           <p className="text-gray-400 mb-6">Please sign in to view your account settings</p>
-          <Link to="/sign-in" className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-md text-white font-medium">Sign In</Link>
-        </div>
+          <Link 
+            to="/sign-in" 
+            className="px-8 py-3 bg-black text-white rounded-md hover:bg-[#111] transition-all shadow-lg border border-purple-500/20 hover:border-purple-500/40 inline-block"
+          >
+            Sign In
+          </Link>
+        </motion.div>
       </div>
     );
   }
@@ -139,7 +161,6 @@ const AccountSettings = () => {
           response = await updateAddress(updateData);
         } catch (error) {
           if (error.response && error.response.status === 404) {
-            // Keep this one informative log
             response = await addAddress(addressForm);
           } else {
             throw error;
@@ -181,239 +202,337 @@ const AccountSettings = () => {
   const renderAddressSection = () => {
     if (isManagingAddress) {
       return (
-        <div className="border border-gray-700 rounded-lg p-4">
-          <h3 className="text-white font-medium mb-4">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="backdrop-blur-sm bg-[#13141f]/60 border border-indigo-500/20 rounded-lg p-5"
+        >
+          <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+            <FiHome className="text-indigo-400" />
             {currentUser.address ? "Edit Address" : "Add New Address"}
           </h3>
-          {/* Form fields stay the same */}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div className="md:col-span-2">
-              <label className="block text-gray-400 text-sm mb-1">Address</label>
+              <label className="block text-gray-300 text-sm mb-1.5">Address</label>
               <input
                 type="text"
                 name="addressInfo"
                 value={addressForm.addressInfo}
                 onChange={handleAddressInputChange}
-                className="w-full bg-[#131825] text-white border border-gray-700 rounded p-2"
+                placeholder="Street address, apartment, etc."
+                className="w-full bg-[#0c0e16] text-white border border-indigo-500/30 focus:border-indigo-500/60 rounded-md p-2.5 transition-colors outline-none"
               />
             </div>
-            {/* Other form fields remain the same */}
+            
             <div>
-              <label className="block text-gray-400 text-sm mb-1">City</label>
+              <label className="block text-gray-300 text-sm mb-1.5">City</label>
               <input
                 type="text"
                 name="city"
                 value={addressForm.city}
                 onChange={handleAddressInputChange}
-                className="w-full bg-[#131825] text-white border border-gray-700 rounded p-2"
+                placeholder="City"
+                className="w-full bg-[#0c0e16] text-white border border-indigo-500/30 focus:border-indigo-500/60 rounded-md p-2.5 transition-colors outline-none"
               />
             </div>
+            
             <div>
-              <label className="block text-gray-400 text-sm mb-1">State</label>
+              <label className="block text-gray-300 text-sm mb-1.5">State</label>
               <input
                 type="text"
                 name="state"
                 value={addressForm.state}
                 onChange={handleAddressInputChange}
-                className="w-full bg-[#131825] text-white border border-gray-700 rounded p-2"
+                placeholder="State/Province"
+                className="w-full bg-[#0c0e16] text-white border border-indigo-500/30 focus:border-indigo-500/60 rounded-md p-2.5 transition-colors outline-none"
               />
             </div>
+            
             <div>
-              <label className="block text-gray-400 text-sm mb-1">Pin Code</label>
+              <label className="block text-gray-300 text-sm mb-1.5">Pin Code</label>
               <input
                 type="text"
                 name="pinCode"
                 value={addressForm.pinCode}
                 onChange={handleAddressInputChange}
-                className="w-full bg-[#131825] text-white border border-gray-700 rounded p-2"
+                placeholder="ZIP/Postal code"
+                className="w-full bg-[#0c0e16] text-white border border-indigo-500/30 focus:border-indigo-500/60 rounded-md p-2.5 transition-colors outline-none"
               />
             </div>
+            
             <div>
-              <label className="block text-gray-400 text-sm mb-1">Country</label>
+              <label className="block text-gray-300 text-sm mb-1.5">Country</label>
               <input
                 type="text"
                 name="country"
                 value={addressForm.country}
                 onChange={handleAddressInputChange}
-                className="w-full bg-[#131825] text-white border border-gray-700 rounded p-2"
+                placeholder="Country"
+                className="w-full bg-[#0c0e16] text-white border border-indigo-500/30 focus:border-indigo-500/60 rounded-md p-2.5 transition-colors outline-none"
               />
             </div>
           </div>
 
-          <div className="flex gap-3 mt-4">
+          <div className="flex gap-3 mt-6">
             <button
               onClick={handleSubmitAddress}
               disabled={isSubmitting}
-              className="px-4 py-2 bg-[#c8a95a] hover:bg-[#b69a48] text-[#0c0e16] rounded-md text-sm font-medium"
+              className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-md text-sm font-medium transition-all shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 flex items-center"
             >
-              {isSubmitting ? <span className="flex items-center gap-2"><MiniLoader size={16} color="#0c0e16" /> Saving...</span> : "Save Address"}
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <MiniLoader size={16} color="#ffffff" /> Saving...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <FiCheck size={16} /> Save Address
+                </span>
+              )}
             </button>
+            
             <button
               onClick={handleCancelAddressEdit}
               disabled={isSubmitting}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md text-sm font-medium"
+              className="px-5 py-2.5 bg-[#111827] hover:bg-[#1e2532] text-white border border-gray-700 rounded-md text-sm font-medium transition-all flex items-center gap-2"
             >
-              Cancel
+              <FiX size={16} /> Cancel
             </button>
           </div>
-        </div>
+        </motion.div>
       );
     }
 
     if (loadingAddress) {
       return (
-        <div className="flex justify-center p-4 border border-gray-700 rounded-lg">
+        <div className="flex justify-center p-5 border border-indigo-500/20 rounded-lg bg-[#13141f]/60 backdrop-blur-sm">
           <MiniLoader />
-          <span className="ml-2 text-gray-400">Loading address...</span>
+          <span className="ml-3 text-indigo-300">Loading address...</span>
         </div>
       );
     }
     
     if (addressError) {
       return (
-        <div className="border border-gray-700 rounded-lg p-4">
-          <div className="flex flex-col items-center justify-center py-2">
-            <p className="text-gray-300 mb-3">Could not retrieve your address information</p>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="border border-red-500/30 bg-red-900/5 backdrop-blur-sm rounded-lg p-5"
+        >
+          <div className="flex flex-col items-center justify-center py-3">
+            <p className="text-gray-300 mb-4">Could not retrieve your address information</p>
             <div className="flex gap-3">
               <button 
                 onClick={handleRetryAddressFetch}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md text-sm font-medium"
+                className="px-4 py-2 bg-[#111827] hover:bg-[#1e2532] text-white border border-gray-700 rounded-md text-sm font-medium transition-all flex items-center gap-2"
               >
+                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
                 Retry
               </button>
+              
               <button 
                 onClick={handleManageAddress}
-                className="px-4 py-2 bg-[#c8a95a] hover:bg-[#b69a48] text-[#0c0e16] rounded-md text-sm font-medium"
+                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-md text-sm font-medium transition-all shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 flex items-center gap-2"
               >
-                Add New Address
+                <FiPlus size={16} /> Add New Address
               </button>
             </div>
           </div>
-        </div>
+        </motion.div>
       );
     }
     
     if (addressData) {
       return (
-        <div className="border border-gray-700 rounded-lg p-4">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="backdrop-blur-sm bg-[#13141f]/60 border border-indigo-500/20 rounded-lg p-5"
+        >
           <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-300 mb-1">{addressData.addressInfo}</p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-indigo-300 mb-2">
+                <FiHome size={16} />
+                <span className="font-medium">Shipping Address</span>
+              </div>
+              
+              <p className="text-gray-300">{addressData.addressInfo}</p>
               <p className="text-gray-300">
                 {addressData.city}, {addressData.state} {addressData.pinCode}
               </p>
               <p className="text-gray-300">{addressData.country}</p>
             </div>
+            
             <button
               onClick={handleManageAddress}
-              className="flex items-center gap-1 text-[#c8a95a] hover:text-[#b69a48] h-fit"
+              className="flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 transition-colors h-fit group"
             >
-              <FiEdit size={16} />
+              <FiEdit size={16} className="group-hover:animate-pulse" />
               <span className="text-sm">Edit</span>
             </button>
           </div>
-        </div>
+        </motion.div>
       );
     }
     
     // No address yet
     return (
-      <div className="flex justify-between items-center border border-gray-700 border-dashed rounded-lg p-4">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex justify-between items-center border border-indigo-500/20 border-dashed rounded-lg p-5 bg-[#13141f]/60 backdrop-blur-sm"
+      >
         <p className="text-gray-400">
           {currentUser.address ? "Your address information needs to be updated" : "No address added yet"}
         </p>
+        
         <button
           onClick={handleManageAddress}
-          className="flex items-center gap-2 px-3 py-1 bg-[#c8a95a] hover:bg-[#b69a48] text-[#0c0e16] rounded-md text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-md text-sm font-medium transition-all shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30"
         >
-          <FiPlus size={14} />
+          <FiPlus size={16} />
           <span>{currentUser.address ? "Update" : "Add"}</span>
         </button>
-      </div>
+      </motion.div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0e16] p-6 mt-20">
+    <div className="min-h-screen bg-gradient-to-b from-[#0c0e16] to-[#161927] pt-24 pb-16 px-4 md:px-8">
       <Toaster
         position="top-right"
         toastOptions={{
+          duration: 4000,
           success: {
+            icon: '🚀',
             style: {
-              background: '#1e293b',
+              background: 'rgba(19, 20, 31, 0.9)',
+              backdropFilter: 'blur(10px)',
               color: '#fff',
-              border: '1px solid #c8a95a',
+              border: '1px solid rgba(124, 58, 237, 0.3)',
             },
           },
           error: {
+            icon: '❌',
             style: {
-              background: '#1e293b',
+              background: 'rgba(19, 20, 31, 0.9)',
+              backdropFilter: 'blur(10px)',
               color: '#fff',
-              border: '1px solid #ef4444',
+              border: '1px solid rgba(220, 38, 38, 0.3)',
             },
           },
         }}
       />
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center gap-2 text-white mb-6">
-          <Link to="/account" className="hover:text-purple-400 transition-colors">
+      
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-3xl mx-auto"
+      >
+        <div className="flex items-center gap-3 mb-8">
+          <Link 
+            to="/account" 
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-[#13141f]/60 backdrop-blur-sm border border-indigo-500/20 text-white hover:bg-indigo-700/20 transition-all hover:border-indigo-500/40"
+          >
             <FiArrowLeft size={20} />
           </Link>
-          <h1 className="text-3xl font-bold">Account Settings</h1>
+          
+          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
+            Account Settings
+          </h1>
         </div>
 
         {/* User Profile Information */}
-        <div className="bg-[#1e293b] rounded-xl p-6 mb-6 shadow-lg">
-          <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-6">
-            <FiUser className="text-purple-400" />
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="bg-[#13141f]/70 backdrop-blur-sm rounded-xl p-6 md:p-8 mb-6 shadow-lg border border-indigo-500/20"
+        >
+          <h2 className="text-xl font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text flex items-center gap-2 mb-6">
+            <FiUser className="text-indigo-400" />
             <span>Profile Information</span>
           </h2>
 
-          <div className="flex gap-6 mb-6">
-            <div className="flex-shrink-0">
+          <div className="flex flex-col md:flex-row gap-6 mb-6">
+            <div className="flex-shrink-0 relative group mx-auto md:mx-0">
+              <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 opacity-50 blur-sm group-hover:opacity-75 transition-opacity duration-300"></div>
               <img
-                src={currentUser.avatar || "https://via.placeholder.com/80?text=Avatar"}
+                src={currentUser.avatar || "https://via.placeholder.com/100?text=Avatar"}
                 alt={currentUser.fullName}
-                className="w-20 h-20 rounded-full object-cover"
+                className="relative w-24 h-24 rounded-full object-cover border-2 border-indigo-500/30"
+                onError={(e) => {
+                  e.target.src = "https://via.placeholder.com/100?text=Avatar";
+                }}
               />
             </div>
-            <div className="flex-grow">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-gray-400 text-sm">Full Name</p>
-                  <p className="text-white">{currentUser.fullName || "Not provided"}</p>
+            
+            <div className="flex-grow space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
+                <div className="space-y-1">
+                  <p className="text-indigo-300 text-sm flex items-center gap-2">
+                    <FiUser size={14} /> Full Name
+                  </p>
+                  <p className="text-white font-medium">{currentUser.fullName || "Not provided"}</p>
                 </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Email Address</p>
-                  <p className="text-white">{currentUser.email}</p>
+                
+                <div className="space-y-1">
+                  <p className="text-indigo-300 text-sm flex items-center gap-2">
+                    <FiMail size={14} /> Email Address
+                  </p>
+                  <p className="text-white font-medium">{currentUser.email}</p>
                 </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Account Type</p>
-                  <p className="text-white capitalize">{currentUser.role || "User"}</p>
+                
+                <div className="space-y-1">
+                  <p className="text-indigo-300 text-sm flex items-center gap-2">
+                    <FiPhone size={14} /> Phone Number
+                  </p>
+                  <p className="text-white font-medium">{currentUser.phone || "Not provided"}</p>
+                </div>
+                
+                <div className="space-y-1">
+                  <p className="text-indigo-300 text-sm">Account Type</p>
+                  <p className="text-white font-medium capitalize">
+                    {currentUser.role === 'admin' ? (
+                      <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-transparent bg-clip-text">Admin</span>
+                    ) : (
+                      currentUser.role || "User"
+                    )}
+                  </p>
                 </div>
               </div>
+              
+              <button
+                onClick={handleEditProfileClick}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#0c0e16] text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 hover:border-indigo-500/60 rounded-md text-sm font-medium transition-all"
+              >
+                <FiEdit size={16} />
+                <span>Edit Profile</span>
+              </button>
             </div>
           </div>
-
-          <button
-            onClick={handleEditProfileClick}
-            className="flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors"
-          >
-            <FiEdit size={16} />
-            <span>Edit Profile</span>
-          </button>
-        </div>
+        </motion.div>
 
         {/* Address Management */}
-        <div className="bg-[#1e293b] rounded-xl p-6 mb-6 shadow-lg">
-          <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-4">
-            <FiMapPin className="text-[#c8a95a]" />
-            <span>My Address</span>
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="bg-[#13141f]/70 backdrop-blur-sm rounded-xl p-6 md:p-8 mb-6 shadow-lg border border-indigo-500/20"
+        >
+          <h2 className="text-xl font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text flex items-center gap-2 mb-6">
+            <FiMapPin className="text-indigo-400" />
+            <span>Shipping Address</span>
           </h2>
 
           {renderAddressSection()}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

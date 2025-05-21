@@ -4,7 +4,7 @@ import ProductCard from "../ProductCard/ProductCard";
 import ViewAllButton from "../FeaturedProducts/ViewAllButton";
 
 const TrendingProductsPage = ({ trendingProduct }) => {
-  console.log("trending: ", trendingProduct);
+  // console.log("trending: ", trendingProduct);
   const starsContainerRef = useRef(null);
 
   // Create stars effect on component mount

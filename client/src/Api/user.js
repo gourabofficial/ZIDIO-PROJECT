@@ -346,3 +346,5 @@ export const removeFromWishlist = async (productId) => {
     };
   }
 }
+
+

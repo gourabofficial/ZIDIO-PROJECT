@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuthdata } from "../../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";  
@@ -10,7 +10,8 @@ import {
   FiArrowLeft,
   FiX,
   FiCheckCircle, 
-  FiAlertCircle, 
+  FiAlertCircle,
+  FiShoppingBag,
 } from "react-icons/fi";
 
 import { removeFromCart, clearCart, updateQuantity } from "../../Api/user.js";
@@ -29,10 +30,10 @@ const Toast = ({ notification, onClose }) => {
           animate={{ opacity: 1, y: 0, x: 0 }}
           exit={{ opacity: 0, y: -20, x: 20 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className={`fixed top-24 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center ${
+          className={`fixed top-24 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center backdrop-blur-md ${
             type === "success"
-              ? "bg-purple-900/90 text-purple-200 border border-purple-700"
-              : "bg-red-900/90 text-red-200 border border-red-700"
+              ? "bg-purple-900/80 text-purple-200 border border-purple-600/50"
+              : "bg-red-900/80 text-red-200 border border-red-600/50"
           }`}
         >
           <motion.div
@@ -55,13 +56,14 @@ const Toast = ({ notification, onClose }) => {
             <FiX />
           </button>
 
-          {/* Progress bar to show time remaining */}
           <motion.div
             initial={{ width: "100%" }}
             animate={{ width: "0%" }}
             transition={{ duration: 3, ease: "linear" }}
             className={`absolute bottom-0 left-0 h-1 ${
-              type === "success" ? "bg-purple-500" : "bg-red-500"
+              type === "success" 
+                ? "bg-gradient-to-r from-indigo-500 to-purple-500" 
+                : "bg-gradient-to-r from-red-500 to-pink-500"
             }`}
           />
         </motion.div>
@@ -246,67 +248,75 @@ const Cart = () => {
   const isLoading = Object.values(loadingStates).some((state) => state);
 
   return (
-    <div className="min-h-screen bg-[#0c0e16] pt-20">
-      {/* Replace the current notification display with our new Toast component */}
+    <div className="min-h-screen bg-gradient-to-b from-[#0c0e16] to-[#161927] pt-24 pb-16 px-4 md:px-8">
+      {/* Toast Notification */}
       <Toast notification={notification} onClose={clearNotification} />
 
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex flex-col mb-6">
-          <h1 className="text-3xl font-bold text-white mb-4">Your Cart</h1>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 animate-fadeIn opacity-0" style={{ animationDelay: "0.1s", animationFillMode: "forwards" }}>
+          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 text-transparent bg-clip-text mb-4 md:mb-0">
+            Your Cosmic Cart
+          </h1>
 
-          <div className="flex justify-between items-center">
-            <Link
-              to="/"
-              className="flex items-center text-purple-400 hover:text-purple-300 transition-colors"
-            >
-              <FiArrowLeft className="mr-2" />
-              <span>Continue Shopping</span>
-            </Link>
-
-            <div className="flex items-center">
-              <FiShoppingCart className="text-purple-400 mr-2" />
-              <span className="text-white font-semibold">
-                {itemsCount} {itemsCount === 1 ? "Item" : "Items"}
-              </span>
-            </div>
+          <div className="flex items-center py-1.5 px-4 rounded-full bg-indigo-900/30 border border-indigo-500/30">
+            <FiShoppingCart className="mr-2 text-purple-400" />
+            <span className="text-white font-medium">
+              {itemsCount} {itemsCount === 1 ? "Item" : "Items"}
+            </span>
           </div>
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-900/20 text-red-400 p-4 rounded-lg text-center">
+          <div className="mb-6 backdrop-blur-md bg-red-900/20 border border-red-500/30 text-red-400 p-4 rounded-lg text-center animate-fadeIn">
             {error}
           </div>
         )}
 
         {isLoading && cartItems.length === 0 ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+          <div className="flex flex-col items-center justify-center py-20 animate-fadeIn">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-purple-200 border-opacity-20 rounded-full"></div>
+              <div className="w-16 h-16 border-4 border-r-indigo-500 border-t-purple-500 rounded-full animate-spin absolute top-0 left-0"></div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <div className="w-4 h-4 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"></div>
+              </div>
+            </div>
+            <p className="mt-4 text-gray-300 text-lg font-medium">
+              Loading your cart...
+            </p>
           </div>
         ) : cartItems.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 rounded-full bg-[#1e293b] flex items-center justify-center mx-auto mb-6">
-              <FiShoppingCart className="text-4xl text-purple-400" />
+          <div className="backdrop-blur-md bg-black/30 border border-purple-900/30 rounded-xl p-10 max-w-2xl mx-auto text-center animate-fadeIn opacity-0" style={{ animationDelay: "0.2s", animationFillMode: "forwards" }}>
+            <div className="relative w-24 h-24 mx-auto mb-6">
+              <div className="absolute -inset-4 rounded-full bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 blur-md"></div>
+              <div className="relative w-full h-full">
+                <FiShoppingCart className="w-full h-full text-purple-400" />
+              </div>
             </div>
-            <h2 className="text-2xl font-semibold text-white mb-2">
-              Your cart is empty
-            </h2>
-            <p className="text-gray-400 mb-8 max-w-md mx-auto">
-              Start adding items to your cart to begin shopping.
+            <h3 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text mb-3">
+              Your Cosmic Cart is Empty
+            </h3>
+            <p className="text-gray-300 mb-6">
+              Your journey through the cosmos awaits. Start by adding cosmic heroes to your cart.
             </p>
             <Link
               to="/"
-              className="inline-flex items-center px-8 py-4 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium hover:from-indigo-600 hover:to-purple-700 transition-all"
+              className="relative group overflow-hidden px-8 py-3 rounded-lg inline-block"
             >
-              Explore Products
+              <span className="absolute inset-0 w-full h-full transition-all duration-300 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 group-hover:from-pink-600 group-hover:via-purple-600 group-hover:to-indigo-600"></span>
+              <span className="relative flex items-center justify-center text-white font-medium">
+                <FiShoppingBag className="mr-2" />
+                Explore Heroes
+              </span>
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fadeIn opacity-0" style={{ animationDelay: "0.3s", animationFillMode: "forwards" }}>
             {/* Cart items */}
             <div className="lg:col-span-2">
-              <div className="bg-[#151828] rounded-lg shadow-lg overflow-hidden">
-                <div className="border-b border-gray-800 px-6 py-4 flex justify-between items-center">
-                  <h2 className="text-xl font-semibold text-white">
+              <div className="bg-[#13141f]/70 backdrop-blur-sm rounded-xl overflow-hidden border border-purple-900/30 shadow-lg shadow-purple-900/5">
+                <div className="border-b border-purple-900/30 px-6 py-4 flex justify-between items-center">
+                  <h2 className="text-xl font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
                     Cart Items
                   </h2>
                   <button
@@ -329,37 +339,46 @@ const Cart = () => {
                   </button>
                 </div>
 
-                <ul className="divide-y divide-gray-800">
-                  {cartItems.map((item) => (
-                    <li
+                <ul className="divide-y divide-purple-900/10">
+                  {cartItems.map((item, index) => (
+                    <motion.li
                       key={item.id}
-                      className={`px-6 py-6 flex flex-col sm:flex-row ${
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className={`px-6 py-6 flex flex-col sm:flex-row group hover:bg-indigo-500/5 transition-colors duration-300 ${
                         loadingStates.removeItem && item.id === item.id
                           ? "opacity-50"
                           : ""
                       }`}
                     >
                       {/* Product image */}
-                      <div className="sm:flex-shrink-0 mb-4 sm:mb-0">
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="w-full sm:w-28 h-28 object-cover rounded-lg"
-                        />
+                      <div className="sm:flex-shrink-0 mb-4 sm:mb-0 relative">
+                        <div className="relative overflow-hidden rounded-lg bg-indigo-900/20 p-1 border border-purple-500/20 shadow-sm shadow-purple-500/10">
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="w-full sm:w-28 h-28 object-contain rounded transition-transform duration-700 group-hover:scale-110"
+                            onError={(e) => {
+                              e.target.src = "https://ext.same-assets.com/1329671863/375037467.gif";
+                            }}
+                          />
+                        </div>
+                        <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-indigo-500/0 to-purple-500/0 group-hover:from-indigo-500/20 group-hover:to-purple-500/20 opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-500"></div>
                       </div>
 
                       {/* Product details */}
                       <div className="sm:ml-6 flex-1">
                         <div className="flex justify-between">
                           <Link to={`/product/${item.handle}`}>
-                            <h3 className="text-lg font-medium text-white hover:text-purple-400">
+                            <h3 className="text-lg font-medium text-white hover:text-purple-300 transition-colors duration-200">
                               {item.title}
                             </h3>
                           </Link>
                           <button
                             onClick={() => handleRemoveItem(item.productId)}
                             disabled={loadingStates.removeItem}
-                            className={`text-gray-400 hover:text-red-400 ${
+                            className={`text-gray-400 hover:text-red-400 hover:scale-110 transition-all duration-200 ${
                               loadingStates.removeItem
                                 ? "opacity-50 cursor-not-allowed"
                                 : ""
@@ -368,13 +387,13 @@ const Cart = () => {
                             <FiX />
                           </button>
                         </div>
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 text-sm text-indigo-300/60">
                           Item #{item.productId.substring(0, 8)}
                         </p>
 
                         <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                           {/* Quantity selector */}
-                          <div className="flex items-center border border-gray-700 rounded-md bg-gray-800/50">
+                          <div className="flex items-center border border-indigo-500/30 rounded-full bg-indigo-900/30 backdrop-blur-sm shadow-sm shadow-indigo-500/10 overflow-hidden">
                             <button
                               onClick={() =>
                                 handleQuantityChange(
@@ -382,7 +401,7 @@ const Cart = () => {
                                   Math.max(1, item.quantity - 1)
                                 )
                               }
-                              className={`px-3 py-1.5 text-gray-400 hover:text-white transition-colors ${
+                              className={`px-3 py-1.5 text-gray-400 hover:text-white hover:bg-indigo-600/20 transition-all ${
                                 loadingStates.updateQuantity ||
                                 item.quantity <= 1
                                   ? "opacity-50 cursor-not-allowed"
@@ -395,7 +414,7 @@ const Cart = () => {
                             >
                               <FiMinus size={14} />
                             </button>
-                            <span className="px-3 py-1.5 text-white font-medium">
+                            <span className="px-3 py-1.5 text-white font-medium min-w-[30px] text-center">
                               {item.quantity}
                             </span>
                             <button
@@ -405,7 +424,7 @@ const Cart = () => {
                                   item.quantity + 1
                                 )
                               }
-                              className={`px-3 py-1.5 text-gray-400 hover:text-white transition-colors ${
+                              className={`px-3 py-1.5 text-gray-400 hover:text-white hover:bg-indigo-600/20 transition-all ${
                                 loadingStates.updateQuantity
                                   ? "opacity-50 cursor-not-allowed"
                                   : ""
@@ -423,7 +442,7 @@ const Cart = () => {
                                 ₹{item.price.toLocaleString()}
                               </span>
                             )}
-                            <span className="text-lg font-semibold text-purple-400">
+                            <span className="text-lg font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
                               ₹
                               {(
                                 calculateItemPrice(item.price, item.discount) *
@@ -433,7 +452,7 @@ const Cart = () => {
                           </div>
                         </div>
                       </div>
-                    </li>
+                    </motion.li>
                   ))}
                 </ul>
               </div>
@@ -441,68 +460,107 @@ const Cart = () => {
 
             {/* Order summary */}
             <div className="lg:col-span-1">
-              <div className="bg-[#151828] rounded-lg shadow-lg sticky top-24">
-                <div className="px-6 py-4 border-b border-gray-800">
-                  <h2 className="text-xl font-semibold text-white">
+              <div className="bg-[#13141f]/70 backdrop-blur-sm rounded-xl overflow-hidden border border-purple-900/30 shadow-lg shadow-purple-900/5 sticky top-24">
+                <div className="px-6 py-4 border-b border-purple-900/30">
+                  <h2 className="text-xl font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
                     Order Summary
                   </h2>
                 </div>
 
-                <div className="px-6 py-4 space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Subtotal</span>
-                    <span className="text-white">
+                <div className="px-6 py-6 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Subtotal</span>
+                    <span className="text-white font-medium">
                       ₹{subtotal.toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Shipping</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Shipping</span>
                     <span className="text-white">
                       {shipping === 0 ? (
-                        <span className="text-green-400">Free</span>
+                        <span className="bg-gradient-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text font-medium">Free</span>
                       ) : (
                         `₹${shipping.toLocaleString()}`
                       )}
                     </span>
                   </div>
-                  <div className="flex justify-between pt-4 border-t border-gray-800">
+                  <div className="flex justify-between items-center pt-4 border-t border-purple-900/30">
                     <span className="text-white font-bold">Total</span>
-                    <span className="text-xl font-bold text-purple-400">
+                    <span className="text-xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
                       ₹{total.toLocaleString()}
                     </span>
                   </div>
                 </div>
 
-                <div className="px-6 py-4">
+                <div className="px-6 py-6 bg-indigo-900/20 border-t border-purple-900/30">
                   <button
                     onClick={handleContinueToCheckout}
                     disabled={isLoading || cartItems.length === 0}
-                    className={`w-full py-3 px-4 flex items-center justify-center bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium rounded-md transition-all ${
-                      isLoading || cartItems.length === 0
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
-                    }`}
+                    className="relative group w-full py-3.5 px-4 rounded-lg overflow-hidden"
                   >
-                    {currentUser
-                      ? "Continue to Checkout"
-                      : "Sign in to Checkout"}
+                    <span className="absolute inset-0 w-full h-full transition-all duration-300 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 group-hover:from-pink-600 group-hover:via-purple-600 group-hover:to-indigo-600"></span>
+                    <span className="relative flex items-center justify-center text-white font-medium">
+                      {isLoading ? (
+                        <span className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processing...
+                        </span>
+                      ) : currentUser ? (
+                        "Continue to Checkout"
+                      ) : (
+                        "Sign in to Checkout"
+                      )}
+                    </span>
                   </button>
 
-                  <p className="text-center text-sm text-gray-500 mt-4">
+                  <div className="mt-5 text-center">
                     {shipping === 0 ? (
-                      <span className="text-green-400">
-                        ✓ Free shipping applied
-                      </span>
+                      <div className="flex items-center justify-center space-x-2 text-green-400 text-sm">
+                        <FiCheckCircle />
+                        <span>Free cosmic shipping applied</span>
+                      </div>
                     ) : (
-                      <span>Free shipping on orders over ₹2,000</span>
+                      <div className="text-indigo-300/70 text-sm">
+                        Free cosmic shipping on orders over ₹2,000
+                      </div>
                     )}
-                  </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         )}
+        
+        {cartItems.length > 0 && (
+          <div className="mt-12 text-center animate-fadeIn opacity-0" style={{ animationDelay: "0.6s", animationFillMode: "forwards" }}>
+            <Link 
+              to="/" 
+              className="relative inline-flex items-center overflow-hidden px-6 py-2.5 rounded-full group"
+            >
+              <span className="absolute inset-0 w-full h-full transition-all duration-300 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 group-hover:from-indigo-600/30 group-hover:to-purple-600/30"></span>
+              <span className="relative flex items-center justify-center text-indigo-400 group-hover:text-indigo-300 font-medium transition-colors duration-200">
+                <FiShoppingBag className="mr-2" />
+                Continue Shopping
+              </span>
+            </Link>
+          </div>
+        )}
       </div>
+      
+      {/* Animation styles */}
+      <style jsx="true">{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.6s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 };

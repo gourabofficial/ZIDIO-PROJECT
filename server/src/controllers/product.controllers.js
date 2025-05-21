@@ -109,6 +109,7 @@ export const filterProduct = async (req, res) => {
       minPrice,
       maxPrice,
       category,
+      collection, // Add collection parameter
       size,
       offerStatus,
       page,
@@ -145,6 +146,11 @@ export const filterProduct = async (req, res) => {
     // Apply category filter
     if (category) {
       filter.category = category;
+    }
+
+    // Apply collection filter - add this block
+    if (collection) {
+      filter.collections = collection; // Use collections (plural) to match the schema
     }
 
     // Apply size filter

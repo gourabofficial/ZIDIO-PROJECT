@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthdata } from "../../context/AuthContext";
-import { FiUser, FiArrowLeft } from "react-icons/fi";
+import { FiUser, FiArrowLeft, FiCheck, FiCamera } from "react-icons/fi";
 import { updateUserDetails, updateAvatarUrl } from "../../Api/user";
 import MiniLoader from "../../components/Loader/MiniLoader";
 import toast, { Toaster } from 'react-hot-toast';
+import { motion, AnimatePresence } from "framer-motion";
 
 const EditProfile = () => {
-  const { currentUser, isAuth, isLoaded, refetchUserData, updateUserState } = useAuthdata();
+  const { currentUser, isAuth, isLoaded, refetchUserData } = useAuthdata();
   const navigate = useNavigate();
   
   const [profileForm, setProfileForm] = useState({
     fullName: "",
     avatar: "",
   });
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Superhero avatars
   const superheroAvatars = [
@@ -34,7 +37,14 @@ const EditProfile = () => {
     }
   }, [currentUser]);
 
-  if (!isLoaded) return <div className="min-h-screen bg-[#0c0e16] flex items-center justify-center"><MiniLoader /></div>;
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#0c0e16] to-[#161927] flex items-center justify-center">
+        <div className="text-white"><MiniLoader /></div>
+      </div>
+    );
+  }
+  
   if (!isAuth) {
     navigate("/sign-in");
     return null;
@@ -51,22 +61,21 @@ const EditProfile = () => {
 
   const handleUpdateProfile = async () => {
     try {
+      setIsSubmitting(true);
       let updatedItems = [];
       
       // For avatar URL updates
       if (profileForm.avatar && profileForm.avatar !== currentUser.avatar) {
-        
-        
         const avatarResult = await updateAvatarUrl(profileForm.avatar);
         
         if (!avatarResult.success) {
           console.error(avatarResult.message);
           toast.error("Failed to update avatar");
+          setIsSubmitting(false);
           return;
         }
         
         updatedItems.push("avatar");
-        toast.success("Avatar updated successfully");
       }
       
       // For name updates
@@ -75,132 +84,237 @@ const EditProfile = () => {
         if (!nameResult.success) {
           console.error("Failed to update name:", nameResult.message);
           toast.error("Failed to update name");
+          setIsSubmitting(false);
           return;
         }
         
         updatedItems.push("name");
-        toast.success("Name updated successfully");
       }
       
       // If nothing was updated
       if (updatedItems.length === 0) {
         toast.info("No changes detected");
+        setIsSubmitting(false);
         return;
       }
       
       // Refresh user data and navigate
       await refetchUserData();
-      navigate("/account");
+      
+      // Show success message
+      toast.success(
+        updatedItems.length > 1 
+          ? "Profile updated successfully!" 
+          : `Your ${updatedItems[0]} has been updated!`
+      );
+      
+      // Small delay before navigation for toast to be visible
+      setTimeout(() => navigate("/account", {
+        state: { updatedUser: {
+          ...currentUser,
+          fullName: profileForm.fullName,
+          avatar: profileForm.avatar
+        }}
+      }), 1000);
+      
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile");
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0e16] p-6 mt-20">
+    <div className="min-h-screen bg-gradient-to-b from-[#0c0e16] to-[#161927] pt-24 pb-16 px-4 md:px-8">
       {/* Toast container */}
       <Toaster 
-        position="top-center"
+        position="top-right"
         toastOptions={{
-          style: {
-            background: '#1e293b',
-            color: '#fff',
-            border: '1px solid #374151'
-          },
+          duration: 4000,
           success: {
-            iconTheme: {
-              primary: '#10b981',
-              secondary: '#fff'
-            }
+            icon: '🚀',
+            style: {
+              background: 'rgba(19, 20, 31, 0.9)',
+              backdropFilter: 'blur(10px)',
+              color: '#fff',
+              border: '1px solid rgba(124, 58, 237, 0.3)',
+            },
           },
           error: {
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#fff'
-            }
+            icon: '❌',
+            style: {
+              background: 'rgba(19, 20, 31, 0.9)',
+              backdropFilter: 'blur(10px)',
+              color: '#fff',
+              border: '1px solid rgba(220, 38, 38, 0.3)',
+            },
+          },
+          info: {
+            icon: 'ℹ️',
+            style: {
+              background: 'rgba(19, 20, 31, 0.9)',
+              backdropFilter: 'blur(10px)',
+              color: '#fff',
+              border: '1px solid rgba(59, 130, 246, 0.3)',
+            },
           }
         }}
       />
       
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center gap-2 text-white mb-6">
-          <Link to="/account" className="hover:text-purple-400">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-3xl mx-auto"
+      >
+        <div className="flex items-center gap-3 mb-8">
+          <Link 
+            to="/account-settings" 
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-[#13141f]/60 backdrop-blur-sm border border-indigo-500/20 text-white hover:bg-indigo-700/20 transition-all hover:border-indigo-500/40"
+          >
             <FiArrowLeft size={20} />
           </Link>
-          <h1 className="text-3xl font-bold">Edit Profile</h1>
+          
+          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
+            Edit Profile
+          </h1>
         </div>
 
-        <div className="bg-[#1e293b] rounded-xl p-6 shadow-lg">
-          <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-6">
-            <FiUser className="text-purple-400" />
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="bg-[#13141f]/70 backdrop-blur-sm rounded-xl p-6 md:p-8 shadow-lg border border-indigo-500/20"
+        >
+          <h2 className="text-xl font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text flex items-center gap-2 mb-8">
+            <FiUser className="text-indigo-400" />
             <span>Profile Information</span>
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-8">
+            {/* Name Field */}
             <div>
-              <label htmlFor="fullName" className="block text-gray-300 mb-1">Full Name</label>
+              <label htmlFor="fullName" className="block text-indigo-300 text-sm mb-2 flex items-center gap-2">
+                <FiUser size={14} /> Full Name
+              </label>
               <input
                 type="text"
                 id="fullName"
                 name="fullName"
                 value={profileForm.fullName}
                 onChange={handleProfileInputChange}
-                className="w-full bg-[#121828] border border-gray-700 rounded-md px-4 py-2 text-white"
+                placeholder="Enter your full name"
+                className="w-full bg-[#0c0e16] text-white border border-indigo-500/30 focus:border-indigo-500/60 rounded-md px-4 py-3 transition-colors outline-none"
               />
             </div>
 
-            <div>
-              <label className="block text-gray-300 mb-2">Select Avatar</label>
-              <div className="grid grid-cols-5 gap-4 mb-4">
+            {/* Avatar Selection */}
+            <div className="space-y-4">
+              <label className="block text-indigo-300 text-sm mb-2 flex items-center gap-2">
+                <FiCamera size={14} /> Choose Profile Avatar
+              </label>
+              
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
                 {superheroAvatars.map((avatar, index) => (
-                  <div
+                  <motion.div
                     key={index}
-                    className={`cursor-pointer rounded-md p-1 ${
-                      profileForm.avatar === avatar
-                        ? "ring-2 ring-purple-500 scale-105"
-                        : "hover:bg-[#2e3446]"
-                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`relative cursor-pointer rounded-lg overflow-hidden transition-all duration-300 
+                      ${profileForm.avatar === avatar
+                        ? "ring-2 ring-purple-500 ring-opacity-70 shadow-lg shadow-purple-500/20"
+                        : "hover:shadow-md hover:shadow-indigo-500/10"
+                      }`}
                     onClick={() => handleAvatarSelect(avatar)}
                   >
-                    <img
-                      src={avatar}
-                      alt={`Avatar option ${index + 1}`}
-                      className="w-16 h-16 rounded-full object-cover mx-auto"
-                    />
-                  </div>
+                    {/* Border glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/0 to-purple-500/0 opacity-0 hover:opacity-30 transition-opacity duration-300"></div>
+                    
+                    {/* Avatar image */}
+                    <div className="aspect-square overflow-hidden bg-[#0c0e16]">
+                      <img
+                        src={avatar}
+                        alt={`Avatar option ${index + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/150?text=Avatar";
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Selected indicator */}
+                    {profileForm.avatar === avatar && (
+                      <div className="absolute bottom-1 right-1 bg-purple-500 rounded-full p-1 shadow-lg">
+                        <FiCheck size={12} className="text-white" />
+                      </div>
+                    )}
+                  </motion.div>
                 ))}
               </div>
 
-              {profileForm.avatar && (
-                <div className="mt-4 text-center">
-                  <p className="text-gray-400 text-sm mb-1">Selected Avatar:</p>
-                  <img
-                    src={profileForm.avatar}
-                    alt="Selected avatar"
-                    className="w-20 h-20 rounded-full object-cover mx-auto"
-                  />
-                </div>
-              )}
+              {/* Selected Avatar Display */}
+              <AnimatePresence>
+                {profileForm.avatar && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="mt-6 flex flex-col items-center"
+                  >
+                    <p className="text-indigo-300 text-sm mb-3">Selected Avatar:</p>
+                    <div className="relative group">
+                      <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 opacity-50 blur-sm group-hover:opacity-75 transition-opacity duration-300"></div>
+                      <img
+                        src={profileForm.avatar}
+                        alt="Selected avatar"
+                        className="relative w-24 h-24 rounded-full object-cover border-2 border-purple-500/30"
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/150?text=Avatar";
+                        }}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            <div className="flex gap-3 mt-4">
-              <button
+            {/* Action Buttons */}
+            <div className="flex gap-4 pt-4">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleUpdateProfile}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md text-white text-sm transition-colors"
+                disabled={isSubmitting}
+                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-md text-sm font-medium transition-all shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 flex items-center justify-center min-w-[120px]"
               >
-                Save Changes
-              </button>
-              <button
-                onClick={() => navigate("/account")}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-800 rounded-md text-white text-sm transition-colors"
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <FiCheck size={16} /> Save Changes
+                  </span>
+                )}
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate("/account-settings")}
+                disabled={isSubmitting}
+                className="px-6 py-3 bg-[#0c0e16] text-gray-300 border border-gray-700 hover:border-gray-600 hover:text-white rounded-md text-sm font-medium transition-all flex items-center justify-center"
               >
                 Cancel
-              </button>
+              </motion.button>
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

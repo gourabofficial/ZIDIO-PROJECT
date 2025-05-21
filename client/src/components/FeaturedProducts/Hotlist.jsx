@@ -3,7 +3,7 @@ import ProductCard from '../ProductCard/ProductCard';
 import ViewAllButton from './ViewAllButton';
 
 const Hotlist = ({ HotProduct }) => {
-  console.log("hotProduct: ", HotProduct);
+  // console.log("hotProduct: ", HotProduct);
   const starsContainerRef = useRef(null);
 
   // Create stars effect on component mount

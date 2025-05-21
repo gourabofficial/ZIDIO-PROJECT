@@ -55,7 +55,7 @@ const productSchema = new mongoose.Schema({
     default: false,
   },
   collections: {
-    type:"String",
+    type:String,
     required: true,
   },
   offerStatus: {

@@ -30,53 +30,48 @@ import AllProductList from "./admin/components/AllProductList";
 import AdminUser from "./admin/components/AdminUser";
 import AdminSettings from "./admin/components/AdminSettings";
 
-
-
-
 const App = () => {
   return (
-    
-      <>
-        <ScrollToTop />
-        <Routes>
-          {/* Root layout */}
-          <Route element={<RootLayout />}>
-            <Route index element={<Home />} />
-            <Route path="/category/:id" element={<Category />} />
+    <>
+      <ScrollToTop />
+      <Routes>
+        {/* Root layout */}
+        <Route element={<RootLayout />}>
+          <Route index element={<Home />} />
+          <Route path="/category/:id" element={<Category />} />
           <Route path="/category" element={<Category />} />
-            <Route path="/collection" element={<Collection />} />
-            <Route path="/collection/:id" element={<Collection />} />
-            <Route path="/track-order" element={<TrackOrder />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/wishlist" element={<Wishlist />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/account-settings" element={<AccountSettings />} />
-            <Route path="/edit-profile" element={<EditProfile />} />
-            <Route path="/add-address" element={<AddAddress />} />
-            <Route path="/product/:id" element={<Product />} />
-            <Route path="/orders" element={<Order />} />
-            <Route path="/offers" element={<Offer />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-          {/* Auth layout */}
-          <Route element={<AuthLayout />}>
-            <Route path="/sign-in" element={<SignIn />} />
-            <Route path="/sign-up" element={<SignUp />} />
-          </Route>
+          <Route path="/collection" element={<Collection />} />
+          <Route path="/collection/:id" element={<Collection />} />
+          <Route path="/track-order" element={<TrackOrder />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="/account-settings" element={<AccountSettings />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          {/* <Route path="/add-address" element={<AddAddress />} /> */}
+          <Route path="/product/:id" element={<Product />} />
+          <Route path="/orders" element={<Order />} />
+          <Route path="/offers" element={<Offer />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+        {/* Auth layout */}
+        <Route element={<AuthLayout />}>
+          <Route path="/sign-in" element={<SignIn />} />
+          <Route path="/sign-up" element={<SignUp />} />
+        </Route>
 
-          {/* Admin layout */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="/admin/add-products" element={<AddProduct />} />
-            <Route path="/admin/products-list" element={<AllProductList />} />
-            <Route path="/admin/all-orders" element={<OrderAdmin />} />
-            <Route path="/admin/all-users" element={<AdminUser />} />
-            <Route path="/admin/settings" element={ <AdminSettings/>} />
-          </Route>
-        </Routes>
-      </>
-    
+        {/* Admin layout */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="/admin/add-products" element={<AddProduct />} />
+          <Route path="/admin/products-list" element={<AllProductList />} />
+          <Route path="/admin/all-orders" element={<OrderAdmin />} />
+          <Route path="/admin/all-users" element={<AdminUser />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+        </Route>
+      </Routes>
+    </>
   );
 };
 
