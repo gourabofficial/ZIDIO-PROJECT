@@ -4,6 +4,7 @@ import { User } from '../model/user.model.js';
 export const checkedUserLogin = async (req, res) => {
   try {
     const clerkId = req.auth?.userId;
+    
 
     if (!clerkId) {
       return res.status(400).json({
@@ -62,7 +63,7 @@ export const checkedUserLogin = async (req, res) => {
           userByEmail._id,
           { clerkId },  // Don't update fullName here
           { new: true }
-        );z
+        );
       }
     }
 

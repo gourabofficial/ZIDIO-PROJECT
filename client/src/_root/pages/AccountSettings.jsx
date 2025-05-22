@@ -33,6 +33,7 @@ const AccountSettings = () => {
     state: "",
     pinCode: "",
     country: "",
+    phoneNumber: "", // Added phone number field
   });
 
   // Fetch address details when component mounts or when address ID changes
@@ -119,6 +120,7 @@ const AccountSettings = () => {
         state: addressData.state || "",
         pinCode: addressData.pinCode || "",
         country: addressData.country || "",
+        phoneNumber: addressData.phoneNumber || "", // Added phone number
       });
     }
     setIsManagingAddress(true);
@@ -273,6 +275,18 @@ const AccountSettings = () => {
                 className="w-full bg-[#0c0e16] text-white border border-indigo-500/30 focus:border-indigo-500/60 rounded-md p-2.5 transition-colors outline-none"
               />
             </div>
+
+            <div>
+              <label className="block text-gray-300 text-sm mb-1.5">Phone Number</label>
+              <input
+                type="text"
+                name="phoneNumber"
+                value={addressForm.phoneNumber}
+                onChange={handleAddressInputChange}
+                placeholder="Contact phone number"
+                className="w-full bg-[#0c0e16] text-white border border-indigo-500/30 focus:border-indigo-500/60 rounded-md p-2.5 transition-colors outline-none"
+              />
+            </div>
           </div>
 
           <div className="flex gap-3 mt-6">
@@ -365,6 +379,14 @@ const AccountSettings = () => {
                 {addressData.city}, {addressData.state} {addressData.pinCode}
               </p>
               <p className="text-gray-300">{addressData.country}</p>
+
+              {/* Add this in the address display section */}
+              {addressData && addressData.phoneNumber && (
+                <p className="text-gray-300 flex items-center gap-2 mt-2">
+                  <FiPhone size={14} className="text-indigo-300" />
+                  <span>{addressData.phoneNumber}</span>
+                </p>
+              )}
             </div>
             
             <button
@@ -463,11 +485,11 @@ const AccountSettings = () => {
             <div className="flex-shrink-0 relative group mx-auto md:mx-0">
               <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 opacity-50 blur-sm group-hover:opacity-75 transition-opacity duration-300"></div>
               <img
-                src={currentUser.avatar || "https://via.placeholder.com/100?text=Avatar"}
+                src={currentUser.avatar || "https://img.freepik.com/premium-vector/influencer-icon-vector-image-can-be-used-digital-nomad_120816-263441.jpg?ga=GA1.1.987127041.1747852951&semt=ais_hybrid&w=740"}
                 alt={currentUser.fullName}
                 className="relative w-24 h-24 rounded-full object-cover border-2 border-indigo-500/30"
                 onError={(e) => {
-                  e.target.src = "https://via.placeholder.com/100?text=Avatar";
+                  e.target.src = "https://img.freepik.com/premium-vector/influencer-icon-vector-image-can-be-used-digital-nomad_120816-263441.jpg?ga=GA1.1.987127041.1747852951&semt=ais_hybrid&w=740";
                 }}
               />
             </div>

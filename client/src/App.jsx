@@ -19,7 +19,7 @@ import SignUp from "./_auth/pages/SignUp";
 import ScrollToTop from "./components/common/ScrollToTop";
 import AccountSettings from "./_root/pages/AccountSettings";
 import EditProfile from "./_root/pages/EditProfile";
-import AddAddress from "./_root/pages/AddAddress";
+
 
 // Admin imports
 import AdminLayout from "./admin/AdminLayout";
@@ -48,8 +48,8 @@ const App = () => {
           <Route path="/cart" element={<Cart />} />
           <Route path="/account" element={<Account />} />
           <Route path="/account-settings" element={<AccountSettings />} />
+          <Route path="/settings" element={<AccountSettings />} />
           <Route path="/edit-profile" element={<EditProfile />} />
-          {/* <Route path="/add-address" element={<AddAddress />} /> */}
           <Route path="/product/:id" element={<Product />} />
           <Route path="/orders" element={<Order />} />
           <Route path="/offers" element={<Offer />} />

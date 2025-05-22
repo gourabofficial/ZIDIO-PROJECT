@@ -43,10 +43,10 @@ export const updateAvatar = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   try {
-    const { fullName, email } = req.body;
+    const { fullName, email,phone } = req.body;
     const userId = req.userId;
 
-    if (!fullName && !email) {
+    if (!fullName && !email && !phone) {
       return res.status(400).json({
         message: "Nothing to update",
         success: false
@@ -56,6 +56,7 @@ export const updateUser = async (req, res) => {
     const updateData = {};
     if (fullName) updateData.fullName = fullName;
     if (email) updateData.email = email;
+    if (phone) updateData.phone = phone;
 
     const updatedUser = await User.findOneAndUpdate(
       { clerkId: userId },
@@ -86,7 +87,7 @@ export const updateUser = async (req, res) => {
 
 export const addAddress = async (req, res) => {
   try {
-    const { addressInfo, city, state, country, pinCode } = req.body;
+    const { addressInfo, city, state, country, pinCode,phoneNumber } = req.body;
     const userId = req.userId;
 
     // Find user to get MongoDB _id
@@ -106,7 +107,8 @@ export const addAddress = async (req, res) => {
       city,
       state,
       country,
-      pinCode
+      pinCode,
+      phoneNumber,
     });
 
     // Update user with address reference
@@ -133,7 +135,7 @@ export const addAddress = async (req, res) => {
 
 export const updateAddress = async (req, res) => {
   try {
-    const { addressId, addressInfo, city, state, pinCode, country } = req.body;
+    const { addressId, addressInfo, city, state, pinCode,phoneNumber, country } = req.body;
     const clerkId = req.userId; // This is the Clerk ID from auth middleware
 
     if (!addressId) {
@@ -171,6 +173,7 @@ export const updateAddress = async (req, res) => {
     address.city = city;
     address.state = state;
     address.pinCode = pinCode;
+    address.phoneNumber = phoneNumber;
     address.country = country;
 
     await address.save();

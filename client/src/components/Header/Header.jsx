@@ -310,10 +310,12 @@ const Header = () => {
                         />
                       </div>
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold border-2 border-purple-500/30 group-hover:border-indigo-500/50 transition-colors duration-300 shadow-sm shadow-purple-500/20">
-                        {currentUser.firstName?.[0] ||
-                          currentUser.fullName?.[0] ||
-                          "U"}
+                      <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-purple-500/30 group-hover:border-indigo-500/50 transition-colors duration-300 shadow-sm shadow-purple-500/20">
+                        <img
+                          src="https://img.freepik.com/premium-vector/influencer-icon-vector-image-can-be-used-digital-nomad_120816-263441.jpg?ga=GA1.1.987127041.1747852951&semt=ais_hybrid&w=740"
+                          alt="Default Profile"
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                     )}
                     <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-indigo-500/0 to-purple-500/0 group-hover:from-indigo-500/10 group-hover:to-purple-500/10 blur-sm transition-opacity duration-300 opacity-0 group-hover:opacity-100"></div>
@@ -341,10 +343,12 @@ const Header = () => {
                           />
                         </div>
                       ) : (
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold mr-3 border-2 border-purple-500/30 shadow-sm shadow-purple-500/20">
-                          {currentUser.firstName?.[0] ||
-                            currentUser.fullName?.[0] ||
-                            "U"}
+                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-purple-500/30 mr-3 shadow-sm shadow-purple-500/20">
+                          <img
+                            src="https://img.freepik.com/premium-vector/influencer-icon-vector-image-can-be-used-digital-nomad_120816-263441.jpg?ga=GA1.1.987127041.1747852951&semt=ais_hybrid&w=740"
+                            alt="Default Profile"
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                       )}
                       <div className="min-w-0 flex-1">

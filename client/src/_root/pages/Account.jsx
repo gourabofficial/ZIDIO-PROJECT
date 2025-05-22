@@ -56,8 +56,8 @@ const Account = () => {
   // Extract user details from displayUser instead of currentUser
   const fullName = displayUser?.fullName || 'User Name';
   const email = displayUser?.email || '';
-  const phone = displayUser?.phone || '629400000';
-  const imageUrl = displayUser?.avatar || 'https://via.placeholder.com/150';
+  const phone = displayUser?.phone || 'Not provided';
+  const imageUrl = displayUser?.avatar || 'https://img.freepik.com/premium-vector/influencer-icon-vector-image-can-be-used-digital-nomad_120816-263441.jpg?ga=GA1.1.987127041.1747852951&semt=ais_hybrid&w=740';
 
   // Updated sign out handler
   const handleSignOut = async () => {

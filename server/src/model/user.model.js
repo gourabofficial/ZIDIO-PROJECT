@@ -28,7 +28,13 @@ const userSchema = new mongoose.Schema(
     },
     avatar: {
       type: String,
-      
+    },
+    phone: {
+      type: String,
+      unique: true,
+      sparse: true,  // This ignores documents where phone field doesn't exist
+      trim: true
+      // Remove the default: '' 
     },
     // forgen key
     address: {

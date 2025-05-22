@@ -230,11 +230,11 @@ const SignIn = () => {
                     Sign in with OTP instead
                   </button>
                 </div>
-                <div className="text-sm">
+                {/* <div className="text-sm">
                   <Link to="/forgot-password" className="font-medium text-purple-400 hover:text-purple-300">
                     Forgot your password?
                   </Link>
-                </div>
+                </div> */}
               </div>
 
               <div>

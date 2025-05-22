@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 
 const addressSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+   {
+      userId: {
+         type: mongoose.Schema.Types.ObjectId,
+         ref: "User",
+         required: true,
       },
       addressInfo: {
          type: String,
@@ -15,6 +15,12 @@ const addressSchema = new mongoose.Schema(
       city: {
          type: String,
          required: true,
+      },
+      phoneNumber: {
+         type: String,
+         required: true,
+         unique: true,
+         trim: true
       },
       country: {
          type: String,
@@ -30,8 +36,8 @@ const addressSchema = new mongoose.Schema(
          required: true,
       }
 
-  },
-  { timestamps: true }
+   },
+   { timestamps: true }
 );
 
 export const Address = mongoose.model("Address", addressSchema);

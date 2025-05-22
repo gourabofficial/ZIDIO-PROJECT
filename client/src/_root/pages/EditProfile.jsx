@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthdata } from "../../context/AuthContext";
-import { FiUser, FiArrowLeft, FiCheck, FiCamera } from "react-icons/fi";
+import { FiUser, FiArrowLeft, FiCheck, FiCamera, FiPhone } from "react-icons/fi";
 import { updateUserDetails, updateAvatarUrl } from "../../Api/user";
 import MiniLoader from "../../components/Loader/MiniLoader";
 import toast, { Toaster } from 'react-hot-toast';
@@ -14,6 +14,7 @@ const EditProfile = () => {
   const [profileForm, setProfileForm] = useState({
     fullName: "",
     avatar: "",
+    phone: "", // Add phone field
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,6 +34,7 @@ const EditProfile = () => {
       setProfileForm({
         fullName: currentUser.fullName || "",
         avatar: currentUser.avatar || "",
+        phone: currentUser.phone || "", // Initialize phone
       });
     }
   }, [currentUser]);
@@ -78,17 +80,28 @@ const EditProfile = () => {
         updatedItems.push("avatar");
       }
       
-      // For name updates
+      // For name and phone updates
+      const userUpdates = {};
       if (profileForm.fullName && profileForm.fullName !== currentUser.fullName) {
-        const nameResult = await updateUserDetails({ fullName: profileForm.fullName });
-        if (!nameResult.success) {
-          console.error("Failed to update name:", nameResult.message);
-          toast.error("Failed to update name");
+        userUpdates.fullName = profileForm.fullName;
+      }
+      
+      if (profileForm.phone !== currentUser.phone) {
+        userUpdates.phone = profileForm.phone;
+      }
+      
+      // Only make API call if there are updates
+      if (Object.keys(userUpdates).length > 0) {
+        const userResult = await updateUserDetails(userUpdates);
+        if (!userResult.success) {
+          console.error("Failed to update user details:", userResult.message);
+          toast.error("Failed to update user details");
           setIsSubmitting(false);
           return;
         }
         
-        updatedItems.push("name");
+        if (userUpdates.fullName) updatedItems.push("name");
+        if (userUpdates.phone) updatedItems.push("phone number");
       }
       
       // If nothing was updated
@@ -113,7 +126,8 @@ const EditProfile = () => {
         state: { updatedUser: {
           ...currentUser,
           fullName: profileForm.fullName,
-          avatar: profileForm.avatar
+          avatar: profileForm.avatar,
+          phone: profileForm.phone
         }}
       }), 1000);
       
@@ -194,7 +208,7 @@ const EditProfile = () => {
           <div className="space-y-8">
             {/* Name Field */}
             <div>
-              <label htmlFor="fullName" className="block text-indigo-300 text-sm mb-2 flex items-center gap-2">
+              <label htmlFor="fullName" className=" text-indigo-300 text-sm mb-2 flex items-center gap-2">
                 <FiUser size={14} /> Full Name
               </label>
               <input
@@ -208,9 +222,26 @@ const EditProfile = () => {
               />
             </div>
 
+            {/* Phone Number Field */}
+            <div>
+              <label htmlFor="phone" className=" text-indigo-300 text-sm mb-2 flex items-center gap-2">
+                <FiPhone size={14} /> Phone Number
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={profileForm.phone}
+                onChange={handleProfileInputChange}
+                placeholder="Enter your phone number"
+                className="w-full bg-[#0c0e16] text-white border border-indigo-500/30 focus:border-indigo-500/60 rounded-md px-4 py-3 transition-colors outline-none"
+              />
+              <p className="text-gray-400 text-xs mt-1">Format: +1234567890 or 1234567890</p>
+            </div>
+
             {/* Avatar Selection */}
             <div className="space-y-4">
-              <label className="block text-indigo-300 text-sm mb-2 flex items-center gap-2">
+              <label className=" text-indigo-300 text-sm mb-2 flex items-center gap-2">
                 <FiCamera size={14} /> Choose Profile Avatar
               </label>
               
