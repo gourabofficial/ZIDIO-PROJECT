@@ -101,6 +101,7 @@ const SignIn = () => {
       if (result.status === 'complete') {
         // User is signed in
         navigate('/');
+        window.location.reload();
       }
     } catch (error) {
       console.error('OTP verification error:', error);

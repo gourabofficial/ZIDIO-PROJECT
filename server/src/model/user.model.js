@@ -32,9 +32,9 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       unique: true,
-      sparse: true,  // This ignores documents where phone field doesn't exist
+      sparse: true,  
       trim: true
-      // Remove the default: '' 
+      
     },
     // forgen key
     address: {
