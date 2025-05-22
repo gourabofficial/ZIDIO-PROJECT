@@ -10,6 +10,7 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showOtpSection, setShowOtpSection] = useState(false);
   const [otpInputs, setOtpInputs] = useState(['', '', '', '', '', '']);
+  const [isOtpMode, setIsOtpMode] = useState(false);
   
   // Clerk hooks
   const { signIn } = useSignIn();
@@ -127,6 +128,11 @@ const SignIn = () => {
     }
   };
 
+  const toggleAuthMode = () => {
+    setIsOtpMode(!isOtpMode);
+    setErrorMessage('');
+  };
+
   return (
     <div className="min-h-screen bg-[#0c0e16] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
       {/* Background effects */}
@@ -166,7 +172,7 @@ const SignIn = () => {
 
         {!showOtpSection ? (
           <>
-            <form className="mt-8 space-y-6" onSubmit={handleSignIn}>
+            <form className="mt-8 space-y-6" onSubmit={isOtpMode ? handleOtpSubmit : handleSignIn}>
               <div className="mb-4">
                 <label htmlFor="email-address" className="sr-only">
                   Email address
@@ -189,58 +195,67 @@ const SignIn = () => {
                 </div>
               </div>
 
-              <div className="mb-4">
-                <label htmlFor="password" className="sr-only">
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiLock className="h-5 w-5 text-gray-500" />
-                  </div>
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="current-password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-700 placeholder-gray-500 text-white rounded-md bg-[#1e293b] focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                    placeholder="Password"
-                  />
-                  <div
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <FiEyeOff className="h-5 w-5 text-gray-500" />
-                    ) : (
-                      <FiEye className="h-5 w-5 text-gray-500" />
-                    )}
+              {!isOtpMode && (
+                <div className="mb-4">
+                  <label htmlFor="password" className="sr-only">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiLock className="h-5 w-5 text-gray-500" />
+                    </div>
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-700 placeholder-gray-500 text-white rounded-md bg-[#1e293b] focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                      placeholder="Password"
+                    />
+                    <div
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <FiEyeOff className="h-5 w-5 text-gray-500" />
+                      ) : (
+                        <FiEye className="h-5 w-5 text-gray-500" />
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex items-center justify-between">
                 <div className="text-sm">
                   <button
                     type="button"
-                    onClick={handleRequestOtp}
+                    onClick={isOtpMode ? handleRequestOtp : toggleAuthMode}
                     className="font-medium text-purple-400 hover:text-purple-300"
                   >
-                    Sign in with OTP instead
+                    {isOtpMode ? " " : "Sign in with OTP instead"}
                   </button>
                 </div>
-                {/* <div className="text-sm">
-                  <Link to="/forgot-password" className="font-medium text-purple-400 hover:text-purple-300">
-                    Forgot your password?
-                  </Link>
-                </div> */}
+                {isOtpMode && (
+                  <div className="text-sm">
+                    <button
+                      type="button"
+                      onClick={toggleAuthMode}
+                      className="font-medium text-purple-400 hover:text-purple-300"
+                    >
+                      Back to password login
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div>
                 <button
-                  type="submit"
+                  type={isOtpMode && !isOtpSent ? "button" : "submit"}
+                  onClick={isOtpMode && !isOtpSent ? handleRequestOtp : undefined}
                   disabled={isLoading}
                   className={`group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-md text-white ${
                     isLoading
@@ -254,9 +269,9 @@ const SignIn = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Signing in...
+                      {isOtpMode && !isOtpSent ? 'Sending OTP...' : 'Signing in...'}
                     </span>
-                  ) : 'Sign in'}
+                  ) : isOtpMode && !isOtpSent ? 'Send OTP' : 'Sign in'}
                 </button>
               </div>
             </form>

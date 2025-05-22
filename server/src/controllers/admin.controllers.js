@@ -3,6 +3,7 @@ import { Product } from "../model/product.model.js";
 import { HomeContent } from "../model/homeContent.model.js";
 import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
+import { User } from "../model/user.model.js";
 
 export const addProduct = async (req, res) => {
   try {
@@ -14,8 +15,16 @@ export const addProduct = async (req, res) => {
       });
     }
 
-    const { name, description, price, category,collections, discount, size, offerStatus } =
-      req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      collections,
+      discount,
+      size,
+      offerStatus,
+    } = req.body;
     console.log("Request body:", req.body);
     if (!name || !description || !price || !category || !collections) {
       return res.status(400).json({
@@ -312,17 +321,14 @@ export const getAllSearchProducts = async (req, res) => {
     const skip = (page - 1) * limit;
 
     // Accept either 'query' or 'search' parameter for compatibility
-    const searchTerm = req.query.query || req.query.search || '';
+    const searchTerm = req.query.query || req.query.search || "";
     let filter = {};
 
     // If search term is provided, create a search filter for name and product_id only
-    if (searchTerm && searchTerm.trim() !== '') {
-      const searchRegex = new RegExp(searchTerm, 'i');
+    if (searchTerm && searchTerm.trim() !== "") {
+      const searchRegex = new RegExp(searchTerm, "i");
       filter = {
-        $or: [
-          { name: searchRegex },
-          { product_id: searchRegex }
-        ],
+        $or: [{ name: searchRegex }, { product_id: searchRegex }],
       };
     }
 
@@ -333,7 +339,7 @@ export const getAllSearchProducts = async (req, res) => {
 
     // Fetch paginated results with only required fields
     const products = await Product.find(filter)
-      .select("name product_id images")
+      .select("name product_id images price category discount")
       .skip(skip)
       .limit(limit);
 
@@ -342,6 +348,9 @@ export const getAllSearchProducts = async (req, res) => {
       _id: product._id,
       product_id: product.product_id,
       name: product.name,
+      price: product.price,
+      category: product.category,
+      discount: product.discount,
       image:
         product.images && product.images.length > 0
           ? product.images[0].imageUrl
@@ -375,7 +384,7 @@ export const getAllSearchProducts = async (req, res) => {
   }
 };
 
-//return image and title and input productId of the product 
+//return image and title and input productId of the product
 export const getProductsbyMultipleIds = async (req, res) => {
   try {
     const userId = req.userId;
@@ -395,16 +404,16 @@ export const getProductsbyMultipleIds = async (req, res) => {
     }
 
     // Check if ids are valid MongoDB ObjectIDs
-    const validMongoIds = productIds.filter(id => 
+    const validMongoIds = productIds.filter((id) =>
       mongoose.Types.ObjectId.isValid(id)
     );
-    
+
     // Query for both MongoDB _id and product_id
     const products = await Product.find({
       $or: [
         { _id: { $in: validMongoIds } },
-        { product_id: { $in: productIds } }
-      ]
+        { product_id: { $in: productIds } },
+      ],
     }).select("_id product_id name images");
 
     if (!products || products.length === 0) {
@@ -439,3 +448,69 @@ export const getProductsbyMultipleIds = async (req, res) => {
   }
 };
 
+export const getAllSearchUsers = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const searchTerm = req.query.query || req.query.search || "";
+    let filter = {};
+
+    if (searchTerm && searchTerm.trim() !== "") {
+      const searchRegex = new RegExp(searchTerm, "i");
+      filter = {
+        $or: [{ name: searchRegex }, { email: searchRegex }],
+      };
+    }
+
+    const totalUsers = await User.countDocuments(filter);
+
+    const users = await User.find(filter)
+      .select("fullName email role avatar createdAt")
+      .skip(skip)
+      .limit(limit);
+
+    const formattedUsers = users.map((user) => ({
+      _id: user._id,
+      name: user.fullName,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      createdAt: user.createdAt,
+    }));
+
+    const totalPages = Math.ceil(totalUsers / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    res.status(200).json({
+      message: "Users fetched successfully",
+      success: true,
+      count: formattedUsers.length,
+      pagination: {
+        totalUsers,
+        totalPages,
+        currentPage: page,
+        hasNextPage,
+        hasPrevPage,
+      },
+      users: formattedUsers,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+      error: error.message,
+    });
+  }
+}

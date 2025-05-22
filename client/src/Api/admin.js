@@ -160,3 +160,23 @@ export const getProductsbyMultipleIds = async (ids) => {
     };
   }
 };
+
+export const getAllSearchUsers = async () => {
+  try {
+    const response = await axiosInstance.get("/admin/get-search-all-users");
+
+    if (!response.data.success) {
+      return {
+        message: response.data.message,
+        success: false,
+      };
+    }
+
+ return response.data;
+  } catch (error) {
+    return {
+      message: error.message,
+      success: false,
+    };
+  }
+}

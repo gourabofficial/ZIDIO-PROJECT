@@ -16,7 +16,6 @@ const AdminLayout = () => {
   // Check admin status
   useEffect(() => {
     const checkAdminStatus = async () => {
-      console.log("Checking admin status:", { isLoaded, isAuth, currentUser });
       
       // Wait for auth to load first
       if (!isLoaded) return;
@@ -30,7 +29,6 @@ const AdminLayout = () => {
         return;
       }
       
-      console.log("Current user role from context:", currentUser.role);
       setDebugInfo({
         stage: "user-check", 
         role: currentUser.role,
@@ -39,7 +37,6 @@ const AdminLayout = () => {
       
       // Fast client-side check - if role is explicitly "admin", immediately approve
       if (currentUser.role === 'admin') {
-        console.log("User has admin role in frontend context");
         setIsAdmin(true);
         setIsLoading(false);
         return;
@@ -47,14 +44,12 @@ const AdminLayout = () => {
       
       // If explicitly user role, no need to check server
       if (currentUser.role === 'user') {
-        console.log("User has regular user role");
         setIsAdmin(false);
         setIsLoading(false);
         return;
       }
       
       try {
-        console.log("Making backend admin verification call");
         // Verify admin status with backend for security
         const response = await axiosInstance.post('/users/admin');
         console.log("Admin API response:", response.data);
