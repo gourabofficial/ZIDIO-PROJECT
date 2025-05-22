@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, AlertCircle } from "lucide-react";
+import { Search, AlertCircle, X } from "lucide-react";
 import AdminUserTable from "./AdminUserTable";
 import { getAllSearchUsers } from "../../Api/admin.js";
 
@@ -11,8 +11,6 @@ const AdminUser = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterRole, setFilterRole] = useState("all");
-  const [limit, setLimit] = useState(10);
 
   // Fetch users
   const fetchUsers = async (page = 1, searchTerm = "") => {
@@ -20,14 +18,11 @@ const AdminUser = () => {
     setError("");
 
     try {
-      const response = await getAllSearchUsers(
-        page,
-        searchTerm,
-        filterRole,
-        limit
-      );
+      console.log(searchTerm);
 
-      console.log("Fetched users:", response);
+      const response = await getAllSearchUsers(page, searchTerm);
+
+      // console.log("Fetched users:", response);
 
       if (response.success) {
         setUsers(response.users);
@@ -54,16 +49,11 @@ const AdminUser = () => {
     fetchUsers(1, searchQuery);
   };
 
-  // Filter handler
-  const handleFilterChange = (e) => {
-    setFilterRole(e.target.value);
+  // Reset search and show all users
+  const handleReset = () => {
+    setSearchQuery("");
     setCurrentPage(1);
-  };
-
-  // Limit handler
-  const handleLimitChange = (e) => {
-    setLimit(Number(e.target.value));
-    setCurrentPage(1);
+    fetchUsers(1, "");
   };
 
   // Pagination handlers
@@ -104,11 +94,6 @@ const AdminUser = () => {
     // For now, just update the UI optimistically
     setUsers(users.filter((user) => user._id !== userId));
   };
-
-  // Apply filters when role or limit changes
-  useEffect(() => {
-    fetchUsers(currentPage, searchQuery);
-  }, [filterRole, limit]);
 
   // Initial load
   useEffect(() => {
@@ -153,32 +138,14 @@ const AdminUser = () => {
             </form>
           </div>
 
-          {/* Role filter */}
-          <div className="md:w-48">
-            <select
-              value={filterRole}
-              onChange={handleFilterChange}
-              className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="user">User</option>
-              <option value="moderator">Moderator</option>
-            </select>
-          </div>
-
-          {/* Items per page */}
-          <div className="md:w-48">
-            <select
-              value={limit}
-              onChange={handleLimitChange}
-              className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value={5}>5 per page</option>
-              <option value={10}>10 per page</option>
-              <option value={25}>25 per page</option>
-            </select>
-          </div>
+          {/* Reset Button */}
+          <button
+            onClick={handleReset}
+            className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center justify-center transition-colors"
+          >
+            <X className="mr-2" size={18} />
+            Reset
+          </button>
         </div>
 
         {/* User Table */}
@@ -188,7 +155,6 @@ const AdminUser = () => {
           currentPage={currentPage}
           totalPages={totalPages}
           totalUsers={totalUsers}
-          limit={limit}
           toggleUserStatus={toggleUserStatus}
           deleteUser={deleteUser}
           goToPreviousPage={goToPreviousPage}

@@ -7,7 +7,6 @@ const AdminUserTable = ({
   currentPage,
   totalPages,
   totalUsers,
-  limit,
   toggleUserStatus,
   deleteUser,
   goToPreviousPage,

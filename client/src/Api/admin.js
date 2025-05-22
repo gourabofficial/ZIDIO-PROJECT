@@ -102,8 +102,11 @@ export const getAllSearchProducts = async (
   limit = 10
 ) => {
   try {
+    // Properly encode the query parameter
+    const encodedQuery = encodeURIComponent(query);
+
     const response = await axiosInstance.get(
-      `/admin/get-search-all-products?query=${query}&page=${page}&limit=${limit}`
+      `/admin/get-search-all-products?query=${encodedQuery}&page=${page}&limit=${limit}`
     );
 
     if (!response.data.success) {
@@ -120,6 +123,7 @@ export const getAllSearchProducts = async (
       pagination: response.data.pagination,
     };
   } catch (error) {
+    console.error("Search error:", error);
     return {
       message: error.message,
       success: false,
@@ -161,10 +165,15 @@ export const getProductsbyMultipleIds = async (ids) => {
   }
 };
 
-export const getAllSearchUsers = async () => {
+export const getAllSearchUsers = async (page = 1, searchTerm = "", limit = 10) => {
   try {
-    const response = await axiosInstance.get("/admin/get-search-all-users");
-
+    // Properly encode the search parameter
+    const encodedSearchTerm = encodeURIComponent(searchTerm);
+    
+    const response = await axiosInstance.get(
+      `/admin/get-search-all-users?page=${page}&searchTerm=${encodedSearchTerm}&limit=${limit}`
+    );
+    console.log("response in getAllSearchUsers", response);
     if (!response.data.success) {
       return {
         message: response.data.message,
@@ -172,11 +181,11 @@ export const getAllSearchUsers = async () => {
       };
     }
 
- return response.data;
+    return response.data;
   } catch (error) {
     return {
       message: error.message,
       success: false,
     };
   }
-}
+};

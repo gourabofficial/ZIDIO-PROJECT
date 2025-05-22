@@ -462,17 +462,36 @@ export const getAllSearchUsers = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const searchTerm = req.query.query || req.query.search || "";
+    const searchTerm = req.query.query || req.query.search || req.query.searchTerm || "";
     let filter = {};
 
     if (searchTerm && searchTerm.trim() !== "") {
-      const searchRegex = new RegExp(searchTerm, "i");
+      // Split search term into words for better matching
+      const searchWords = searchTerm.trim().split(/\s+/);
+      
+      // Create regex patterns for each word
+      const regexPatterns = searchWords.map(word => new RegExp(word, "i"));
+      
+      // Build a more flexible search filter
       filter = {
-        $or: [{ name: searchRegex }, { email: searchRegex }],
+        $or: [
+          // Match any of the words in fullName
+          { fullName: { $in: regexPatterns } },
+          // Match any of the words in email
+          { email: { $in: regexPatterns } },
+          // Match the complete search term in fullName
+          { fullName: new RegExp(searchTerm.trim(), "i") },
+          // Match the complete search term in email
+          { email: new RegExp(searchTerm.trim(), "i") }
+        ]
       };
+      
+      console.log("Search term:", searchTerm.trim());
+      console.log("Search filter:", JSON.stringify(filter, null, 2));
     }
 
     const totalUsers = await User.countDocuments(filter);
+    console.log("Total users found:", totalUsers);
 
     const users = await User.find(filter)
       .select("fullName email role avatar createdAt")
@@ -513,4 +532,4 @@ export const getAllSearchUsers = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
