@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAllSearchProducts } from '../../Api/admin.js';
-
 import { 
   Search, 
   AlertCircle, 
-  Filter,
+  RefreshCw,
+  PackageOpen,
+  X,
+  Plus
 } from 'lucide-react';
 import AdminProductTable from './AdminProductTable';
 
@@ -21,17 +23,16 @@ const AllProductList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
   const [limit, setLimit] = useState(10);
-  const [filterCategory, setFilterCategory] = useState('');
+  const [isSearchActive, setIsSearchActive] = useState(false);
   
   // Fetch products
   const fetchProducts = async (page = 1, searchTerm = '') => {
     setLoading(true);
     setError('');
+    setIsSearchActive(!!searchTerm);
     
     try {
       const response = await getAllSearchProducts(searchTerm, page, limit);
-      
-      // console.log('Response from getAllSearchProducts:', response);
       
       if (response.success) {
         // Update products with the data array
@@ -63,10 +64,11 @@ const AllProductList = () => {
     fetchProducts(1, searchQuery);
   };
   
-  // Filter handler
-  const handleFilterChange = (e) => {
-    setFilterCategory(e.target.value);
+  // Reset search
+  const handleReset = () => {
+    setSearchQuery('');
     setCurrentPage(1);
+    fetchProducts(1, '');
   };
   
   // Pagination handlers
@@ -89,29 +91,19 @@ const AllProductList = () => {
 
   // Product action handlers
   const handleViewProduct = (product) => {
-    // Navigate to product detail page
     navigate(`/admin/products/${product._id || product.id}`);
   };
 
   const handleEditProduct = (product) => {
-    // Navigate to edit product page
     navigate(`/admin/edit-product/${product._id || product.id}`);
   };
 
   const handleDeleteProduct = (product) => {
-    // Implement delete functionality or confirmation dialog
     if (window.confirm(`Are you sure you want to delete ${product.name}?`)) {
-      // Call delete API
       console.log('Delete product:', product);
-      // After successful deletion, refresh the product list
       fetchProducts(currentPage);
     }
   };
-  
-  // Apply filters when category changes
-  useEffect(() => {
-    fetchProducts(currentPage, searchQuery);
-  }, [filterCategory, limit]);
   
   // Initial load
   useEffect(() => {
@@ -120,52 +112,103 @@ const AllProductList = () => {
   
   return (
     <div className="w-full max-w-7xl mx-auto">
-      <div className="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-        <h1 className="text-2xl font-bold text-white mb-6">Product Management</h1>
+      <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-8 mb-8 border border-gray-700">
+        <div className="flex items-center gap-3 mb-8">
+          <PackageOpen className="text-blue-400" size={28} />
+          <h1 className="text-2xl font-bold text-white">Product Management</h1>
+          <div className="ml-auto text-sm text-gray-400 font-medium">
+            {totalProducts > 0 && `${totalProducts} products total`}
+          </div>
+        </div>
         
         {/* Error message */}
         {error && (
-          <div className="bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded mb-6 flex items-center">
-            <AlertCircle className="mr-2" size={20} />
-            <span>{error}</span>
+          <div className="bg-red-900/40 backdrop-blur-sm border border-red-700/50 text-red-200 px-5 py-4 rounded-lg mb-6 flex items-center animate-fadeIn">
+            <AlertCircle className="mr-3 text-red-400 flex-shrink-0" size={20} />
+            <span className="font-medium">{error}</span>
+            <button 
+              onClick={() => setError("")} 
+              className="ml-auto text-red-400 hover:text-red-300 transition-colors"
+            >
+              <X size={18} />
+            </button>
           </div>
         )}
         
         {/* Controls */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
           {/* Search */}
           <div className="flex-1">
-            <form onSubmit={handleSearch} className="relative">
+            <form onSubmit={handleSearch} className="relative group">
               <input
                 type="text"
-                placeholder="Search products..."
+                placeholder="Search products by name or SKU..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-gray-700/60 backdrop-blur-sm border border-gray-600 text-white rounded-lg py-3 pl-12 pr-14 focus:outline-none focus:ring-2 focus:ring-blue-500/70 transition-all duration-300 placeholder-gray-400"
               />
               <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-400 transition-colors duration-300"
                 size={18}
               />
               <button
                 type="submit"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-400"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-500 text-white p-1.5 rounded-md transition-colors duration-300"
+                title="Search products"
               >
-                <Search size={18} />
+                <Search size={16} />
               </button>
             </form>
           </div>
           
-          {/* Filter dropdown could go here */}
+          {/* Reset Button */}
+          <button
+            onClick={handleReset}
+            disabled={!isSearchActive && searchQuery === ""}
+            className={`
+              px-5 py-3 rounded-lg flex items-center justify-center transition-all duration-300 font-medium
+              ${
+                isSearchActive || searchQuery 
+                  ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white shadow-md hover:shadow-lg border border-blue-500" 
+                  : "bg-gray-700/40 text-gray-400 cursor-not-allowed border border-gray-600"
+              }
+              focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:ring-offset-2 focus:ring-offset-gray-800
+              active:scale-95 active:shadow-inner
+            `}
+            title={isSearchActive || searchQuery ? "Clear search" : "No active search"}
+          >
+            <RefreshCw 
+              className={`mr-2 transition-all ${loading && isSearchActive ? "animate-spin text-white" : ""}`} 
+              size={18} 
+            />
+            Clear Search
+          </button>
           
           {/* Add Product Button */}
           <Link
             to="/admin/add-products"
-            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center"
+            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white py-3 px-5 rounded-lg flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg border border-green-500 font-medium active:scale-95"
           >
-            + Add Product
+            <Plus size={18} className="mr-2" />
+            Add Product
           </Link>
         </div>
+
+        {/* Search status indicator */}
+        {isSearchActive && (
+          <div className="mb-4 text-sm text-gray-300 bg-gray-700/30 inline-block py-1 px-3 rounded-full">
+            {loading ? (
+              <span className="flex items-center">
+                <RefreshCw className="animate-spin mr-2" size={14} />
+                Searching...
+              </span>
+            ) : (
+              <span>
+                Found {products.length} products {searchQuery && `for "${searchQuery}"`}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Product Table */}
         <AdminProductTable 
