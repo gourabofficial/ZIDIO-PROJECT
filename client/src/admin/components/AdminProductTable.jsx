@@ -151,12 +151,18 @@ const AdminProductTable = ({
                   </span>
                 </td>
                 <td className="py-4 px-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-white">
-                    {formatPrice(product.price)}
-                  </div>
-                  {product.originalPrice && product.originalPrice > product.price && (
-                    <div className="text-xs text-gray-400 line-through">
-                      {formatPrice(product.originalPrice)}
+                  {product.discount > 0 ? (
+                    <>
+                      <div className="text-sm font-medium text-white">
+                        {formatPrice(product.price - (product.price * product.discount / 100))}
+                      </div>
+                      <div className="text-xs text-gray-400 line-through">
+                        {formatPrice(product.price)}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-sm font-medium text-white">
+                      {formatPrice(product.price)}
                     </div>
                   )}
                 </td>

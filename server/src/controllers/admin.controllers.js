@@ -414,7 +414,8 @@ export const getProductsbyMultipleIds = async (req, res) => {
         { _id: { $in: validMongoIds } },
         { product_id: { $in: productIds } },
       ],
-    }).select("_id product_id name images");
+    }).select("_id product_id name images price discount");  // Added discount field
+
 
     if (!products || products.length === 0) {
       return res.status(404).json({
@@ -427,6 +428,8 @@ export const getProductsbyMultipleIds = async (req, res) => {
       _id: product._id,
       id: product.product_id,
       name: product.name,
+      price: product.price,
+      discount: product.discount || 0,  // Include discount and default to 0
       image:
         product.images && product.images.length > 0
           ? product.images[0].imageUrl

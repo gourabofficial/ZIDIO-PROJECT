@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import ProductSearchPopup from "./ProductSearchPopup";
 import { getProductsbyMultipleIds } from "../../Api/admin";
-import { 
-  Trash, 
-  PackagePlus, 
-  Flame, 
-  Save, 
-  AlertCircle, 
-  Loader, 
+import {
+  Trash,
+  PackagePlus,
+  Flame,
+  Save,
+  AlertCircle,
+  Loader,
   ShoppingBag,
-  Info
+  Info,
 } from "lucide-react";
 
 const AdminSettingsHotItems = ({ selectedIds = [], onSave }) => {
@@ -39,13 +39,13 @@ const AdminSettingsHotItems = ({ selectedIds = [], onSave }) => {
       setError("");
       try {
         const response = await getProductsbyMultipleIds(selectedProductIds);
-        
+
         if (response.success) {
           // Maintain the order of products based on selectedProductIds
-          const orderedProducts = selectedProductIds.map(id => 
-            response.data.find(product => product._id === id)
-          ).filter(Boolean); // Remove any undefined entries
-          
+          const orderedProducts = selectedProductIds
+            .map((id) => response.data.find((product) => product._id === id))
+            .filter(Boolean); // Remove any undefined entries
+
           setProductDetails(orderedProducts);
         } else {
           setError(response.message || "Failed to fetch product details");
@@ -70,7 +70,7 @@ const AdminSettingsHotItems = ({ selectedIds = [], onSave }) => {
   // Handle save button click
   const handleSave = async () => {
     if (!isDirty) return;
-    
+
     setSaving(true);
     try {
       await onSave(selectedProductIds);
@@ -96,8 +96,8 @@ const AdminSettingsHotItems = ({ selectedIds = [], onSave }) => {
         <div className="bg-red-900/30 border border-red-700/50 text-red-200 px-4 py-3 rounded-lg mb-4 flex items-center">
           <AlertCircle className="mr-2 text-red-400 flex-shrink-0" size={18} />
           <span>{error}</span>
-          <button 
-            onClick={() => setError("")} 
+          <button
+            onClick={() => setError("")}
             className="ml-auto text-red-400 hover:text-red-300 transition-colors"
           >
             &times;
@@ -116,16 +116,21 @@ const AdminSettingsHotItems = ({ selectedIds = [], onSave }) => {
             {selectedProductIds.length} products
           </div>
         </div>
-        
+
         <div className="min-h-[180px] bg-gray-800/50 rounded-lg border border-gray-700 p-2 overflow-hidden shadow-inner">
           {loading ? (
             <div className="flex justify-center items-center h-full py-12">
               <div className="flex flex-col items-center">
                 <div className="relative">
                   <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500"></div>
-                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-orange-400 absolute top-0 left-0" style={{animationDuration: '1.2s'}}></div>
+                  <div
+                    className="animate-spin rounded-full h-10 w-10 border-t-2 border-orange-400 absolute top-0 left-0"
+                    style={{ animationDuration: "1.2s" }}
+                  ></div>
                 </div>
-                <p className="text-gray-300 font-medium mt-4">Loading products...</p>
+                <p className="text-gray-300 font-medium mt-4">
+                  Loading products...
+                </p>
               </div>
             </div>
           ) : selectedProductIds.length > 0 ? (
@@ -145,7 +150,8 @@ const AdminSettingsHotItems = ({ selectedIds = [], onSave }) => {
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = 'https://via.placeholder.com/150?text=No+Image';
+                            e.target.src =
+                              "https://via.placeholder.com/150?text=No+Image";
                           }}
                         />
                       ) : (
@@ -159,12 +165,25 @@ const AdminSettingsHotItems = ({ selectedIds = [], onSave }) => {
                         {product.name}
                       </p>
                       <div className="flex items-center mt-1">
-                        <span className="text-orange-400 text-xs font-medium mr-2">
-                          ₹{Number(product.price).toLocaleString('en-IN')}
-                        </span>
-                        {product.discount > 0 && (
-                          <span className="bg-green-900/40 text-green-400 text-xs px-1.5 py-0.5 rounded">
-                            {product.discount}% off
+                        {product.discount > 0 ? (
+                          <>
+                            <span className="text-gray-400 text-xs font-medium line-through mr-2">
+                              ₹{Number(product.price).toLocaleString("en-IN")}
+                            </span>
+                            <span className="text-orange-400 text-xs font-medium mr-2">
+                              ₹
+                              {Number(
+                                product.price -
+                                  (product.price * product.discount) / 100
+                              ).toLocaleString("en-IN")}
+                            </span>
+                            <span className="bg-green-900/40 text-green-400 text-xs px-1.5 py-0.5 rounded">
+                              {product.discount}% off
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-orange-400 text-xs font-medium mr-2">
+                            ₹{Number(product.price).toLocaleString("en-IN")}
                           </span>
                         )}
                       </div>
@@ -173,7 +192,7 @@ const AdminSettingsHotItems = ({ selectedIds = [], onSave }) => {
                       </p>
                     </div>
                   </div>
-                  
+
                   <button
                     onClick={() => removeProduct(product._id)}
                     className="bg-gray-750 p-3 transition-all duration-200 h-full flex items-center justify-center border-l border-gray-650 group-hover:bg-gray-700 w-12"
@@ -194,7 +213,8 @@ const AdminSettingsHotItems = ({ selectedIds = [], onSave }) => {
               </div>
               <p className="text-gray-300 font-medium">No hot items selected</p>
               <p className="text-gray-500 text-sm mt-1 max-w-sm">
-                Add products to showcase in the Hot Items section of your homepage
+                Add products to showcase in the Hot Items section of your
+                homepage
               </p>
               <button
                 className="mt-4 px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-md transition-all duration-200 flex items-center gap-2 font-medium"
@@ -212,9 +232,12 @@ const AdminSettingsHotItems = ({ selectedIds = [], onSave }) => {
       <div className="bg-orange-900/20 border border-orange-700/30 rounded-lg px-4 py-3 text-orange-200 text-sm flex items-start">
         <Info className="text-orange-400 mr-2 flex-shrink-0 mt-0.5" size={16} />
         <div>
-          <p className="font-medium mb-1">Hot Items appear in a dedicated homepage section</p>
+          <p className="font-medium mb-1">
+            Hot Items appear in a dedicated homepage section
+          </p>
           <p className="text-orange-300 opacity-80">
-            These products will be prominently displayed to attract customer attention. Choose your best-selling or featured products.
+            These products will be prominently displayed to attract customer
+            attention. Choose your best-selling or featured products.
           </p>
         </div>
       </div>
@@ -232,9 +255,10 @@ const AdminSettingsHotItems = ({ selectedIds = [], onSave }) => {
         <button
           className={`
             px-5 py-2.5 rounded-md transition-all duration-200 flex items-center gap-2 font-medium shadow-sm
-            ${isDirty 
-              ? "bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
-              : "bg-gray-700 text-gray-400 cursor-not-allowed"
+            ${
+              isDirty
+                ? "bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
+                : "bg-gray-700 text-gray-400 cursor-not-allowed"
             }
           `}
           onClick={handleSave}

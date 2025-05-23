@@ -76,12 +76,24 @@ const SortableProductItem = ({ product, onRemove }) => {
             {product.name}
           </p>
           <div className="flex items-center mt-1">
-            <span className="text-blue-400 text-xs font-medium mr-2">
-              ₹{Number(product.price).toLocaleString("en-IN")}
-            </span>
-            {product.discount > 0 && (
-              <span className="bg-green-900/40 text-green-400 text-xs px-1.5 py-0.5 rounded">
-                {product.discount}% off
+            {product.discount > 0 ? (
+              <>
+                <span className="text-gray-400 text-xs font-medium line-through mr-2">
+                  ₹{Number(product.price).toLocaleString("en-IN")}
+                </span>
+                <span className="text-blue-400 text-xs font-medium mr-2">
+                  ₹
+                  {Number(
+                    product.price - (product.price * product.discount) / 100
+                  ).toLocaleString("en-IN")}
+                </span>
+                <span className="bg-green-900/40 text-green-400 text-xs px-1.5 py-0.5 rounded">
+                  {product.discount}% off
+                </span>
+              </>
+            ) : (
+              <span className="text-blue-400 text-xs font-medium mr-2">
+                ₹{Number(product.price).toLocaleString("en-IN")}
               </span>
             )}
           </div>
