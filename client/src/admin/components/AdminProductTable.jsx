@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   RefreshCw,
   Eye,
@@ -10,7 +11,7 @@ import {
   AlertCircle,
   DollarSign,
   Truck,
-  PercentCircle
+  PercentCircle,
 } from "lucide-react";
 
 const AdminProductTable = ({
@@ -27,15 +28,22 @@ const AdminProductTable = ({
   onEdit,
   onDelete,
 }) => {
+  const navigate = useNavigate();
+
+  // Handle navigation to edit product page
+  const handleProductClick = (productId) => {
+    navigate(`/admin/edit-products/${productId}`);
+  };
+
   // Format price with commas and decimal places
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-IN', { 
-      style: 'currency', 
-      currency: 'INR',
-      maximumFractionDigits: 0
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
     }).format(price);
   };
-  
+
   // Enhanced loading state
   if (loading) {
     return (
@@ -43,23 +51,29 @@ const AdminProductTable = ({
         <div className="flex flex-col justify-center items-center py-16 space-y-4">
           <div className="relative">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-blue-400 absolute top-0 left-0" style={{animationDuration: '1.2s'}}></div>
+            <div
+              className="animate-spin rounded-full h-12 w-12 border-t-2 border-blue-400 absolute top-0 left-0"
+              style={{ animationDuration: "1.2s" }}
+            ></div>
           </div>
           <p className="text-gray-300 font-medium">Loading products...</p>
         </div>
       </div>
     );
   }
-  
+
   // Enhanced empty state
   if (!products || products.length === 0) {
     return (
       <div className="bg-gray-750 rounded-lg border border-gray-700 overflow-hidden">
         <div className="flex flex-col justify-center items-center py-16 px-4 text-center">
           <Package className="h-16 w-16 text-gray-500 mb-4" />
-          <h3 className="text-xl font-semibold text-gray-300 mb-2">No products found</h3>
+          <h3 className="text-xl font-semibold text-gray-300 mb-2">
+            No products found
+          </h3>
           <p className="text-gray-400 max-w-md mb-6">
-            Try adjusting your search criteria or add a new product to get started.
+            Try adjusting your search criteria or add a new product to get
+            started.
           </p>
           <button
             onClick={() => goToPage(1)}
@@ -114,7 +128,8 @@ const AdminProductTable = ({
             {products.map((product) => (
               <tr
                 key={product._id || product.id}
-                className="hover:bg-gray-700/50 transition-colors duration-150"
+                className="hover:bg-gray-700/50 transition-colors duration-150 cursor-pointer"
+                onClick={() => handleProductClick(product._id || product.id)}
               >
                 <td className="py-4 px-4 whitespace-nowrap">
                   <div className="flex items-center">
@@ -126,7 +141,8 @@ const AdminProductTable = ({
                           alt={product.name}
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = 'https://via.placeholder.com/150?text=No+Image';
+                            e.target.src =
+                              "https://via.placeholder.com/150?text=No+Image";
                           }}
                         />
                       ) : (
@@ -140,21 +156,27 @@ const AdminProductTable = ({
                         {product.name}
                       </div>
                       <div className="text-xs text-gray-400 font-mono mt-1">
-                        #{product._id?.substring(0, 8) || product.id?.substring(0, 8) || 'N/A'}
+                        #
+                        {product._id?.substring(0, 8) ||
+                          product.id?.substring(0, 8) ||
+                          "N/A"}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="py-4 px-4 whitespace-nowrap">
                   <span className="px-2.5 py-1 text-xs leading-5 font-medium rounded-full bg-blue-900/50 text-blue-300 border border-blue-800/50">
-                    {product.category || 'Uncategorized'}
+                    {product.category || "Uncategorized"}
                   </span>
                 </td>
                 <td className="py-4 px-4 whitespace-nowrap">
                   {product.discount > 0 ? (
                     <>
                       <div className="text-sm font-medium text-white">
-                        {formatPrice(product.price - (product.price * product.discount / 100))}
+                        {formatPrice(
+                          product.price -
+                            (product.price * product.discount) / 100
+                        )}
                       </div>
                       <div className="text-xs text-gray-400 line-through">
                         {formatPrice(product.price)}
@@ -167,16 +189,19 @@ const AdminProductTable = ({
                   )}
                 </td>
                 <td className="py-4 px-4 whitespace-nowrap">
-                  <div className={`
-                    inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                    ${parseInt(product.stock || 100) > 50 
-                      ? "bg-green-900/40 text-green-300" 
+                  <div
+                    className={`
+                  inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                  ${
+                    parseInt(product.stock || 100) > 50
+                      ? "bg-green-900/40 text-green-300"
                       : parseInt(product.stock || 100) > 10
-                        ? "bg-yellow-900/40 text-yellow-300"
-                        : "bg-red-900/40 text-red-300"
-                    }
-                  `}>
-                    {product.stock || 100 } 
+                      ? "bg-yellow-900/40 text-yellow-300"
+                      : "bg-red-900/40 text-red-300"
+                  }
+                `}
+                  >
+                    {product.stock || 100}
                   </div>
                 </td>
                 <td className="py-4 px-4 whitespace-nowrap">
@@ -190,29 +215,21 @@ const AdminProductTable = ({
                 </td>
                 <td className="py-4 px-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex space-x-3">
-                    {onView && (
-                      <button
-                        className="text-blue-400 hover:text-blue-300 transition-colors p-1.5 rounded-full hover:bg-gray-700"
-                        title="View product details"
-                        onClick={() => onView(product)}
-                      >
-                        <Eye size={18} />
-                      </button>
-                    )}
-                    {onEdit && (
-                      <button
-                        className="text-amber-400 hover:text-amber-300 transition-colors p-1.5 rounded-full hover:bg-gray-700"
-                        title="Edit product"
-                        onClick={() => onEdit(product)}
-                      >
-                        <Edit size={18} />
-                      </button>
-                    )}
+                    <button
+                      className="text-amber-400 hover:text-amber-300 transition-colors p-1.5 rounded-full hover:bg-gray-700"
+                      title="Edit product"
+                      handleProductClick={() => handleProductClick(product._id || product.id)}
+                    >
+                      <Edit size={18} />
+                    </button>
                     {onDelete && (
                       <button
                         className="text-red-400 hover:text-red-300 transition-colors p-1.5 rounded-full hover:bg-gray-700"
                         title="Delete product"
-                        onClick={() => onDelete(product)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(product);
+                        }}
                       >
                         <Trash2 size={18} />
                       </button>
@@ -228,9 +245,18 @@ const AdminProductTable = ({
       {/* Enhanced Pagination */}
       <div className="px-6 py-4 bg-gradient-to-r from-gray-800 to-gray-750 border-t border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="text-sm text-gray-400">
-          Showing <span className="font-medium text-white">{Math.min(products.length, (currentPage - 1) * limit + 1)}</span> to <span className="font-medium text-white">{Math.min(currentPage * limit, totalProducts)}</span> of <span className="font-medium text-white">{totalProducts}</span> products
+          Showing{" "}
+          <span className="font-medium text-white">
+            {Math.min(products.length, (currentPage - 1) * limit + 1)}
+          </span>{" "}
+          to{" "}
+          <span className="font-medium text-white">
+            {Math.min(currentPage * limit, totalProducts)}
+          </span>{" "}
+          of <span className="font-medium text-white">{totalProducts}</span>{" "}
+          products
         </div>
-        
+
         <div className="flex items-center space-x-1">
           <button
             onClick={goToPreviousPage}
@@ -244,11 +270,11 @@ const AdminProductTable = ({
           >
             <ChevronLeft size={18} />
           </button>
-          
+
           {(() => {
             let pages = [];
             const maxVisiblePages = 5;
-            
+
             if (totalPages <= maxVisiblePages) {
               // Show all pages if there are few
               pages = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -256,24 +282,46 @@ const AdminProductTable = ({
               // Show first, last, current and surrounding pages
               const firstPage = 1;
               const lastPage = totalPages;
-              
+
               if (currentPage <= 3) {
                 // Near the start
-                pages = [1, 2, 3, 4, '...', lastPage];
+                pages = [1, 2, 3, 4, "...", lastPage];
               } else if (currentPage >= totalPages - 2) {
                 // Near the end
-                pages = [firstPage, '...', totalPages - 3, totalPages - 2, totalPages - 1, lastPage];
+                pages = [
+                  firstPage,
+                  "...",
+                  totalPages - 3,
+                  totalPages - 2,
+                  totalPages - 1,
+                  lastPage,
+                ];
               } else {
                 // In the middle
-                pages = [firstPage, '...', currentPage - 1, currentPage, currentPage + 1, '...', lastPage];
+                pages = [
+                  firstPage,
+                  "...",
+                  currentPage - 1,
+                  currentPage,
+                  currentPage + 1,
+                  "...",
+                  lastPage,
+                ];
               }
             }
-            
+
             return pages.map((page, index) => {
-              if (page === '...') {
-                return <span key={`ellipsis-${index}`} className="text-gray-500 px-2">...</span>;
+              if (page === "...") {
+                return (
+                  <span
+                    key={`ellipsis-${index}`}
+                    className="text-gray-500 px-2"
+                  >
+                    ...
+                  </span>
+                );
               }
-              
+
               return (
                 <button
                   key={page}
@@ -289,7 +337,7 @@ const AdminProductTable = ({
               );
             });
           })()}
-          
+
           <button
             onClick={goToNextPage}
             disabled={currentPage === totalPages}

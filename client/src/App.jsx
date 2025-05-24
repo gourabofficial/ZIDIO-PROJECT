@@ -20,7 +20,6 @@ import ScrollToTop from "./components/common/ScrollToTop";
 import AccountSettings from "./_root/pages/AccountSettings";
 import EditProfile from "./_root/pages/EditProfile";
 
-
 // Admin imports
 import AdminLayout from "./admin/AdminLayout";
 import AdminDashboard from "./admin/components/AdminDashboard";
@@ -29,6 +28,8 @@ import OrderAdmin from "./admin/components/OrderList";
 import AllProductList from "./admin/components/AllProductList";
 import AdminUser from "./admin/components/AdminUser";
 import AdminSettings from "./admin/components/AdminSettings";
+import AdminProductDetails from "./admin/components/AdminProductDetails";
+import AdminUpdateProduct from "./admin/components/AdminUpdateProduct";
 
 const App = () => {
   return (
@@ -65,6 +66,8 @@ const App = () => {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="/admin/add-products" element={<AddProduct />} />
+          <Route path="/admin/edit-products/:id" element={<AdminUpdateProduct />} />
+          <Route path="/admin/product/:id" element={<AdminProductDetails />} />
           <Route path="/admin/products-list" element={<AllProductList />} />
           <Route path="/admin/all-orders" element={<OrderAdmin />} />
           <Route path="/admin/all-users" element={<AdminUser />} />

@@ -27,4 +27,20 @@ const uploadOnCloudinary = async (localFilePath, folderName) => {
   }
 };
 
+export const deleteFromCloudinary = async (publicId) => {
+  try {
+    if (!publicId) {
+      return null;
+    }
+
+    const response = await cloudinary.uploader.destroy(publicId);
+
+    return response;
+  } catch (error) {
+    throw new Error("Image delete failed");
+  }
+};
+
 export { uploadOnCloudinary };
+
+

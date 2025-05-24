@@ -1,4 +1,7 @@
-import { uploadOnCloudinary } from "../config/cloudinary.js";
+import {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} from "../config/cloudinary.js";
 import { Product } from "../model/product.model.js";
 import { HomeContent } from "../model/homeContent.model.js";
 import { v4 as uuidv4 } from "uuid";
@@ -335,8 +338,7 @@ export const getAllSearchProducts = async (req, res) => {
     // Count total results for pagination info
     const totalProducts = await Product.countDocuments(filter);
 
-    // console.log("Total products found:", totalProducts);
-
+    
     // Fetch paginated results with only required fields
     const products = await Product.find(filter)
       .select("name product_id images price category discount")
@@ -414,8 +416,7 @@ export const getProductsbyMultipleIds = async (req, res) => {
         { _id: { $in: validMongoIds } },
         { product_id: { $in: productIds } },
       ],
-    }).select("_id product_id name images price discount");  // Added discount field
-
+    }).select("_id product_id name images price discount"); // Added discount field
 
     if (!products || products.length === 0) {
       return res.status(404).json({
@@ -429,7 +430,7 @@ export const getProductsbyMultipleIds = async (req, res) => {
       id: product.product_id,
       name: product.name,
       price: product.price,
-      discount: product.discount || 0,  // Include discount and default to 0
+      discount: product.discount || 0, // Include discount and default to 0
       image:
         product.images && product.images.length > 0
           ? product.images[0].imageUrl
@@ -465,16 +466,17 @@ export const getAllSearchUsers = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const searchTerm = req.query.query || req.query.search || req.query.searchTerm || "";
+    const searchTerm =
+      req.query.query || req.query.search || req.query.searchTerm || "";
     let filter = {};
 
     if (searchTerm && searchTerm.trim() !== "") {
       // Split search term into words for better matching
       const searchWords = searchTerm.trim().split(/\s+/);
-      
+
       // Create regex patterns for each word
-      const regexPatterns = searchWords.map(word => new RegExp(word, "i"));
-      
+      const regexPatterns = searchWords.map((word) => new RegExp(word, "i"));
+
       // Build a more flexible search filter
       filter = {
         $or: [
@@ -485,16 +487,16 @@ export const getAllSearchUsers = async (req, res) => {
           // Match the complete search term in fullName
           { fullName: new RegExp(searchTerm.trim(), "i") },
           // Match the complete search term in email
-          { email: new RegExp(searchTerm.trim(), "i") }
-        ]
+          { email: new RegExp(searchTerm.trim(), "i") },
+        ],
       };
-      
-      console.log("Search term:", searchTerm.trim());
-      console.log("Search filter:", JSON.stringify(filter, null, 2));
+
+      // console.log("Search term:", searchTerm.trim());
+      // console.log("Search filter:", JSON.stringify(filter, null, 2));
     }
 
     const totalUsers = await User.countDocuments(filter);
-    console.log("Total users found:", totalUsers);
+    // console.log("Total users found:", totalUsers);
 
     const users = await User.find(filter)
       .select("fullName email role avatar createdAt")
@@ -532,6 +534,241 @@ export const getAllSearchUsers = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch users",
+      error: error.message,
+    });
+  }
+};
+// delete product by id
+export const deleterProductById = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    const { id } = req.params;
+
+    // Check if the product exists
+    const product = await Product.findOne({ product_id: id });
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found",
+        success: false,
+      });
+    }
+
+    // Delete the product
+    await Product.deleteOne({ product_id: id });
+
+    return res.status(200).json({
+      message: "Product deleted successfully",
+      success: true,
+    });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete product",
+      error: error.message,
+    });
+  }
+};
+
+// update product by id
+export const updateProductById = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    const { id } = req.params;
+
+    // Check if the product exists
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found",
+        success: false,
+      });
+    }
+
+    
+
+    const {
+      name,
+      description,
+      price,
+      category,
+      collections,
+      discount,
+      size,
+      offerStatus,
+      removedImages,
+    } = req.body;
+
+  
+
+    // Start with existing images
+    let finalImages = [...(product.images || [])];
+    let deletedImagesCount = 0;
+    let uploadedImagesCount = 0;
+
+    // Step 1: Handle removed images
+    if (removedImages) {
+      // Parse removedImages if it's a string (from form data)
+      let imagesToRemove;
+      if (typeof removedImages === 'string') {
+        try {
+          imagesToRemove = JSON.parse(removedImages);
+        } catch (e) {
+          imagesToRemove = [removedImages];
+        }
+      } else {
+        imagesToRemove = Array.isArray(removedImages) ? removedImages : [removedImages];
+      }
+      
+  
+
+      // Delete specified images from Cloudinary and remove from array
+      for (const imageIdToRemove of imagesToRemove) {
+        const imageIndex = finalImages.findIndex(img => img.imageId === imageIdToRemove);
+        
+        if (imageIndex !== -1) {
+          const imageToDelete = finalImages[imageIndex];
+          
+          try {
+            // Delete from Cloudinary using the imageId (which is the public_id)
+            await deleteFromCloudinary(imageToDelete.imageId);
+            // Remove from array
+            finalImages.splice(imageIndex, 1);
+            deletedImagesCount++;
+            console.log(`Successfully deleted image: ${imageIdToRemove}`);
+          } catch (error) {
+            console.error(`Failed to delete image ${imageIdToRemove}:`, error);
+            // Continue with other operations even if one deletion fails
+          }
+        } else {
+          console.log(`Image ${imageIdToRemove} not found in product images`);
+        }
+      }
+    }
+
+    // Step 2: Handle new image uploads
+    if (req.files && req.files.length > 0) {
+      console.log("Uploading new images...");
+      const cloudinaryFolder = "products";
+
+      const uploadPromises = req.files.map((file) =>
+        uploadOnCloudinary(file.path, cloudinaryFolder)
+      );
+
+      try {
+        const uploadResults = await Promise.all(uploadPromises);
+        
+        // Process successful uploads
+        const newImages = uploadResults
+          .filter(result => result) // Filter out null results
+          .map(result => ({
+            imageUrl: result.secure_url,
+            imageId: result.public_id,
+          }));
+
+        uploadedImagesCount = newImages.length;
+        finalImages = [...finalImages, ...newImages];
+        console.log(`Successfully uploaded ${uploadedImagesCount} new images`);
+      } catch (error) {
+        console.error("Error uploading images:", error);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload new images",
+          error: error.message,
+        });
+      }
+    }
+
+    // Step 3: Update the product with new data
+    const updateData = {};
+    
+    // Only update fields that are provided
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (price !== undefined) updateData.price = price;
+    if (category !== undefined) updateData.category = category;
+    if (collections !== undefined) updateData.collections = collections;
+    if (discount !== undefined) updateData.discount = discount;
+    if (size !== undefined) updateData.size = size;
+    if (offerStatus !== undefined) updateData.offerStatus = offerStatus;
+    
+    // Always update images array
+    updateData.images = finalImages;
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    
+
+    return res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+      product: updatedProduct,
+      updateStats: {
+        imagesRemoved: deletedImagesCount,
+        imagesAdded: uploadedImagesCount,
+        totalImages: finalImages.length,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update product",
+      error: error.message,
+    });
+  }
+};
+
+// get product by id for admin
+export const getProductByIdForAdmin = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    const { id } = req.params;
+
+    // Check if the product exists
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found",
+        success: false,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Product fetched successfully",
+      success: true,
+      product,
+    });
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch product",
       error: error.message,
     });
   }
