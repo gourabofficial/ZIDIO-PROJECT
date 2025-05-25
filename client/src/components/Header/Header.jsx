@@ -297,137 +297,144 @@ const Header = () => {
               <div className="hidden md:block relative" ref={profileRef}>
                 <button
                   onClick={toggleProfileDropdown}
-                  className="flex items-center space-x-1 text-white hover:text-indigo-400 transition-all duration-300 p-2 group"
+                  className="flex items-center space-x-2 text-white hover:text-indigo-400 transition-all duration-200 p-2 group rounded-lg hover:bg-white/5"
                   aria-label="Profile"
                 >
                   <div className="relative">
                     {currentUser.imageUrl || currentUser.avatar ? (
-                      <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-purple-500/30 group-hover:border-indigo-500/50 transition-colors duration-300 shadow-sm shadow-purple-500/20">
-                        <img
-                          src={currentUser.imageUrl || currentUser.avatar}
-                          alt="Profile"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-purple-500/30 group-hover:border-indigo-500/50 transition-colors duration-300 shadow-sm shadow-purple-500/20">
-                        <img
-                          src="https://img.freepik.com/premium-vector/influencer-icon-vector-image-can-be-used-digital-nomad_120816-263441.jpg?ga=GA1.1.987127041.1747852951&semt=ais_hybrid&w=740"
-                          alt="Default Profile"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-indigo-500/0 to-purple-500/0 group-hover:from-indigo-500/10 group-hover:to-purple-500/10 blur-sm transition-opacity duration-300 opacity-0 group-hover:opacity-100"></div>
-                  </div>
-
-                  <FiChevronDown
-                    size={16}
-                    className={`transition-transform duration-300 ${
-                      isProfileOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {isProfileOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-[#0c0e16]/90 backdrop-blur-md shadow-lg shadow-purple-900/20 rounded-lg py-2 z-50 border border-purple-900/30 animate-fadeIn">
-                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-600/5 via-purple-600/5 to-pink-600/5 pointer-events-none"></div>
-
-                    <div className="px-4 py-3 border-b border-gray-700/50 flex items-center">
-                      {currentUser.imageUrl || currentUser.avatar ? (
-                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-purple-500/30 mr-3 shadow-sm shadow-purple-500/20">
+                      <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-transparent bg-gradient-to-r from-indigo-500 to-purple-500 p-[1px] group-hover:from-purple-500 group-hover:to-pink-500 transition-all duration-200 shadow-lg shadow-purple-500/20">
+                        <div className="w-full h-full rounded-full overflow-hidden bg-[#0c0e16]">
                           <img
                             src={currentUser.imageUrl || currentUser.avatar}
                             alt="Profile"
                             className="w-full h-full object-cover"
                           />
                         </div>
-                      ) : (
-                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-purple-500/30 mr-3 shadow-sm shadow-purple-500/20">
+                      </div>
+                    ) : (
+                      <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-transparent bg-gradient-to-r from-indigo-500 to-purple-500 p-[1px] group-hover:from-purple-500 group-hover:to-pink-500 transition-all duration-200 shadow-lg shadow-purple-500/20">
+                        <div className="w-full h-full rounded-full overflow-hidden bg-[#0c0e16]">
                           <img
                             src="https://img.freepik.com/premium-vector/influencer-icon-vector-image-can-be-used-digital-nomad_120816-263441.jpg?ga=GA1.1.987127041.1747852951&semt=ais_hybrid&w=740"
                             alt="Default Profile"
                             className="w-full h-full object-cover"
                           />
                         </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <p className="text-white font-medium truncate">
-                          {currentUser.fullName || "User"}
-                        </p>
-                        <p className="text-gray-400 text-xs truncate max-w-[150px]">
-                          {currentUser.email}
-                        </p>
+                      </div>
+                    )}
+                    <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-indigo-500/0 to-purple-500/0 group-hover:from-indigo-500/20 group-hover:to-purple-500/20 blur transition-all duration-200 opacity-0 group-hover:opacity-100"></div>
+                  </div>
+
+                  {/* <div className="hidden lg:block">
+                    <span className="text-sm font-medium">
+                      {currentUser.fullName ? currentUser.fullName.split(' ')[0] : 'User'}
+                    </span>
+                  </div> */}
+
+                  <FiChevronDown
+                    size={14}
+                    className={`transition-all duration-200 ${
+                      isProfileOpen ? "rotate-180 text-indigo-400" : ""
+                    }`}
+                  />
+                </button>
+
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-1 w-64 bg-black/90 backdrop-blur-xl shadow-2xl shadow-purple-900/30 rounded-xl py-3 z-50 border border-purple-500/20 animate-slideDown">
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-indigo-600/5 via-purple-600/3 to-pink-600/5 pointer-events-none"></div>
+
+                    {/* User info header */}
+                    <div className="px-4 py-3 border-b border-purple-500/20 relative">
+                      <div className="flex items-center space-x-3">
+                        {currentUser.imageUrl || currentUser.avatar ? (
+                          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-transparent bg-gradient-to-r from-indigo-500 to-purple-500 p-[1px] shadow-lg shadow-purple-500/30">
+                            <div className="w-full h-full rounded-full overflow-hidden bg-black">
+                              <img
+                                src={currentUser.imageUrl || currentUser.avatar}
+                                alt="Profile"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-transparent bg-gradient-to-r from-indigo-500 to-purple-500 p-[1px] shadow-lg shadow-purple-500/30">
+                            <div className="w-full h-full rounded-full overflow-hidden bg-black">
+                              <img
+                                src="https://img.freepik.com/premium-vector/influencer-icon-vector-image-can-be-used-digital-nomad_120816-263441.jpg?ga=GA1.1.987127041.1747852951&semt=ais_hybrid&w=740"
+                                alt="Default Profile"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-white font-semibold text-sm truncate">
+                            {currentUser.fullName || "User"}
+                          </p>
+                          <p className="text-gray-400 text-xs truncate max-w-[150px]">
+                            {currentUser.email}
+                          </p>
+                          {currentUser.role === "admin" && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500/20 text-orange-300 border border-orange-500/30 mt-1">
+                              Admin
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Profile menu items */}
-                    <div className="py-1">
+                    {/* Menu items */}
+                    <div className="py-2 space-y-1">
                       <Link
                         to="/account"
-                        className="flex items-center px-4 py-2 text-sm text-white hover:bg-indigo-900/30 hover:text-indigo-300 transition-all duration-200 group"
+                        className="flex items-center px-4 py-3 text-sm text-white hover:bg-white/5 hover:text-indigo-300 transition-all duration-150 group"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <FiUser
-                          className="mr-3 text-indigo-400 group-hover:scale-110 transition-transform duration-200"
-                          size={16}
-                        />
-                        <span>My Account</span>
+                        <FiUser className="mr-3 text-indigo-400" size={16} />
+                        <span className="font-medium">My Account</span>
                       </Link>
 
                       {/* Show admin link if user has admin role */}
                       {currentUser.role === "admin" && (
                         <Link
                           to="/admin"
-                          className="flex items-center px-4 py-2 text-sm text-white hover:bg-indigo-900/30 hover:text-indigo-300 transition-all duration-200 group"
+                          className="flex items-center px-4 py-3 text-sm text-white hover:bg-white/5 hover:text-orange-300 transition-all duration-150 group"
                           onClick={() => setIsProfileOpen(false)}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <FiSettings
-                            className="mr-3 text-indigo-400 group-hover:scale-110 transition-transform duration-200"
-                            size={16}
-                          />
-                          <span>Admin Dashboard</span>
+                          <FiSettings className="mr-3 text-orange-400" size={16} />
+                          <span className="font-medium">Admin Dashboard</span>
                         </Link>
                       )}
 
-                      {/* Rest of the menu items */}
                       <Link
                         to="/orders"
-                        className="flex items-center px-4 py-2 text-sm text-white hover:bg-indigo-900/30 hover:text-indigo-300 transition-all duration-200 group"
+                        className="flex items-center px-4 py-3 text-sm text-white hover:bg-white/5 hover:text-purple-300 transition-all duration-150 group"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <FiPackage
-                          className="mr-3 text-indigo-400 group-hover:scale-110 transition-transform duration-200"
-                          size={16}
-                        />
-                        <span>My Orders</span>
+                        <FiPackage className="mr-3 text-purple-400" size={16} />
+                        <span className="font-medium">My Orders</span>
                       </Link>
 
                       <Link
                         to="/settings"
-                        className="flex items-center px-4 py-2 text-sm text-white hover:bg-indigo-900/30 hover:text-indigo-300 transition-all duration-200 group"
+                        className="flex items-center px-4 py-3 text-sm text-white hover:bg-white/5 hover:text-indigo-300 transition-all duration-150 group"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <FiSettings
-                          className="mr-3 text-indigo-400 group-hover:scale-110 transition-transform duration-200"
-                          size={16}
-                        />
-                        <span>Settings</span>
+                        <FiSettings className="mr-3 text-indigo-400" size={16} />
+                        <span className="font-medium">Settings</span>
                       </Link>
 
-                      <div className="border-t border-gray-700/50 my-1"></div>
+                      <div className="my-2 mx-4 border-t border-purple-500/20"></div>
 
                       <button
                         onClick={handleSignOut}
-                        className="flex items-center w-full text-left px-4 py-2 text-sm text-white hover:bg-indigo-900/30 hover:text-indigo-300 transition-all duration-200 group"
+                        className="flex items-center w-full text-left px-4 py-3 text-sm text-white hover:bg-white/5 hover:text-red-300 transition-all duration-150 group"
                       >
-                        <FiLogOut
-                          className="mr-3 text-indigo-400 group-hover:scale-110 transition-transform duration-200"
-                          size={16}
-                        />
-                        <span>Sign Out</span>
+                        <FiLogOut className="mr-3 text-red-400" size={16} />
+                        <span className="font-medium">Sign Out</span>
                       </button>
                     </div>
                   </div>
@@ -473,8 +480,23 @@ const Header = () => {
           }
         }
 
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-4px) scale(0.98);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
         .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out forwards;
+          animation: fadeIn 0.2s ease-out forwards;
+        }
+
+        .animate-slideDown {
+          animation: slideDown 0.1s ease-out forwards;
         }
       `}</style>
     </header>

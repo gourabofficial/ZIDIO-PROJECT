@@ -117,7 +117,7 @@ export const getAllSearchProducts = async (
     }
 
     return {
-      message: response.data.message,
+      message: "Search successful",
       success: true,
       data: response.data.products,
       pagination: response.data.pagination,

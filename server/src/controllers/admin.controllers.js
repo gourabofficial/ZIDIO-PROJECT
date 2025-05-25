@@ -599,8 +599,6 @@ export const updateProductById = async (req, res) => {
       });
     }
 
-    
-
     const {
       name,
       description,
@@ -610,10 +608,8 @@ export const updateProductById = async (req, res) => {
       discount,
       size,
       offerStatus,
-      removedImages,
+      removedImageIds, // Changed from removedImages to removedImageIds
     } = req.body;
-
-  
 
     // Start with existing images
     let finalImages = [...(product.images || [])];
@@ -621,20 +617,20 @@ export const updateProductById = async (req, res) => {
     let uploadedImagesCount = 0;
 
     // Step 1: Handle removed images
-    if (removedImages) {
-      // Parse removedImages if it's a string (from form data)
+    if (removedImageIds) { // Changed from removedImages to removedImageIds
+      // Parse removedImageIds if it's a string (from form data)
       let imagesToRemove;
-      if (typeof removedImages === 'string') {
+      if (typeof removedImageIds === 'string') {
         try {
-          imagesToRemove = JSON.parse(removedImages);
+          imagesToRemove = JSON.parse(removedImageIds);
         } catch (e) {
-          imagesToRemove = [removedImages];
+          imagesToRemove = [removedImageIds];
         }
       } else {
-        imagesToRemove = Array.isArray(removedImages) ? removedImages : [removedImages];
+        imagesToRemove = Array.isArray(removedImageIds) ? removedImageIds : [removedImageIds];
       }
       
-  
+      console.log("Images to remove:", imagesToRemove);
 
       // Delete specified images from Cloudinary and remove from array
       for (const imageIdToRemove of imagesToRemove) {

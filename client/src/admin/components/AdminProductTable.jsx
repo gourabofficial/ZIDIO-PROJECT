@@ -1,17 +1,18 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  RefreshCw,
+  
   Eye,
   Edit,
   Trash2,
   ChevronLeft,
   ChevronRight,
   Package,
-  AlertCircle,
-  DollarSign,
+  
+  
   Truck,
   PercentCircle,
+  IndianRupee,
 } from "lucide-react";
 
 const AdminProductTable = ({
@@ -103,7 +104,7 @@ const AdminProductTable = ({
               </th>
               <th className="py-4 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                 <div className="flex items-center space-x-1">
-                  <DollarSign size={14} className="text-gray-400" />
+                  <IndianRupee size={14} className="text-gray-400" />
                   <span>Price</span>
                 </div>
               </th>
@@ -214,24 +215,48 @@ const AdminProductTable = ({
                   )}
                 </td>
                 <td className="py-4 px-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex space-x-3">
+                  <div className="flex items-center space-x-2">
                     <button
-                      className="text-amber-400 hover:text-amber-300 transition-colors p-1.5 rounded-full hover:bg-gray-700"
-                      title="Edit product"
-                      handleProductClick={() => handleProductClick(product._id || product.id)}
+                      className="group relative inline-flex items-center justify-center w-8 h-8 text-emerald-400 hover:text-emerald-300 bg-emerald-900/20 hover:bg-emerald-900/40 border border-emerald-800/30 hover:border-emerald-700/50 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-emerald-500/20"
+                      title="View details"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/admin/product-details/${product._id || product.id}`);
+                      }}
                     >
-                      <Edit size={18} />
+                      <Eye size={16} />
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                        View Details
+                      </div>
                     </button>
+
+                    <button
+                      className="group relative inline-flex items-center justify-center w-8 h-8 text-blue-400 hover:text-blue-300 bg-blue-900/20 hover:bg-blue-900/40 border border-blue-800/30 hover:border-blue-700/50 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20"
+                      title="Edit product"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleProductClick(product._id || product.id);
+                      }}
+                    >
+                      <Edit size={16} />
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                        Edit
+                      </div>
+                    </button>
+
                     {onDelete && (
                       <button
-                        className="text-red-400 hover:text-red-300 transition-colors p-1.5 rounded-full hover:bg-gray-700"
+                        className="group relative inline-flex items-center justify-center w-8 h-8 text-red-400 hover:text-red-300 bg-red-900/20 hover:bg-red-900/40 border border-red-800/30 hover:border-red-700/50 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-red-500/20"
                         title="Delete product"
                         onClick={(e) => {
                           e.stopPropagation();
                           onDelete(product);
                         }}
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} />
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                          Delete
+                        </div>
                       </button>
                     )}
                   </div>
