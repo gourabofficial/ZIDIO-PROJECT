@@ -134,17 +134,25 @@ const AdminUpdateProductFrom = ({ product }) => {
     ];
     fieldsToCompare.forEach((field) => {
       if (formData[field] !== initialData[field]) {
-        // Return the actual value, not an object with from/to
-        changes[field] = formData[field];
+        // If offerStatus is disabled, ensure discount is 0
+        if (field === "discount" && !formData.offerStatus) {
+          changes[field] = "0";
+        } else {
+          changes[field] = formData[field];
+        }
       }
     });
+
+    // Special case: if offerStatus changes from true to false, always include discount: "0"
+    if (formData.offerStatus !== initialData.offerStatus && !formData.offerStatus) {
+      changes.discount = "0";
+    }
 
     // Check size array
     if (
       JSON.stringify(formData.size.sort()) !==
       JSON.stringify(initialData.size.sort())
     ) {
-      // Return the actual array, not an object with from/to
       changes.size = formData.size;
     }
 
@@ -155,7 +163,7 @@ const AdminUpdateProductFrom = ({ product }) => {
 
     // Check new images
     if (formData.newImages.length > 0) {
-      changes.newImages = formData.newImages; // Pass actual file objects
+      changes.newImages = formData.newImages;
     }
 
     return changes;
@@ -188,10 +196,21 @@ const AdminUpdateProductFrom = ({ product }) => {
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
+    
+    // Special handling for offerStatus toggle
+    if (name === "offerStatus") {
+      setFormData({
+        ...formData,
+        [name]: checked,
+        // Reset discount to 0 when offer is disabled
+        discount: checked ? formData.discount : "0"
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: type === "checkbox" ? checked : value,
+      });
+    }
 
     // Clear field-specific error when user makes a change
     if (errors[name]) {
@@ -335,12 +354,13 @@ const AdminUpdateProductFrom = ({ product }) => {
       newErrors.collections = "Collection is required";
     }
 
+    // Only validate discount if offer is enabled
     if (
       formData.offerStatus &&
-      (!formData.discount || Number(formData.discount) <= 0)
+      (!formData.discount || Number(formData.discount) <= 0 || Number(formData.discount) > 100)
     ) {
       newErrors.discount =
-        "Please enter a valid discount percentage for offers";
+        "Please enter a valid discount percentage between 1-100";
     }
 
     setErrors(newErrors);
