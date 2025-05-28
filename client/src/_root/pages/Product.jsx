@@ -6,9 +6,10 @@ import {
   FiMinus,
   FiCheck,
   FiAlertTriangle,
-  FiShoppingBag
+  FiShoppingBag,
+  FiCreditCard
 } from "react-icons/fi";
-import toast, { Toaster } from "react-hot-toast"; // Add this import
+import toast, { Toaster } from "react-hot-toast"; 
 import ProductGallery from "../../components/productDetails/ProductGalery";
 import ProductInfo from "../../components/productDetails/ProductInfo";
 import { getProductById } from "../../Api/ProductApi.js";
@@ -98,6 +99,17 @@ const Product = () => {
   const handleQuantityChange = (newQuantity) => {
     console.log("Changing quantity to:", newQuantity);
     setQuantity(newQuantity);
+  };
+
+  const handleBuyNow = () => {
+    // Navigate to checkout page with product info
+    navigate('/checkout', {
+      state: {
+        type: 'buyNow',
+        product: product,
+        quantity: quantity
+      }
+    });
   };
 
   // Check if product is already in cart
@@ -244,36 +256,48 @@ const Product = () => {
                 </div>
               )}
 
-              {/* Conditional Button: Add to Cart or View Cart */}
-              {isInCart() ? (
+              {/* Action Buttons Container */}
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                {/* Conditional Button: Add to Cart or View Cart */}
+                {isInCart() ? (
+                  <button
+                    onClick={handleViewCart}
+                    className="flex items-center justify-center bg-gradient-to-r from-green-600 to-emerald-600 text-white font-medium px-6 py-3 rounded-md shadow-lg hover:from-green-700 hover:to-emerald-700 active:shadow-inner transition-all w-full sm:w-auto"
+                  >
+                    <FiShoppingBag className="mr-2" size={18} />
+                    View in Cart
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={addToCartLoading}
+                    className={`flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium px-6 py-3 rounded-md shadow-lg hover:from-purple-700 hover:to-indigo-700 active:shadow-inner transition-all w-full sm:w-auto ${
+                      addToCartLoading ? "opacity-70 cursor-wait" : ""
+                    }`}
+                  >
+                    {addToCartLoading ? (
+                      <>
+                        <span className="mr-2">Adding...</span>
+                        <MiniLoader size="small" />
+                      </>
+                    ) : (
+                      <>
+                        <FiShoppingCart className="mr-2" size={18} />
+                        Add to Cart
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Buy Now Button */}
                 <button
-                  onClick={handleViewCart}
-                  className="flex items-center justify-center bg-gradient-to-r from-green-600 to-emerald-600 text-white font-medium px-6 py-3 rounded-md shadow-lg hover:from-green-700 hover:to-emerald-700 active:shadow-inner transition-all w-full sm:w-auto"
+                  onClick={handleBuyNow}
+                  className="flex items-center justify-center bg-gradient-to-r from-orange-600 to-red-600 text-white font-medium px-6 py-3 rounded-md shadow-lg hover:from-orange-700 hover:to-red-700 active:shadow-inner transition-all w-full sm:w-auto"
                 >
-                  <FiShoppingBag className="mr-2" size={18} />
-                  View in Cart
+                  <FiCreditCard className="mr-2" size={18} />
+                  Buy Now
                 </button>
-              ) : (
-                <button
-                  onClick={handleAddToCart}
-                  disabled={addToCartLoading}
-                  className={`flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium px-6 py-3 rounded-md shadow-lg hover:from-purple-700 hover:to-indigo-700 active:shadow-inner transition-all w-full sm:w-auto ${
-                    addToCartLoading ? "opacity-70 cursor-wait" : ""
-                  }`}
-                >
-                  {addToCartLoading ? (
-                    <>
-                      <span className="mr-2">Adding...</span>
-                      <MiniLoader size="small" />
-                    </>
-                  ) : (
-                    <>
-                      <FiShoppingCart className="mr-2" size={18} />
-                      Add to Cart
-                    </>
-                  )}
-                </button>
-              )}
+              </div>
             </div>
           </div>
         </div>
