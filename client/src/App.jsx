@@ -30,6 +30,7 @@ import AdminUser from "./admin/components/AdminUser";
 import AdminSettings from "./admin/components/AdminSettings";
 import AdminProductDetails from "./admin/components/AdminProductDetails";
 import AdminUpdateProduct from "./admin/components/AdminUpdateProduct";
+import Checkout from "./_root/pages/Checkout";
 
 const App = () => {
   return (
@@ -54,6 +55,7 @@ const App = () => {
           <Route path="/product/:id" element={<Product />} />
           <Route path="/orders" element={<Order />} />
           <Route path="/offers" element={<Offer />} />
+          <Route path="/checkout" element={<Checkout />} />
           <Route path="*" element={<NotFound />} />
         </Route>
         {/* Auth layout */}

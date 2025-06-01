@@ -6,18 +6,22 @@ const orderSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  
+
+  paymentDetails: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "PaymentDetails",
+   
+  },
   trackingId: {
     type: String,
     unique: true,
     required: true,
   },
-  
+
   products: [
     {
-      productId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
+      title: {
+        type: String,
         required: true,
       },
       quantity: {
@@ -25,28 +29,36 @@ const orderSchema = new mongoose.Schema({
         required: true,
         min: 1,
       },
-      price: {
+      original_price: {
         type: Number,
         required: true,
       },
-      
+      offer: {
+        type: Number,
+        default: 0,
+      },
+      payable_price: {
+        type: Number,
+        required: true,
+      },
+
     },
   ],
   totalAmount: {
-    type: Number, 
+    type: Number,
     required: true,
   },
-  
+
   Orderstatus: {
     type: String,
-    enum: ["pending", "processing", "shipped", "delivered", "cancelled",],
+    enum: ["pending", "processing", "shipped", "delivered", "cancelled", "return",],
     default: "pending",
   },
-  
+
   totalAmount: {
     type: Number,
     required: true
- },
+  },
   paymentMethod: {
     type: String,
     enum: ["online", "cashOnDelivery"],
@@ -57,8 +69,8 @@ const orderSchema = new mongoose.Schema({
     enum: ["paid", "unpaid"],
     default: "unpaid",
   },
- 
- 
+
+
 }, { timestamps: true });
 
 export const Order = mongoose.model("Order", orderSchema);

@@ -14,6 +14,7 @@ import {
   adminLogin,
   checkedUserLogin,
 } from "../controllers/auth.controllers.js";
+import { placeOrder, getUserOrders, getOrderById } from "../controllers/order.controllers.js";
 
 const userRouter = express.Router();
 
@@ -36,6 +37,10 @@ userRouter.post("/admin", isAdmin, adminLogin);
 //wishlist routes 
 // Add these routes to your existing user.routes.js
 userRouter.post('/add-to-wishlist', isLogedin, addToWishlist);
+//order routes
+userRouter.post('/place-order',isLogedin,placeOrder);
+userRouter.get('/orders', isLogedin, getUserOrders);
+userRouter.get('/orders/:orderId', isLogedin, getOrderById);
 
 userRouter.delete('/remove-from-wishlist/:productId', isLogedin, removeFromWishlist);
 

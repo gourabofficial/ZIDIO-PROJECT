@@ -318,7 +318,7 @@ const Wishlist = () => {
                       </h3>
                     </Link>
                     <p className="bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text font-semibold mb-3">
-                      ₹{(item.price || 0).toFixed(2)}
+                      ₹{(item.price || 0).toLocaleString('en-IN')}
                     </p>
                     
                     <div className="w-full">

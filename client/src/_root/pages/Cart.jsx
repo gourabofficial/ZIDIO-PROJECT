@@ -135,7 +135,7 @@ const Cart = () => {
   );
 
   // Shipping is free over 2000
-  const shipping = subtotal > 2000 ? 0 : 499;
+  const shipping = subtotal > 2000 ? 0 : 49;
 
   // Calculate total
   const total = subtotal + shipping;
@@ -237,12 +237,24 @@ const Cart = () => {
   };
 
   const handleContinueToCheckout = () => {
-    if (!currentUser) {
-      navigate("/login", { state: { from: "/cart" } });
-    } else {
-      navigate("/checkout");
-    }
-  };
+  
+  
+  if (!currentUser) {
+    navigate("/login", { state: { from: "/cart" } });
+  } else {
+    navigate("/checkout", { 
+      state: { 
+        cartItems: cartItems,
+        orderSummary: {
+          subtotal: subtotal,
+          shipping: shipping,
+          total: total,
+          itemsCount: itemsCount
+        }
+      } 
+    });
+  }
+};
 
   // Check if any operation is in progress
   const isLoading = Object.values(loadingStates).some((state) => state);
@@ -439,7 +451,7 @@ const Cart = () => {
                           <div className="mt-4 sm:mt-0">
                             {item.discount > 0 && (
                               <span className="text-sm text-gray-400 line-through mr-2">
-                                ₹{item.price.toLocaleString()}
+                                ₹{item.price.toLocaleString('en-IN')}
                               </span>
                             )}
                             <span className="text-lg font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
@@ -447,7 +459,7 @@ const Cart = () => {
                               {(
                                 calculateItemPrice(item.price, item.discount) *
                                 item.quantity
-                              ).toLocaleString()}
+                              ).toLocaleString('en-IN')}
                             </span>
                           </div>
                         </div>
@@ -471,7 +483,7 @@ const Cart = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">Subtotal</span>
                     <span className="text-white font-medium">
-                      ₹{subtotal.toLocaleString()}
+                      ₹{subtotal.toLocaleString('en-IN')}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -480,14 +492,14 @@ const Cart = () => {
                       {shipping === 0 ? (
                         <span className="bg-gradient-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text font-medium">Free</span>
                       ) : (
-                        `₹${shipping.toLocaleString()}`
+                        `₹${shipping.toLocaleString('en-IN')}`
                       )}
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-4 border-t border-purple-900/30">
                     <span className="text-white font-bold">Total</span>
                     <span className="text-xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
-                      ₹{total.toLocaleString()}
+                      ₹{total.toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>

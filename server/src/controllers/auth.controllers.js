@@ -93,7 +93,9 @@ export const checkedUserLogin = async (req, res) => {
             model: 'Product'
           }
         })
-        .populate('wishlist'); // Add this line to populate wishlist
+        .populate('wishlist')
+        .populate('address')
+      console.log(populatedUser);
 
       return res.status(201).json({
         message: "User created successfully",
@@ -118,7 +120,8 @@ export const checkedUserLogin = async (req, res) => {
           model: 'Product'
         }
       })
-      .populate('wishlist'); // Add this line to populate wishlist
+      .populate('wishlist')
+      .populate('address'); // Add this line to populate address
 
       // console.log("Updated user:", updatedUser);
 
@@ -172,7 +175,8 @@ export const adminLogin = async (req, res) => {
           model: 'Product'
         }
       })
-      .populate('wishlist'); // Add this line for admin too
+      .populate('wishlist')
+      .populate('address'); // Add this line for admin too
 
     if (!user) {
       return res.status(404).json({

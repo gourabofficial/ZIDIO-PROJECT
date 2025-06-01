@@ -347,3 +347,48 @@ export const removeFromWishlist = async (productId) => {
   }
 }
 
+//place order 
+export const placeOrder = async(orderData) => {
+  try {
+    const res = await axiosInstance.post("/user/place-order", orderData, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Error placing order:", error);
+    return {
+      message: error.response?.data?.message || "Failed to place order",
+      success: false,
+    };
+  }
+}
+
+// get all orders for user
+export const getUserOrders = async (page = 1, limit = 10) => {
+  try {
+    const res = await axiosInstance.get(`/user/orders?page=${page}&limit=${limit}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    return {
+      message: error.response?.data?.message || "Failed to fetch orders",
+      success: false,
+    };
+  }
+}
+
+// get order by id
+export const getOrderById = async (orderId) => {
+  try {
+    const res = await axiosInstance.get(`/user/orders/${orderId}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching order:", error);
+    return {
+      message: error.response?.data?.message || "Failed to fetch order",
+      success: false,
+    };
+  }
+}

@@ -52,7 +52,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                     <div className="flex justify-between items-center mt-1">
                       <div className="text-sm text-gray-400">
                         <span>{item.quantity} × </span>
-                        <span className="text-purple-400">₹{item.price.toLocaleString()}</span>
+                        <span className="text-purple-400">₹{item.price.toLocaleString('en-IN')}</span>
                       </div>
                       <button 
                         onClick={() => {
@@ -75,7 +75,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
         <div className="absolute bottom-0 left-0 right-0 px-4 py-4 border-t border-gray-800 bg-[#0c0e16]">
           <div className="flex justify-between mb-4">
             <span className="text-gray-400">Subtotal</span>
-            <span className="text-white font-semibold">₹{subtotal.toLocaleString()}</span>
+            <span className="text-white font-semibold">₹{subtotal.toLocaleString('en-IN')}</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Link 
