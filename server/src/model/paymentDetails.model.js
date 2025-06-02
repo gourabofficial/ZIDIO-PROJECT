@@ -14,6 +14,7 @@ const paymentDetailsSchema = new mongoose.Schema({
    transactionId: {
       type: String,
       unique: true,
+      sparse: true,
    },
    stripeUserId: {
       type: String,
@@ -21,6 +22,7 @@ const paymentDetailsSchema = new mongoose.Schema({
    receiptUrl: {
       type: String,
       unique: true,
+      sparse: true,
    },
    paymentDate: {
       type: Date,

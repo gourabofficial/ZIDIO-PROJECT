@@ -884,7 +884,10 @@ export const verifyPayment = async (req, res) => {
       
       // Add additional Stripe metadata
       if (session.customer) {
-        paymentDetails.stripeUserId = session.customer;
+        // Extract customer ID from customer object or use the string directly
+        paymentDetails.stripeUserId = typeof session.customer === 'string' 
+          ? session.customer 
+          : session.customer.id;
       }
       
       await paymentDetails.save({ session: mongoSession });

@@ -16,6 +16,8 @@ const PaymentSuccess = () => {
   const [paymentStatus, setPaymentStatus] = useState("loading");
   const [orderDetails, setOrderDetails] = useState(null);
   const [error, setError] = useState("");
+  const [countdown, setCountdown] = useState(null);
+  const [countdownInterval, setCountdownInterval] = useState(null);
 
   const sessionId = searchParams.get("session_id");
   const orderId = searchParams.get("order_id");
@@ -29,6 +31,15 @@ const PaymentSuccess = () => {
     }
   }, [sessionId]);
 
+  // Cleanup countdown interval on component unmount
+  useEffect(() => {
+    return () => {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
+    };
+  }, [countdownInterval]);
+
   const verifyPayment = async () => {
     try {
       const response = await verifyPaymentAPI(sessionId);
@@ -41,6 +52,22 @@ const PaymentSuccess = () => {
         if (response.payment.isAlreadyVerified) {
           console.log("Payment was already verified");
         }
+
+        // Start countdown and auto-redirect to orders page after 5 seconds
+        setCountdown(5);
+        const interval = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(interval);
+              navigate("/orders");
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        
+        setCountdownInterval(interval);
+        
       } else {
         throw new Error(response.message || "Payment verification failed");
       }
@@ -52,6 +79,12 @@ const PaymentSuccess = () => {
   };
 
   const handleViewOrders = () => {
+    // Clear countdown if active
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      setCountdownInterval(null);
+    }
+    setCountdown(null);
     navigate("/orders");
   };
 
@@ -165,6 +198,27 @@ const PaymentSuccess = () => {
           <p className="text-gray-300 mb-6">
             Thank you for your purchase! Your order has been confirmed and will be processed shortly.
           </p>
+          
+          {countdown !== null && (
+            <div className="mb-6 p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-300 text-sm font-medium">
+                    Redirecting to your orders in {countdown} second{countdown !== 1 ? 's' : ''}...
+                  </p>
+                  <p className="text-green-400/70 text-xs mt-1">
+                    You'll be taken to track your order automatically
+                  </p>
+                </div>
+                <button
+                  onClick={handleViewOrders}
+                  className="text-green-400 hover:text-green-300 text-sm font-medium border border-green-500/50 px-3 py-1 rounded-lg hover:bg-green-500/10 transition-all duration-200"
+                >
+                  Go Now
+                </button>
+              </div>
+            </div>
+          )}
           
           <div className="space-y-3">
             <button
