@@ -97,18 +97,25 @@ const Checkout = () => {
       const response = await placeOrder(orderDataToSubmit);
       
       if (response.success) {
-        setOrderData(response.order);
-        setOrderPlaced(true);
-        
-        // Redirect to orders page after 3 seconds
-        setTimeout(() => {
-          navigate("/orders", { 
-            state: { 
-              newOrder: response.order,
-              showSuccess: true 
-            } 
-          });
-        }, 3000);
+        // Handle different payment methods
+        if (paymentMethod === "ONLINE" && response.order.paymentUrl) {
+          // For online payments, redirect to Stripe checkout
+          window.location.href = response.order.paymentUrl;
+        } else {
+          // For COD, show success message and redirect to orders
+          setOrderData(response.order);
+          setOrderPlaced(true);
+          
+          // Redirect to orders page after 3 seconds
+          setTimeout(() => {
+            navigate("/orders", { 
+              state: { 
+                newOrder: response.order,
+                showSuccess: true 
+              } 
+            });
+          }, 3000);
+        }
       } else {
         throw new Error(response.message || "Failed to place order");
       }
@@ -160,7 +167,9 @@ const Checkout = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">Payment Method:</span>
-                    <span className="text-purple-400">Cash on Delivery</span>
+                    <span className="text-purple-400">
+                      {orderData.paymentMethod === "online" ? "Online Payment" : "Cash on Delivery"}
+                    </span>
                   </div>
                 </div>
               </div>

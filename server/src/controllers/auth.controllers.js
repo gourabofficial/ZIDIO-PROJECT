@@ -58,7 +58,7 @@ export const checkedUserLogin = async (req, res) => {
       const userByEmail = await User.findOne({ email });
       
       if (userByEmail) {
-        // Update the existing user with the new clerkId but keep their name
+        
         existingUser = await User.findByIdAndUpdate(
           userByEmail._id,
           { clerkId },  // Don't update fullName here
@@ -83,7 +83,6 @@ export const checkedUserLogin = async (req, res) => {
         });
       }
 
-      // Populate the newly created user's cart
       const populatedUser = await User.findById(newUser._id)
         .populate({
           path: 'cart',
@@ -103,13 +102,11 @@ export const checkedUserLogin = async (req, res) => {
         user: populatedUser
       });
     } else {
-      // For existing users, only update email and role, NOT the name
       const updatedUser = await User.findByIdAndUpdate(
         existingUser._id,
         {
           email,
           role: isAdmin ? "admin" : existingUser.role
-          // fullName is intentionally not updated here
         },
         { new: true }
       ).populate({
@@ -121,9 +118,8 @@ export const checkedUserLogin = async (req, res) => {
         }
       })
       .populate('wishlist')
-      .populate('address'); // Add this line to populate address
+      .populate('address'); 
 
-      // console.log("Updated user:", updatedUser);
 
       return res.status(200).json({
         message: "User already exists",

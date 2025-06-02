@@ -14,7 +14,7 @@ import {
   adminLogin,
   checkedUserLogin,
 } from "../controllers/auth.controllers.js";
-import { placeOrder, getUserOrders, getOrderById } from "../controllers/order.controllers.js";
+import { placeOrder, getUserOrders, getOrderById, handleStripeWebhook, getPaymentStatus, verifyPayment } from "../controllers/order.controllers.js";
 
 const userRouter = express.Router();
 
@@ -41,6 +41,11 @@ userRouter.post('/add-to-wishlist', isLogedin, addToWishlist);
 userRouter.post('/place-order',isLogedin,placeOrder);
 userRouter.get('/orders', isLogedin, getUserOrders);
 userRouter.get('/orders/:orderId', isLogedin, getOrderById);
+
+// Payment routes
+userRouter.post('/webhook/stripe', handleStripeWebhook);
+userRouter.get('/payment-status/:sessionId', isLogedin, getPaymentStatus);
+userRouter.post('/verify-payment', isLogedin, verifyPayment);
 
 userRouter.delete('/remove-from-wishlist/:productId', isLogedin, removeFromWishlist);
 

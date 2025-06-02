@@ -55,6 +55,10 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,  // add []
       ref: "Product",
     }],
+    stripeCustomerId: {
+      type: String,
+      sparse: true,
+    },
   },
   { timestamps: true }
 );

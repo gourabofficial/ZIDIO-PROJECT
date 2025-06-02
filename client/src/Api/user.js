@@ -392,3 +392,35 @@ export const getOrderById = async (orderId) => {
     };
   }
 }
+
+// Payment verification API
+export const verifyPayment = async (sessionId) => {
+  try {
+    const res = await axiosInstance.post("/user/verify-payment", { sessionId }, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Error verifying payment:", error);
+    return {
+      message: error.response?.data?.message || "Failed to verify payment",
+      success: false,
+    };
+  }
+}
+
+// Get payment status (existing function - kept for backward compatibility)
+export const getPaymentStatus = async (sessionId) => {
+  try {
+    const res = await axiosInstance.get(`/user/payment-status/${sessionId}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching payment status:", error);
+    return {
+      message: error.response?.data?.message || "Failed to fetch payment status",
+      success: false,
+    };
+  }
+}

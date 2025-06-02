@@ -66,8 +66,16 @@ const orderSchema = new mongoose.Schema({
   },
   paymentStatus: {
     type: String,
-    enum: ["paid", "unpaid"],
+    enum: ["paid", "unpaid", "failed"],
     default: "unpaid",
+  },
+  sessionId: {
+    type: String,
+    sparse: true,
+  },
+  paymentUrl: {
+    type: String,
+    sparse: true,
   },
 
 
