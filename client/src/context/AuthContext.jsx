@@ -71,8 +71,132 @@ export const AuthProvider = ({ children }) => {
     };
 
     setCurrentUser(updatedUser);
-
     setOverrideData(updatedUser);
+  };
+
+  // Optimistic update functions for cart and wishlist
+  const updateCartLocally = (newCartData) => {
+    if (!currentUser) return;
+
+    const updatedUser = {
+      ...currentUser,
+      cartData: newCartData,
+    };
+
+    setCurrentUser(updatedUser);
+    setOverrideData(updatedUser);
+  };
+
+  const updateWishlistLocally = (newWishlist) => {
+    if (!currentUser) return;
+
+    const updatedUser = {
+      ...currentUser,
+      wishlist: newWishlist,
+    };
+
+    setCurrentUser(updatedUser);
+    setOverrideData(updatedUser);
+  };
+
+  // Add item to cart optimistically
+  const addToCartOptimistic = (product, quantity = 1) => {
+    if (!currentUser?.cartData) return;
+
+    const existingItems = currentUser.cartData.items || [];
+    const existingItemIndex = existingItems.findIndex(
+      (item) => item.productId._id === product.id || item.productId === product.id
+    );
+
+    let newItems;
+    if (existingItemIndex !== -1) {
+      // Update existing item quantity
+      newItems = [...existingItems];
+      newItems[existingItemIndex] = {
+        ...newItems[existingItemIndex],
+        quantity: newItems[existingItemIndex].quantity + quantity,
+      };
+    } else {
+      // Add new item with properly structured productId object
+      const newItem = {
+        _id: `temp_${Date.now()}`, // Temporary ID
+        productId: {
+          _id: product.id || product._id,
+          name: product.name || product.title,
+          price: product.price,
+          images: product.images || [{ imageUrl: product.image }],
+          discount: product.discount || 0,
+          product_id: product.product_id || product.handle || product.id || product._id
+        },
+        quantity: quantity,
+      };
+      newItems = [...existingItems, newItem];
+    }
+
+    updateCartLocally({
+      ...currentUser.cartData,
+      items: newItems,
+    });
+  };
+
+  // Remove item from cart optimistically
+  const removeFromCartOptimistic = (productId) => {
+    if (!currentUser?.cartData) return;
+
+    const newItems = currentUser.cartData.items.filter(
+      (item) => (item.productId._id || item.productId) !== productId
+    );
+
+    updateCartLocally({
+      ...currentUser.cartData,
+      items: newItems,
+    });
+  };
+
+  // Update cart item quantity optimistically
+  const updateCartQuantityOptimistic = (productId, newQuantity) => {
+    if (!currentUser?.cartData) return;
+
+    const newItems = currentUser.cartData.items
+      .map((item) => {
+        const itemProductId = item.productId._id || item.productId;
+        if (itemProductId === productId) {
+          return { ...item, quantity: newQuantity };
+        }
+        return item;
+      })
+      .filter((item) => item.quantity > 0); // Remove items with 0 quantity
+
+    updateCartLocally({
+      ...currentUser.cartData,
+      items: newItems,
+    });
+  };
+
+  // Add to wishlist optimistically
+  const addToWishlistOptimistic = (product) => {
+    if (!currentUser) return;
+
+    const currentWishlist = currentUser.wishlist || [];
+    const isAlreadyInWishlist = currentWishlist.some(
+      (item) => (item._id || item) === product.id
+    );
+
+    if (!isAlreadyInWishlist) {
+      updateWishlistLocally([...currentWishlist, product]);
+    }
+  };
+
+  // Remove from wishlist optimistically
+  const removeFromWishlistOptimistic = (productId) => {
+    if (!currentUser) return;
+
+    const currentWishlist = currentUser.wishlist || [];
+    const newWishlist = currentWishlist.filter(
+      (item) => (item._id || item) !== productId
+    );
+
+    updateWishlistLocally(newWishlist);
   };
 
   useEffect(() => {
@@ -86,6 +210,14 @@ export const AuthProvider = ({ children }) => {
     error,
     refetchUserData,
     updateUserState,
+    // Add optimistic update functions
+    updateCartLocally,
+    updateWishlistLocally,
+    addToCartOptimistic,
+    removeFromCartOptimistic,
+    updateCartQuantityOptimistic,
+    addToWishlistOptimistic,
+    removeFromWishlistOptimistic,
   };
 
   return (

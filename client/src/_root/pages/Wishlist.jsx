@@ -66,7 +66,7 @@ const Toast = ({ notification, onClose }) => {
 
 const Wishlist = () => {
   const { user, isLoaded: clerkLoaded, isSignedIn } = useUser();
-  const { currentUser, refetchUserData, isLoaded: authLoaded } = useAuthdata();
+  const { currentUser, refetchUserData, isLoaded: authLoaded, removeFromWishlistOptimistic } = useAuthdata();
   const [isLoading, setIsLoading] = useState(true);
   const [wishlistItems, setWishlistItems] = useState([]);
   const [notification, setNotification] = useState(null);
@@ -116,62 +116,31 @@ const Wishlist = () => {
     // Already being removed
     if (pendingRemovals[productId]) return;
     
-    // Optimistically update UI immediately
+    // Optimistically update UI immediately using the auth context
+    removeFromWishlistOptimistic(productId);
+    
+    // Also update local state for this component
     setPendingRemovals(prev => ({ ...prev, [productId]: true }));
     setWishlistItems(prev => prev.filter(item => item.id !== productId));
     
-    // Show success toast immediately for perceived speed
-    const toastId = toast.loading("Removing...", { duration: 1000 });
+    // Show success toast immediately
+    toast.success("Item removed from wishlist", { duration: 1500 });
     
     try {
       // Execute API call in background
-      removeFromWishlist(productId)
-        .then(response => {
-          if (response.success) {
-            toast.success("Item removed", { id: toastId, duration: 1500 });
-            // Silently refresh data
-            refetchUserData();
-          } else {
-            // Handle failure - revert UI
-            toast.error(response.message || "Failed to remove item", { id: toastId });
-            setPendingRemovals(prev => {
-              const newState = { ...prev };
-              delete newState[productId];
-              return newState;
-            });
-            // Re-fetch data to restore correct state
-            refetchUserData().then(() => {
-              if (currentUser?.wishlist) {
-                const revertedItem = currentUser.wishlist.find(item => (item._id || item) === productId);
-                if (revertedItem) {
-                  setWishlistItems(prev => [...prev, {
-                    id: revertedItem._id,
-                    productId: revertedItem._id,
-                    title: revertedItem.name || revertedItem.title || "Product",
-                    price: revertedItem.price || 0,
-                    image: revertedItem.images?.[0]?.imageUrl || revertedItem.images?.[0] || revertedItem.image,
-                    inStock: revertedItem.inStock !== false,
-                    handle: revertedItem.product_id || revertedItem.handle || revertedItem.slug || revertedItem._id,
-                  }]);
-                }
-              }
-            });
-          }
-        })
-        .catch(error => {
-          console.error('Error removing from wishlist:', error);
-          toast.error("Failed to remove item", { id: toastId });
-        })
-        .finally(() => {
-          setPendingRemovals(prev => {
-            const newState = { ...prev };
-            delete newState[productId];
-            return newState;
-          });
-        });
+      const response = await removeFromWishlist(productId);
+      
+      if (!response.success) {
+        // Handle failure - revert using refetch
+        toast.error(response.message || "Failed to remove item");
+        refetchUserData();
+      }
     } catch (error) {
       console.error('Error removing from wishlist:', error);
-      toast.error("Failed to remove item", { id: toastId });
+      toast.error("Failed to remove item");
+      // Revert optimistic update by refetching correct data
+      refetchUserData();
+    } finally {
       setPendingRemovals(prev => {
         const newState = { ...prev };
         delete newState[productId];

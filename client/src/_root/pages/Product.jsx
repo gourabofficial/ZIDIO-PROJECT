@@ -18,7 +18,7 @@ import { addToCart } from "../../Api/user.js";
 import { useAuthdata } from "../../context/AuthContext.jsx";
 
 const Product = () => {
-  const { refetchUserData, currentUser } = useAuthdata();
+  const { refetchUserData, currentUser, addToCartOptimistic } = useAuthdata();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -54,11 +54,10 @@ const Product = () => {
         quantity: quantity,
       };
 
-      const res = await addToCart(cartToBeSubmitted);
-      console.log(res);
-      refetchUserData();
+      // Optimistically update the cart UI immediately
+      addToCartOptimistic(product, quantity);
 
-      // Enhanced success toast
+      // Show immediate success toast
       toast.success(`${product.name} added to cart!`, {
         icon: <FiCheck className="text-green-500" size={20} />,
         duration: 3000,
@@ -73,8 +72,17 @@ const Product = () => {
           fontWeight: '500',
         },
       });
+
+      // Make API call in the background
+      const res = await addToCart(cartToBeSubmitted);
+      console.log(res);
+
+      // Only refetch if there was an error (to sync correct state)
     } catch (err) {
       console.error("Error adding to cart:", err);
+
+      // Revert optimistic update by refetching correct data
+      refetchUserData();
 
       // Enhanced error toast
       toast.error(err.message || "Failed to add to cart", {

@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 const WishlistButton = ({ product, className = "", size = "medium" }) => {
   const [optimisticState, setOptimisticState] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { isLoaded, refetchUserData, currentUser } = useAuthdata();
+  const { isLoaded, refetchUserData, currentUser, addToWishlistOptimistic, removeFromWishlistOptimistic } = useAuthdata();
   const navigate = useNavigate();
 
   // More efficient wishlist check
@@ -39,13 +39,16 @@ const WishlistButton = ({ product, className = "", size = "medium" }) => {
     
     // Immediately update UI state
     setOptimisticState(!currentlyInWishlist);
-    
-    // Use quick toast for better responsiveness
-    const toastId = currentlyInWishlist 
-      ? toast.loading("Removing...", { duration: 1500 })
-      : toast.loading("Adding...", { duration: 1500 });
-    
     setIsLoading(true);
+
+    // Optimistically update the context immediately
+    if (currentlyInWishlist) {
+      removeFromWishlistOptimistic(productId);
+      toast.success("Removed from wishlist");
+    } else {
+      addToWishlistOptimistic(product);
+      toast.success("Added to wishlist");
+    }
 
     try {
       // Execute operation in background
@@ -55,22 +58,22 @@ const WishlistButton = ({ product, className = "", size = "medium" }) => {
       
       // Fire and forget pattern with cleanup
       apiCall.then(res => {
-        if (res.success) {
-          toast.success(currentlyInWishlist ? "Removed from wishlist" : "Added to wishlist", { 
-            id: toastId,
-            duration: 1500
-          });
-          // Silently refresh data
-          refetchUserData().then(() => setOptimisticState(null));
-        } else {
-          // Revert on failure
+        if (!res.success) {
+          // Revert on failure and show error
           setOptimisticState(currentlyInWishlist);
-          toast.error(res.message || "Failed to update wishlist", { id: toastId });
+          toast.error(res.message || "Failed to update wishlist");
+          // Silently refetch to restore correct state
+          refetchUserData();
+        } else {
+          // Reset optimistic state since the operation succeeded
+          setOptimisticState(null);
         }
       }).catch(error => {
         console.error("Error updating wishlist:", error);
         setOptimisticState(currentlyInWishlist);
-        toast.error("Failed to update wishlist", { id: toastId });
+        toast.error("Failed to update wishlist");
+        // Silently refetch to restore correct state
+        refetchUserData();
       }).finally(() => {
         setIsLoading(false);
       });
@@ -81,8 +84,8 @@ const WishlistButton = ({ product, className = "", size = "medium" }) => {
     } catch (error) {
       console.error("Error updating wishlist:", error);
       setOptimisticState(currentlyInWishlist);
+      toast.error("Failed to update wishlist");
       setIsLoading(false);
-      toast.error("Failed to update wishlist", { id: toastId });
     }
   };
 

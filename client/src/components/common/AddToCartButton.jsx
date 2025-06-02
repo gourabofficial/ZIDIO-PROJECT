@@ -9,7 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 const AddToCartButton = ({ product }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { isLoaded, refetchUserData, currentUser } = useAuthdata();
+  const { isLoaded, refetchUserData, currentUser, addToCartOptimistic } = useAuthdata();
   const navigate = useNavigate();
 
   // Check if product is already in cart
@@ -50,21 +50,32 @@ const AddToCartButton = ({ product }) => {
     setIsLoading(true);
     setIsSuccess(false);
 
+    // Optimistically update the UI immediately
+    addToCartOptimistic(product, 1);
+    toast.success("Item added to cart successfully!");
+    setIsSuccess(true);
+
     try {
       const cartToBeSubmitted = {
         productId: product.id,
         quantity: 1,
       };
       
+      // Call API in background without blocking UI
       const res = await addToCart(cartToBeSubmitted);
-      refetchUserData();
-      
-      setIsSuccess(true);
-      toast.success("Item added to cart successfully!");
       console.log("res:: ", res);
+      
+      // Only refetch if there was an error to sync with server
+      if (!res.success) {
+        toast.error(res.message || "Failed to add item to cart");
+        // Silently refetch to restore correct state
+        refetchUserData();
+      }
     } catch (error) {
       console.error("Error adding to cart:", error);
       toast.error(error.message || "Failed to add item to cart. Please try again.");
+      // Silently refetch to restore correct state
+      refetchUserData();
     } finally {
       setIsLoading(false);
       

@@ -83,7 +83,7 @@ const Cart = () => {
   const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
 
-  const { currentUser, refetchUserData } = useAuthdata();
+  const { currentUser, refetchUserData, removeFromCartOptimistic, updateCartQuantityOptimistic, updateCartLocally } = useAuthdata();
 
   // Show notification function with improved handling
   const showNotification = (message, type = "success") => {
@@ -106,16 +106,16 @@ const Cart = () => {
   const cartItems =
     currentUser?.cartData?.items
       // Filter out items with null productId before mapping
-      .filter(item => item && item.productId)
+      .filter(item => item && item.productId && item.productId._id)
       .map((item) => ({
         id: item._id,
         productId: item.productId._id,
-        title: item.productId.name,
-        price: item.productId.price,
-        image: item.productId.images[0]?.imageUrl,
-        quantity: item.quantity,
-        discount: item.productId.discount,
-        handle: item.productId.product_id,
+        title: item.productId.name || 'Unknown Product',
+        price: item.productId.price || 0,
+        image: item.productId.images?.[0]?.imageUrl || '',
+        quantity: item.quantity || 1,
+        discount: item.productId.discount || 0,
+        handle: item.productId.product_id || item.productId._id,
       })) || [];
 
   // Calculate cart metrics
@@ -150,6 +150,9 @@ const Cart = () => {
         return handleRemoveItem(productId);
       }
 
+      // Optimistically update UI immediately
+      updateCartQuantityOptimistic(productId, newQuantity);
+
       // Determine action based on whether we're increasing or decreasing
       const currentItem = cartItems.find(
         (item) => item.productId === productId
@@ -165,7 +168,6 @@ const Cart = () => {
       );
 
       if (response.success) {
-        await refetchUserData(); // Refresh cart data
         // Improved toast messages based on the action
         showNotification(
           action === "increase"
@@ -179,11 +181,15 @@ const Cart = () => {
           response.message || "Failed to update quantity",
           "error"
         );
+        // Silently refetch to restore correct state
+        refetchUserData();
       }
     } catch (err) {
       console.error("Error updating quantity:", err);
       setError("Something went wrong. Please try again.");
       showNotification("Something went wrong. Please try again.", "error");
+      // Silently refetch to restore correct state
+      refetchUserData();
     } finally {
       setLoadingStates((prev) => ({ ...prev, updateQuantity: false }));
     }
@@ -194,19 +200,24 @@ const Cart = () => {
       setLoadingStates((prev) => ({ ...prev, removeItem: true }));
       setError("");
 
+      // Optimistically remove item from UI immediately
+      removeFromCartOptimistic(productId);
+      showNotification("Item removed from cart successfully", "success");
+
       const response = await removeFromCart(productId, 0); // Pass 0 quantity to remove item completely
 
-      if (response.success) {
-        await refetchUserData(); // Refresh cart data
-        showNotification("Item removed from cart successfully", "success");
-      } else {
+      if (!response.success) {
         setError(response.message || "Failed to remove item");
         showNotification(response.message || "Failed to remove item", "error");
+        // Silently refetch to restore correct state
+        refetchUserData();
       }
     } catch (err) {
       console.error("Error removing item:", err);
       setError("Something went wrong. Please try again.");
       showNotification("Something went wrong. Please try again.", "error");
+      // Silently refetch to restore correct state
+      refetchUserData();
     } finally {
       setLoadingStates((prev) => ({ ...prev, removeItem: false }));
     }
@@ -217,20 +228,25 @@ const Cart = () => {
       setLoadingStates((prev) => ({ ...prev, clearCart: true }));
       setError("");
 
+      // Optimistically clear cart immediately
+      updateCartLocally({ items: [] });
+      showNotification("Your cart has been cleared", "success");
+
       // Fix the API call to not include headers in the wrong position
       const response = await clearCart();
 
-      if (response.success) {
-        await refetchUserData(); // Refresh cart data
-        showNotification("Your cart has been cleared", "success");
-      } else {
+      if (!response.success) {
         setError(response.message || "Failed to clear cart");
         showNotification(response.message || "Failed to clear cart", "error");
+        // Silently refetch to restore correct state
+        refetchUserData();
       }
     } catch (err) {
       console.error("Error clearing cart:", err);
       setError("Something went wrong. Please try again.");
       showNotification("Something went wrong. Please try again.", "error");
+      // Silently refetch to restore correct state
+      refetchUserData();
     } finally {
       setLoadingStates((prev) => ({ ...prev, clearCart: false }));
     }
@@ -400,7 +416,7 @@ const Cart = () => {
                           </button>
                         </div>
                         <p className="mt-1 text-sm text-indigo-300/60">
-                          Item #{item.productId.substring(0, 8)}
+                          Item #{item.productId?.substring(0, 8) || 'N/A'}
                         </p>
 
                         <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
