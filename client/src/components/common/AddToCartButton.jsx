@@ -40,8 +40,8 @@ const AddToCartButton = ({ product }) => {
   const handleAddToCart = async (e) => {
     e.preventDefault();
     
-    if (!isLoaded) {
-      toast.info("Please log in to add items to your cart");
+    if (!isLoaded || !currentUser) {
+      toast.error("Please login first");
       return;
     }
     

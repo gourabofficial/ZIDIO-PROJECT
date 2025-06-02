@@ -27,8 +27,7 @@ const WishlistButton = ({ product, className = "", size = "medium" }) => {
     e.stopPropagation();
     
     if (!isLoaded || !currentUser) {
-      toast.info("Please sign in to use wishlist");
-      navigate('/sign-in');
+      toast.error("Please login first");
       return;
     }
     
