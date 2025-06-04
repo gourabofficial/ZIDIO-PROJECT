@@ -41,10 +41,16 @@ const AccountSettings = () => {
     setAddressError(false);
     
     async function fetchAddressData() {
+      // If address is already populated as an object, use it directly
+      if (currentUser?.address && typeof currentUser.address === 'object') {
+        setAddressData(currentUser.address);
+        setLoadingAddress(false);
+        return;
+      }
+      
+      // If address is a string ID, fetch it from API
       if (currentUser?.address && typeof currentUser.address === 'string') {
-        if (!addressData) {
-          setLoadingAddress(true);
-        }
+        setLoadingAddress(true);
         
         try {
           const response = await getAddressById(currentUser.address);
@@ -65,13 +71,17 @@ const AccountSettings = () => {
         } finally {
           setLoadingAddress(false);
         }
+      } else {
+        // No address at all
+        setAddressData(null);
+        setLoadingAddress(false);
       }
     }
     
-    if (isAuth && currentUser?.address) {
+    if (isAuth && isLoaded) {
       fetchAddressData();
     }
-  }, [currentUser?.address, isAuth]);
+  }, [currentUser?.address, isAuth, isLoaded]);
 
   // Handle loading state for the entire component
   if (!isLoaded) {
@@ -153,10 +163,19 @@ const AccountSettings = () => {
       
       let response;
       
-      if (currentUser.address) {
+      // Check if user has an existing address (either as object or ID string)
+      const hasExistingAddress = currentUser.address && 
+        (typeof currentUser.address === 'object' || typeof currentUser.address === 'string');
+      
+      if (hasExistingAddress) {
+        // Get the address ID - either from the object or use the string directly
+        const addressId = typeof currentUser.address === 'object' 
+          ? currentUser.address._id 
+          : currentUser.address;
+          
         const updateData = {
           ...addressForm,
-          addressId: currentUser.address
+          addressId: addressId
         };
         
         try {
@@ -175,7 +194,10 @@ const AccountSettings = () => {
       if (response.success) {
         const userData = await refetchUserData();
         
-        if (response.address) {
+        // After successful update, the userData should have the populated address
+        if (userData && userData.address && typeof userData.address === 'object') {
+          setAddressData(userData.address);
+        } else if (response.address) {
           setAddressData(response.address);
         } else if (response.addressId || (userData && userData.address)) {
           const addressId = response.addressId || userData.address;
@@ -186,7 +208,7 @@ const AccountSettings = () => {
         }
         
         setIsManagingAddress(false);
-        toast.success(currentUser.address 
+        toast.success(hasExistingAddress 
           ? "Address updated successfully!" 
           : "New address added successfully!");
       } else {

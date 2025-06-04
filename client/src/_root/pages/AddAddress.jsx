@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthdata } from "../../context/AuthContext";
-import { FiMapPin, FiArrowLeft, FiCheck, FiHome, FiGlobe, FiFlag, FiNavigation, FiMail } from "react-icons/fi";
+import { FiMapPin, FiArrowLeft, FiCheck, FiHome, FiGlobe, FiFlag, FiNavigation, FiMail, FiPhone } from "react-icons/fi";
 import { updateAddress, addAddress } from "../../Api/user";
 import MiniLoader from "../../components/Loader/MiniLoader";
 import toast, { Toaster } from 'react-hot-toast';
@@ -18,17 +18,19 @@ const AddAddress = () => {
     state: "",
     pinCode: "",
     country: "",
+    phoneNumber: "", // Added phone number field
   });
 
   // Initialize form with existing address data if it exists
   useEffect(() => {
-    if (currentUser?.address) {
+    if (currentUser?.address && typeof currentUser.address === 'object') {
       setAddressForm({
         addressInfo: currentUser.address.addressInfo || "",
         city: currentUser.address.city || "",
         state: currentUser.address.state || "",
         pinCode: currentUser.address.pinCode || "",
         country: currentUser.address.country || "",
+        phoneNumber: currentUser.address.phoneNumber || "", // Added phone number
       });
     }
   }, [currentUser]);
@@ -56,7 +58,7 @@ const AddAddress = () => {
   const handleSubmitAddress = async () => {
     // Form validation
     if (!addressForm.addressInfo || !addressForm.city || !addressForm.state || 
-        !addressForm.pinCode || !addressForm.country) {
+        !addressForm.pinCode || !addressForm.country || !addressForm.phoneNumber) {
       toast.error("Please fill in all address fields");
       return;
     }
@@ -78,7 +80,12 @@ const AddAddress = () => {
     
     try {
       const response = hasExistingAddress
-        ? await updateAddress(addressForm)
+        ? await updateAddress({
+            ...addressForm,
+            addressId: typeof currentUser.address === 'object' 
+              ? currentUser.address._id 
+              : currentUser.address
+          })
         : await addAddress(addressForm);
       
       if (response.success) {
@@ -255,6 +262,16 @@ const AddAddress = () => {
                 placeholder="Country"
               />
             </div>
+
+            {/* Phone Number */}
+            <InputField 
+              label="Phone Number"
+              name="phoneNumber"
+              value={addressForm.phoneNumber}
+              onChange={handleAddressInputChange}
+              icon={FiPhone}
+              placeholder="Contact phone number"
+            />
 
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-4 border-t border-indigo-500/10">
