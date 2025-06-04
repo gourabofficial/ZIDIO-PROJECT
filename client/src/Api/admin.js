@@ -40,7 +40,7 @@ export const AdminAddProduct = async (productData) => {
     };
 
     const response = await axiosInstance.post(
-      "/admin/add-product",
+      "/admin/add-products",
       formData,
       config
     );
@@ -362,6 +362,32 @@ export const updateOrderStatus = async (orderId, status) => {
     };
   } catch (error) {
     console.error("Error updating order status:", error);
+    return {
+      message: error.response?.data?.message || error.message,
+      success: false,
+    };
+  }
+};
+
+// get dashboard stats
+export const getDashboardStats = async () => {
+  try {
+    const response = await axiosInstance.get('/admin/dashboard/stats');
+
+    if (!response.data.success) {
+      return {
+        message: response.data.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: response.data.message,
+      success: true,
+      stats: response.data.stats,
+    };
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
     return {
       message: error.response?.data?.message || error.message,
       success: false,

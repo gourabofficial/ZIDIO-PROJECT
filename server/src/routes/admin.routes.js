@@ -1,5 +1,5 @@
 import express from "express";
-import { addProduct, deleterProductById, getAllOrders, getAllSearchProducts, getAllSearchUsers, getProductByIdForAdmin, getProductsbyMultipleIds, updateHomeContent, updateOrderStatus, updateProductById } from "../controllers/admin.controllers.js";
+import { addProduct, deleterProductById, getAllOrders, getAllSearchProducts, getAllSearchUsers, getDashboardStats, getProductByIdForAdmin, getProductsbyMultipleIds, updateHomeContent, updateOrderStatus, updateProductById } from "../controllers/admin.controllers.js";
 import { isAdmin } from "../middlewares/isAuthenticated.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { getAllProducts } from "../controllers/product.controllers.js";
@@ -32,5 +32,7 @@ adminRouter.post('/delete-product/:id', isAdmin, deleterProductById);
 // get product by id for admin
 adminRouter.get('/get-product-for-admin/:id', isAdmin, getProductByIdForAdmin);
 
+// dashboard stats
+adminRouter.get('/dashboard/stats', isAdmin, getDashboardStats);
 
 export default adminRouter;

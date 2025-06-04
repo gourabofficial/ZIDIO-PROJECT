@@ -937,3 +937,119 @@ export const updateOrderStatus = async (req, res) => {
     });
   }
 };
+
+// Dashboard Stats
+export const getDashboardStats = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    // Get current date and calculate date ranges
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    // Get total counts
+    const [totalOrders, totalUsers, totalProducts] = await Promise.all([
+      Order.countDocuments(),
+      User.countDocuments(),
+      Product.countDocuments()
+    ]);
+
+    // Get current month orders
+    const currentMonthOrders = await Order.countDocuments({
+      createdAt: { $gte: startOfMonth }
+    });
+
+    // Get last month orders
+    const lastMonthOrders = await Order.countDocuments({
+      createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth }
+    });
+
+    // Calculate order growth percentage
+    const orderGrowth = lastMonthOrders > 0 
+      ? ((currentMonthOrders - lastMonthOrders) / lastMonthOrders) * 100 
+      : currentMonthOrders > 0 ? 100 : 0;
+
+    // Get total revenue
+    const revenueResult = await Order.aggregate([
+      { $match: { paymentStatus: 'paid' } },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+    ]);
+    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
+
+    // Get current month revenue
+    const currentMonthRevenueResult = await Order.aggregate([
+      { 
+        $match: { 
+          paymentStatus: 'paid',
+          createdAt: { $gte: startOfMonth }
+        }
+      },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+    ]);
+    const currentMonthRevenue = currentMonthRevenueResult.length > 0 ? currentMonthRevenueResult[0].total : 0;
+
+    // Get last month revenue
+    const lastMonthRevenueResult = await Order.aggregate([
+      { 
+        $match: { 
+          paymentStatus: 'paid',
+          createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth }
+        }
+      },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+    ]);
+    const lastMonthRevenue = lastMonthRevenueResult.length > 0 ? lastMonthRevenueResult[0].total : 0;
+
+    // Calculate revenue growth percentage
+    const revenueGrowth = lastMonthRevenue > 0 
+      ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 
+      : currentMonthRevenue > 0 ? 100 : 0;
+
+    // Get current month users
+    const currentMonthUsers = await User.countDocuments({
+      createdAt: { $gte: startOfMonth }
+    });
+
+    // Get last month users
+    const lastMonthUsers = await User.countDocuments({
+      createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth }
+    });
+
+    // Calculate user growth percentage
+    const userGrowth = lastMonthUsers > 0 
+      ? ((currentMonthUsers - lastMonthUsers) / lastMonthUsers) * 100 
+      : currentMonthUsers > 0 ? 100 : 0;
+
+    const stats = {
+      totalOrders,
+      totalRevenue: Math.round(totalRevenue),
+      totalUsers,
+      totalProducts,
+      orderGrowth: Math.round(orderGrowth * 100) / 100,
+      revenueGrowth: Math.round(revenueGrowth * 100) / 100,
+      userGrowth: Math.round(userGrowth * 100) / 100
+    };
+
+    return res.status(200).json({
+      message: "Dashboard stats fetched successfully",
+      success: true,
+      stats
+    });
+
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch dashboard stats",
+      error: error.message,
+    });
+  }
+};

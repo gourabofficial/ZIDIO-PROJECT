@@ -71,14 +71,13 @@ const App = () => {
         {/* Admin layout */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
-          <Route path="/admin/add-products" element={<AddProduct />} />
-          <Route path="/admin/edit-products/:id" element={<AdminUpdateProduct />} />
-         
-          <Route path="/admin/products-list" element={<AllProductList />} />
-          <Route path="/admin/product-details/:id" element={<AdminProductDetails />} />
-          <Route path="/admin/all-orders" element={<OrderAdmin />} />
-          <Route path="/admin/all-users" element={<AdminUser />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="add-products" element={<AddProduct />} />
+          <Route path="edit-products/:id" element={<AdminUpdateProduct />} />
+          <Route path="products-list" element={<AllProductList />} />
+          <Route path="product-details/:id" element={<AdminProductDetails />} />
+          <Route path="all-orders" element={<OrderAdmin />} />
+          <Route path="all-users" element={<AdminUser />} />
+          <Route path="settings" element={<AdminSettings />} />
         </Route>
       </Routes>
     </>
