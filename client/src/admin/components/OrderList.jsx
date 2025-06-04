@@ -13,7 +13,8 @@ import {
   XCircle,
   Clock
 } from 'lucide-react';
-import axiosInstance from '../../Api/config';
+import { getAllOrders, updateOrderStatus as updateOrderStatusAPI } from '../../Api/admin';
+
 
 const OrderList = () => {
   // State
@@ -36,25 +37,22 @@ const OrderList = () => {
     setError('');
     
     try {
-      const params = { 
-        page, 
-        limit,
-        ...(searchTerm && { search: searchTerm }),
-        ...(filterStatus && { status: filterStatus.toLowerCase() })
-      };
+      const response = await getAllOrders(page, searchTerm, filterStatus, limit);
+      console.log("resposne: ", response);
       
-      const response = await axiosInstance.get('/orders', { params });
       
-      if (response.data.success) {
-        setOrders(response.data.orders || []);
-        setTotalPages(response.data.totalPages || 1);
-        setTotalOrders(response.data.totalItems || 0);
+      if (response.success) {
+        setOrders(response.orders || []);
+        if (response.pagination) {
+          setTotalPages(response.pagination.totalPages || 1);
+          setTotalOrders(response.pagination.totalOrders || 0);
+        }
       } else {
-        throw new Error(response.data.message || 'Failed to fetch orders');
+        throw new Error(response.message || 'Failed to fetch orders');
       }
     } catch (err) {
       console.error('Error fetching orders:', err);
-      setError(err.response?.data?.message || err.message || 'An error occurred while fetching orders');
+      setError(err.message || 'An error occurred while fetching orders');
       setOrders([]);
     } finally {
       setLoading(false);
@@ -72,6 +70,15 @@ const OrderList = () => {
   const handleFilterChange = (e) => {
     setFilterStatus(e.target.value);
     setCurrentPage(1);
+    fetchOrders(1, searchQuery);
+  };
+  
+  // Reset handler
+  const handleReset = () => {
+    setSearchQuery('');
+    setFilterStatus('');
+    setCurrentPage(1);
+    fetchOrders(1, '', '');
   };
   
   // Pagination handlers
@@ -95,21 +102,19 @@ const OrderList = () => {
   // Update order status
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const response = await axiosInstance.patch(`/orders/${orderId}/status`, {
-        status: newStatus
-      });
+      const response = await updateOrderStatusAPI(orderId, newStatus);
       
-      if (response.data.success) {
+      if (response.success) {
         // Update the order in the local state
         setOrders(orders.map(order => 
           order._id === orderId ? { ...order, status: newStatus } : order
         ));
       } else {
-        throw new Error(response.data.message || 'Failed to update order status');
+        throw new Error(response.message || 'Failed to update order status');
       }
     } catch (err) {
       console.error('Error updating order status:', err);
-      setError(err.response?.data?.message || err.message || 'An error occurred while updating order');
+      setError(err.message || 'An error occurred while updating order');
     }
   };
   
@@ -193,7 +198,7 @@ const OrderList = () => {
             <form onSubmit={handleSearch} className="relative">
               <input
                 type="text"
-                placeholder="Search by order ID or customer name..."
+                placeholder="Search by order ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -235,12 +240,13 @@ const OrderList = () => {
           
           {/* Refresh Button */}
           <button
-            onClick={() => {
-              setSearchQuery('');
-              setFilterStatus('');
-              fetchOrders(1);
-            }}
-            className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center"
+            onClick={handleReset}
+            disabled={!searchQuery && !filterStatus}
+            className={`py-2 px-4 rounded-lg flex items-center justify-center transition-colors ${
+              searchQuery || filterStatus 
+                ? 'bg-blue-600 hover:bg-blue-500 text-white' 
+                : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+            }`}
           >
             <RefreshCw size={18} className="mr-2" />
             Reset
@@ -298,15 +304,15 @@ const OrderList = () => {
                   <tr key={order._id} className="hover:bg-gray-650">
                     <td className="py-3 px-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-white">
-                        #{order.orderNumber || order._id.substring(0, 8)}
+                        #{order.trackingId || order._id.substring(0, 8)}
                       </div>
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-white">
-                        {order.user.name}
+                        {order.owner.name}
                       </div>
                       <div className="text-xs text-gray-400">
-                        {order.user.email}
+                        {order.owner.email}
                       </div>
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap text-sm text-white">

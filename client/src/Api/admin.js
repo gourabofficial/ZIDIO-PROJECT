@@ -35,7 +35,7 @@ export const AdminAddProduct = async (productData) => {
 
     const config = {
       headers: {
-        "Content-Type": "multipart/form-data",
+        "Content-Type": undefined, // Remove default json header, let browser set multipart boundary
       },
     };
 
@@ -267,15 +267,12 @@ export const updateProductByIdForAdmin = async (id, productData) => {
       });
     }
 
-  
-
-
     const response = await axiosInstance.patch(
       `/admin/update-product/${id}`,
       formData,
       {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": undefined, // Remove default json header, let browser set multipart boundary
         },
       }
     );
@@ -293,6 +290,78 @@ export const updateProductByIdForAdmin = async (id, productData) => {
     };
   } catch (error) {
     console.error("Error updating product:", error);
+    return {
+      message: error.response?.data?.message || error.message,
+      success: false,
+    };
+  }
+};
+
+// get all orders for admin with pagination and search
+export const getAllOrders = async (page = 1, searchTerm = "", status = "", limit = 10) => {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    });
+
+    if (searchTerm && searchTerm.trim()) {
+      params.append('search', searchTerm.trim());
+    }
+
+    if (status && status.trim()) {
+      params.append('status', status.trim());
+    }
+
+    const response = await axiosInstance.get(`/admin/get-all-orders?${params.toString()}`);
+
+    if (!response.data.success) {
+      return {
+        message: response.data.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: response.data.message,
+      success: true,
+      orders: response.data.orders,
+      pagination: response.data.pagination,
+    };
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    return {
+      message: error.response?.data?.message || error.message,
+      success: false,
+    };
+  }
+};
+
+// update order status
+export const updateOrderStatus = async (orderId, status) => {
+  try {
+    const response = await axiosInstance.patch(`/admin/orders/${orderId}/status`, {
+      status: status
+    }, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.data.success) {
+      return {
+        message: response.data.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: response.data.message,
+      success: true,
+      order: response.data.order,
+    };
+  } catch (error) {
+    console.error("Error updating order status:", error);
     return {
       message: error.response?.data?.message || error.message,
       success: false,

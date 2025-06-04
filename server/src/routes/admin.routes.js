@@ -1,5 +1,5 @@
 import express from "express";
-import { addProduct, deleterProductById, getAllSearchProducts, getAllSearchUsers, getProductByIdForAdmin, getProductsbyMultipleIds, updateHomeContent, updateProductById } from "../controllers/admin.controllers.js";
+import { addProduct, deleterProductById, getAllOrders, getAllSearchProducts, getAllSearchUsers, getProductByIdForAdmin, getProductsbyMultipleIds, updateHomeContent, updateOrderStatus, updateProductById } from "../controllers/admin.controllers.js";
 import { isAdmin } from "../middlewares/isAuthenticated.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { getAllProducts } from "../controllers/product.controllers.js";
@@ -17,6 +17,12 @@ adminRouter.post('/get-products-by-multiple-ids', isAdmin, getProductsbyMultiple
 adminRouter.post('/get-all-products', isAdmin, getAllProducts);
 
 adminRouter.get('/get-search-all-users', isAdmin, getAllSearchUsers);
+
+// get all orders for admin
+adminRouter.get('/get-all-orders', isAdmin, getAllOrders);
+
+// update order status
+adminRouter.patch('/orders/:orderId/status', isAdmin, updateOrderStatus);
 
 //update product
 adminRouter.patch('/update-product/:id', isAdmin, upload.array('images', 12), updateProductById);

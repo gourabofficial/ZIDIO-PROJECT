@@ -9,9 +9,12 @@ export const updateAccount = async (formData) => {
       formData instanceof FormData ? "FormData object" : formData
     );
 
-    // For FormData, don't set content-type header (browser will set it with boundary)
-    // Use the same approach that worked for updateUserDetails
-    const res = await axiosInstance.patch("/user/update-profile", formData);
+    // For FormData, remove the default content-type header (browser will set it with boundary)
+    const res = await axiosInstance.patch("/user/update-profile", formData, {
+      headers: {
+        "Content-Type": undefined, // This removes the default application/json header
+      },
+    });
     return res.data;
   } catch (error) {
     console.error("Error updating account:", error);
@@ -155,8 +158,12 @@ export const updateAvatar = async (avatarData) => {
       throw new Error("Invalid avatar data format");
     }
 
-    // Don't manually set Content-Type for FormData
-    const res = await axiosInstance.patch("/user/update-avatar", data);
+    // Remove the default content-type header for FormData
+    const res = await axiosInstance.patch("/user/update-avatar", data, {
+      headers: {
+        "Content-Type": undefined, // This removes the default application/json header
+      },
+    });
     return res.data;
   } catch (error) {
     console.error("Error updating avatar:", error);

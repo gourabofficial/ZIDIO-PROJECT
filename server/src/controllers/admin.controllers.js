@@ -7,6 +7,7 @@ import { HomeContent } from "../model/homeContent.model.js";
 import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
 import { User } from "../model/user.model.js";
+import { Order } from "../model/order.model.js";
 
 export const addProduct = async (req, res) => {
   try {
@@ -765,6 +766,173 @@ export const getProductByIdForAdmin = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch product",
+      error: error.message,
+    });
+  }
+};
+
+// get all orders for admin with search and pagination
+export const getAllOrders = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const searchTerm = req.query.search || req.query.query || "";
+    const statusFilter = req.query.status || "";
+    
+    let filter = {};
+
+    // Add status filter if provided
+    if (statusFilter && statusFilter.trim() !== "") {
+      filter.Orderstatus = statusFilter.toLowerCase();
+    }
+
+    // If search term is provided, search only in trackingId
+    if (searchTerm && searchTerm.trim() !== "") {
+      const searchRegex = new RegExp(searchTerm, "i");
+      
+      filter = {
+        ...filter,
+        trackingId: searchRegex
+      };
+    }
+
+    // Count total results for pagination info
+    const totalOrders = await Order.countDocuments(filter);
+
+    // Fetch paginated results with populated fields
+    const orders = await Order.find(filter)
+      .populate({
+        path: 'owner',
+        select: 'fullName email'
+      })
+      .populate('paymentDetails')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Format the response
+    const formattedOrders = orders.map((order) => ({
+      _id: order._id,
+      trackingId: order.trackingId,
+      owner: {
+        _id: order.owner._id,
+        name: order.owner.fullName,
+        email: order.owner.email
+      },
+      products: order.products,
+      totalAmount: order.totalAmount,
+      status: order.Orderstatus,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt
+    }));
+
+    // Pagination information
+    const totalPages = Math.ceil(totalOrders / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    res.status(200).json({
+      success: true,
+      message: "Orders fetched successfully",
+      count: formattedOrders.length,
+      pagination: {
+        totalOrders,
+        totalPages,
+        currentPage: page,
+        hasNextPage,
+        hasPrevPage,
+      },
+      orders: formattedOrders,
+    });
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders",
+      error: error.message,
+    });
+  }
+};
+
+// update order status
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    // Validate status
+    const validStatuses = ["pending", "processing", "shipped", "delivered", "cancelled", "return"];
+    if (!validStatuses.includes(status.toLowerCase())) {
+      return res.status(400).json({
+        message: "Invalid order status",
+        success: false,
+      });
+    }
+
+    // Check if order exists
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        message: "Order not found",
+        success: false,
+      });
+    }
+
+    // Update order status
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { Orderstatus: status.toLowerCase() },
+      { new: true }
+    ).populate({
+      path: 'owner',
+      select: 'fullName email'
+    }).populate('paymentDetails');
+
+    return res.status(200).json({
+      message: "Order status updated successfully",
+      success: true,
+      order: {
+        _id: updatedOrder._id,
+        trackingId: updatedOrder.trackingId,
+        owner: {
+          _id: updatedOrder.owner._id,
+          name: updatedOrder.owner.fullName,
+          email: updatedOrder.owner.email
+        },
+        products: updatedOrder.products,
+        totalAmount: updatedOrder.totalAmount,
+        status: updatedOrder.Orderstatus,
+        paymentMethod: updatedOrder.paymentMethod,
+        paymentStatus: updatedOrder.paymentStatus,
+        createdAt: updatedOrder.createdAt,
+        updatedAt: updatedOrder.updatedAt
+      }
+    });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update order status",
       error: error.message,
     });
   }
