@@ -1053,3 +1053,102 @@ export const getDashboardStats = async (req, res) => {
     });
   }
 };
+
+// Get recent users for dashboard
+export const getRecentUsers = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    const limit = parseInt(req.query.limit) || 10;
+
+    // Fetch recent users sorted by creation date
+    const users = await User.find()
+      .select("fullName email role avatar createdAt")
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    const formattedUsers = users.map((user) => ({
+      _id: user._id,
+      name: user.fullName,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      createdAt: user.createdAt,
+    }));
+
+    return res.status(200).json({
+      message: "Recent users fetched successfully",
+      success: true,
+      users: formattedUsers,
+    });
+  } catch (error) {
+    console.error("Error fetching recent users:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch recent users",
+      error: error.message,
+    });
+  }
+};
+
+// Get recent orders for dashboard
+export const getRecentOrders = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    const limit = parseInt(req.query.limit) || 10;
+
+    // Fetch recent orders sorted by creation date
+    const orders = await Order.find()
+      .populate({
+        path: 'owner',
+        select: 'fullName email'
+      })
+      .populate('paymentDetails')
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    // Format the response
+    const formattedOrders = orders.map((order) => ({
+      _id: order._id,
+      trackingId: order.trackingId,
+      owner: {
+        _id: order.owner._id,
+        name: order.owner.fullName,
+        email: order.owner.email
+      },
+      products: order.products,
+      totalAmount: order.totalAmount,
+      status: order.Orderstatus,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt
+    }));
+
+    return res.status(200).json({
+      message: "Recent orders fetched successfully",
+      success: true,
+      orders: formattedOrders,
+    });
+  } catch (error) {
+    console.error("Error fetching recent orders:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch recent orders",
+      error: error.message,
+    });
+  }
+};

@@ -395,4 +395,60 @@ export const getDashboardStats = async () => {
   }
 };
 
+// get recent users (limit 10 for dashboard)
+export const getRecentUsers = async () => {
+  try {
+    const response = await axiosInstance.get('/admin/recent-users?limit=10');
+
+    if (!response.data.success) {
+      return {
+        message: response.data.message,
+        success: false,
+        users: []
+      };
+    }
+
+    return {
+      message: response.data.message,
+      success: true,
+      users: response.data.users || []
+    };
+  } catch (error) {
+    console.error("Error fetching recent users:", error);
+    return {
+      message: error.response?.data?.message || error.message,
+      success: false,
+      users: []
+    };
+  }
+};
+
+// get recent orders (limit 10 for dashboard)
+export const getRecentOrders = async () => {
+  try {
+    const response = await axiosInstance.get('/admin/recent-orders?limit=10');
+
+    if (!response.data.success) {
+      return {
+        message: response.data.message,
+        success: false,
+        orders: []
+      };
+    }
+
+    return {
+      message: response.data.message,
+      success: true,
+      orders: response.data.orders || []
+    };
+  } catch (error) {
+    console.error("Error fetching recent orders:", error);
+    return {
+      message: error.response?.data?.message || error.message,
+      success: false,
+      orders: []
+    };
+  }
+};
+
 

@@ -20,7 +20,7 @@ import {
   MapPin,
   Activity
 } from 'lucide-react';
-import axiosInstance from '../../Api/config';
+import { getDashboardStats, getRecentUsers, getRecentOrders } from '../../Api/admin';
 
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -311,7 +311,7 @@ const AdminDashboard = () => {
                   <RefreshCw className="animate-spin text-blue-500" size={24} />
                 </div>
               ) : recentActivities.recentUsers.length > 0 ? (
-                recentActivities.recentUsers.slice(0, 5).map((user, index) => (
+                recentActivities.recentUsers.slice(0, 4).map((user, index) => (
                   <div key={user._id || index} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-700/30 to-gray-800/30 rounded-xl border border-gray-600/30 hover:border-blue-500/30 transition-all duration-300">
                     <div className="flex items-center space-x-4">
                       <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 p-3 rounded-full text-blue-400">
@@ -368,7 +368,7 @@ const AdminDashboard = () => {
                   <RefreshCw className="animate-spin text-blue-500" size={24} />
                 </div>
               ) : recentActivities.recentOrders.length > 0 ? (
-                recentActivities.recentOrders.slice(0, 5).map((order, index) => (
+                recentActivities.recentOrders.slice(0, 3).map((order, index) => (
                   <div key={order._id || index} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-700/30 to-gray-800/30 rounded-xl border border-gray-600/30 hover:border-green-500/30 transition-all duration-300">
                     <div className="flex items-center space-x-4">
                       <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-3 rounded-full text-green-400">
