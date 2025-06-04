@@ -144,21 +144,14 @@ export const placeOrder = async (req, res) => {
   try {
     const userId = req.userId;
     
-    // Validate user authentication
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "User authentication required",
-      });
-    }
-
     // Extract request body data
     const { 
       items, 
       shippingAddress, 
       paymentMethod, 
       orderSummary, 
-      orderDate 
+      orderDate,
+      orderType // Add this to track if it's a buyNow or cart order
     } = req.body;
 
     // console.log("Order request data:", req.body);
@@ -327,7 +320,7 @@ export const placeOrder = async (req, res) => {
     const initialPaymentStatus = isOnlinePayment ? "unpaid" : "unpaid";
     const initialOrderStatus = isOnlinePayment ? "pending" : "pending";
 
-    // Create the order first to get MongoDB ObjectId
+    // Create the order with optional orderType metadata
     const newOrder = new Order({
       owner: user._id,
       trackingId: trackingId,
@@ -337,6 +330,8 @@ export const placeOrder = async (req, res) => {
       paymentMethod: normalizedPaymentMethod,
       paymentStatus: initialPaymentStatus,
       createdAt: orderDate ? new Date(orderDate) : new Date(),
+      // You can add orderType to your schema if you want to track this
+      // orderType: orderType || 'cart'
     });
 
     // Save the order to get the MongoDB ObjectId

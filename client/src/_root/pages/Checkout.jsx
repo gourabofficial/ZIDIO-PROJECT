@@ -23,8 +23,13 @@ import { placeOrder } from "../../Api/user";
 const Checkout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Handle both cart checkout and buy now
   const cartItems = location.state?.cartItems || [];
   const orderSummary = location.state?.orderSummary || {};
+  const isBuyNow = location.state?.type === 'buyNow';
+  const buyNowProduct = location.state?.product;
+  const buyNowQuantity = location.state?.quantity || 1;
 
   const { currentUser, isAuth, isLoaded } = useAuthdata();
 
@@ -34,6 +39,37 @@ const Checkout = () => {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [error, setError] = useState("");
   const [orderData, setOrderData] = useState(null);
+
+  // Calculate order summary for Buy Now
+  const calculateBuyNowSummary = () => {
+    if (!buyNowProduct) return {};
+    
+    const originalPrice = buyNowProduct.price;
+    const discount = buyNowProduct.discount || 0;
+    const discountedPrice = originalPrice - (originalPrice * discount / 100);
+    const subtotal = discountedPrice * buyNowQuantity;
+    const shipping = subtotal >= 2000 ? 0 : 50;
+    const total = subtotal + shipping;
+    
+    return {
+      subtotal,
+      shipping,
+      total
+    };
+  };
+
+  // Use appropriate items and summary based on flow type
+  const currentItems = isBuyNow ? [{
+    id: buyNowProduct?._id,
+    productId: buyNowProduct?._id,
+    title: buyNowProduct?.name,
+    price: buyNowProduct?.price,
+    discount: buyNowProduct?.discount || 0,
+    quantity: buyNowQuantity,
+    image: buyNowProduct?.images?.[0] || "https://ext.same-assets.com/1329671863/375037467.gif"
+  }] : cartItems;
+
+  const currentOrderSummary = isBuyNow ? calculateBuyNowSummary() : orderSummary;
 
   // Early returns for invalid states
   if (!isLoaded) {
@@ -52,7 +88,7 @@ const Checkout = () => {
     return null;
   }
 
-  if (cartItems.length === 0) {
+  if (currentItems.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#0c0e16] to-[#161927] pt-24 px-4 md:px-8">
         <div className="max-w-2xl mx-auto text-center py-20">
@@ -61,13 +97,13 @@ const Checkout = () => {
             No items to checkout
           </h2>
           <p className="text-gray-300 mb-6">
-            Your cart is empty. Add some items before proceeding to checkout.
+            {isBuyNow ? "Product information is missing." : "Your cart is empty. Add some items before proceeding to checkout."}
           </p>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate(isBuyNow ? -1 : "/")}
             className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all duration-300"
           >
-            Continue Shopping
+            {isBuyNow ? "Go Back" : "Continue Shopping"}
           </button>
         </div>
       </div>
@@ -82,7 +118,7 @@ const Checkout = () => {
       
       const orderDataToSubmit = {
         userId: currentUser._id,
-        items: cartItems.map((item) => ({
+        items: currentItems.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
           price: item.price,
@@ -90,8 +126,9 @@ const Checkout = () => {
         })),
         shippingAddress: currentUser.address,
         paymentMethod: paymentMethod,
-        orderSummary: orderSummary,
+        orderSummary: currentOrderSummary,
         orderDate: new Date().toISOString(),
+        orderType: isBuyNow ? 'buyNow' : 'cart', // Add order type for tracking
       };
       
       const response = await placeOrder(orderDataToSubmit);
@@ -196,43 +233,47 @@ const Checkout = () => {
         {/* Header */}
         <div className="flex items-center mb-8">
           <button
-            onClick={() => navigate("/cart")}
+            onClick={() => navigate(isBuyNow ? -1 : "/cart")}
             className="mr-4 p-2 text-gray-400 hover:text-white hover:bg-indigo-600/20 rounded-lg transition-all duration-200"
           >
             <FiArrowLeft className="w-5 h-5" />
           </button>
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
-              Checkout
+              {isBuyNow ? "Buy Now" : "Checkout"}
             </h1>
             <p className="text-gray-300 text-sm mt-1">
-              Review your order and complete your purchase
+              {isBuyNow ? "Complete your purchase for this item" : "Review your order and complete your purchase"}
             </p>
           </div>
         </div>
 
-        {/* Progress Steps */}
+        {/* Progress Steps - Updated for Buy Now */}
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-4 mb-6">
+            {!isBuyNow && (
+              <>
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
+                    <FiCheck className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="ml-2 text-white text-sm">Cart</span>
+                </div>
+                <div className="w-16 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+              </>
+            )}
             <div className="flex items-center">
               <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
-                <FiCheck className="w-4 h-4 text-white" />
-              </div>
-              <span className="ml-2 text-white text-sm">Cart</span>
-            </div>
-            <div className="w-16 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-bold">2</span>
+                <span className="text-white text-sm font-bold">{isBuyNow ? "1" : "2"}</span>
               </div>
               <span className="ml-2 text-white text-sm font-medium">
-                Checkout
+                {isBuyNow ? "Product" : "Checkout"}
               </span>
             </div>
             <div className="w-16 h-0.5 bg-gray-600"></div>
             <div className="flex items-center">
               <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                <span className="text-gray-400 text-sm">3</span>
+                <span className="text-gray-400 text-sm">{isBuyNow ? "2" : "3"}</span>
               </div>
               <span className="ml-2 text-gray-400 text-sm">Payment</span>
             </div>
@@ -398,13 +439,13 @@ const Checkout = () => {
               </div>
 
               <div className="px-6 py-4">
-                {/* Order Items - Condensed View */}
+                {/* Order Items - Updated for Buy Now */}
                 <div className="space-y-3 mb-6">
                   <h4 className="text-white font-medium text-sm">
-                    Items ({cartItems.length})
+                    {isBuyNow ? "Item (1)" : `Items (${currentItems.length})`}
                   </h4>
                   <div className="max-h-48 overflow-y-auto space-y-2">
-                    {cartItems.map((item, index) => (
+                    {currentItems.map((item, index) => (
                       <div
                         key={item.id}
                         className="flex items-center space-x-3 p-2 rounded-lg bg-indigo-900/10"
@@ -439,25 +480,25 @@ const Checkout = () => {
                   </div>
                 </div>
 
-                {/* Price Breakdown */}
+                {/* Price Breakdown - Updated for Buy Now */}
                 <div className="space-y-3 border-t border-purple-900/30 pt-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-300">Subtotal</span>
                     <span className="text-white">
-                      ₹{orderSummary.subtotal?.toLocaleString('en-IN')}
+                      ₹{currentOrderSummary.subtotal?.toLocaleString('en-IN')}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-300">Delivery</span>
                     <span className="text-white">
-                      {orderSummary.shipping === 0 ? (
+                      {currentOrderSummary.shipping === 0 ? (
                         <span className="text-green-400">Free</span>
                       ) : (
-                        `₹${orderSummary.shipping?.toLocaleString('en-IN')}`
+                        `₹${currentOrderSummary.shipping?.toLocaleString('en-IN')}`
                       )}
                     </span>
                   </div>
-                  {orderSummary.subtotal >= 2000 && (
+                  {currentOrderSummary.subtotal >= 2000 && (
                     <div className="text-xs text-green-400 text-center">
                       🎉 Free delivery on orders ≥ ₹2,000
                     </div>
@@ -465,7 +506,7 @@ const Checkout = () => {
                   <div className="flex justify-between text-lg font-bold border-t border-purple-900/30 pt-3">
                     <span className="text-white">Total</span>
                     <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
-                      ₹{orderSummary.total?.toLocaleString('en-IN')}
+                      ₹{currentOrderSummary.total?.toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>
