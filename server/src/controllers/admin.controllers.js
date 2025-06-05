@@ -8,6 +8,11 @@ import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
 import { User } from "../model/user.model.js";
 import { Order } from "../model/order.model.js";
+import { Cart } from "../model/cart.model.js";
+import { Address } from "../model/address.model.js";
+import { clerkClient } from '@clerk/clerk-sdk-node';
+
+
 
 export const addProduct = async (req, res) => {
   try {
@@ -825,7 +830,7 @@ export const getAllOrders = async (req, res) => {
       _id: order._id,
       trackingId: order.trackingId,
       owner: {
-        _id: order.owner._id,
+        _id: order.owner.trackingId,
         name: order.owner.fullName,
         email: order.owner.email
       },
@@ -1152,3 +1157,155 @@ export const getRecentOrders = async (req, res) => {
     });
   }
 };
+
+// Delete user and all associated data
+export const deleteUser = async (req, res) => {
+  try {
+    const adminUserId = req.userId;
+    const { userId } = req.params;
+
+    if (!adminUserId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+        success: false,
+      });
+    }
+
+    // Find the user in our database
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+
+    // Start a database transaction for data consistency
+    const session = await mongoose.startSession();
+    
+    try {
+      await session.withTransaction(async () => {
+        // Delete user from Clerk first
+        if (user.clerkId) {
+          try {
+            await clerkClient.users.deleteUser(user.clerkId);
+            console.log(`Successfully deleted user from Clerk: ${user.clerkId}`);
+          } catch (clerkError) {
+            console.error("Error deleting user from Clerk:", clerkError);
+            // Continue with database cleanup even if Clerk deletion fails
+            // This prevents orphaned data in our database
+          }
+        }
+
+        // Delete associated cart data
+        if (user.cart) {
+          await Cart.findByIdAndDelete(user.cart).session(session);
+          console.log(`Deleted cart for user: ${userId}`);
+        }
+
+        // Delete associated address data
+        if (user.address) {
+          await Address.findByIdAndDelete(user.address).session(session);
+          console.log(`Deleted address for user: ${userId}`);
+        }
+
+        // Delete all orders associated with the user
+        const deletedOrders = await Order.deleteMany({ owner: userId }).session(session);
+        console.log(`Deleted ${deletedOrders.deletedCount} orders for user: ${userId}`);
+
+        // Remove user from any wishlists or other references
+        // This handles the wishlist array in the user model
+        await User.updateMany(
+          { wishlist: { $in: [userId] } },
+          { $pull: { wishlist: userId } }
+        ).session(session);
+
+        // Finally, delete the user from our database
+        await User.findByIdAndDelete(userId).session(session);
+        console.log(`Successfully deleted user from database: ${userId}`);
+      });
+
+      return res.status(200).json({
+        message: "User and all associated data deleted successfully",
+        success: true,
+      });
+
+    } catch (transactionError) {
+      console.error("Transaction error during user deletion:", transactionError);
+      return res.status(500).json({
+        message: "Failed to delete user data completely",
+        success: false,
+        error: transactionError.message,
+      });
+    } finally {
+      await session.endSession();
+    }
+
+  } catch (error) {
+    console.error("Error in deleteUser controller:", error);
+    return res.status(500).json({
+      message: "Internal server error during user deletion",
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+// Delete user by ID
+export const deleteUserById = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    const { id } = req.params;
+
+    // Check if the user exists
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+
+    // Delete user from MongoDB
+    await User.deleteOne({ _id: id });
+
+    // If the user has a Clerk ID, also delete from Clerk
+    if (user.clerkId) {
+      try {
+        await clerkClient.users.deleteUser(user.clerkId);
+        console.log(`Successfully deleted user ${user.clerkId} from Clerk`);
+      } catch (error) {
+        console.error(`Failed to delete user ${user.clerkId} from Clerk:`, error);
+        // Continue with the response even if Clerk deletion fails
+      }
+    }
+
+    return res.status(200).json({
+      message: "User deleted successfully",
+      success: true,
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete user",
+      error: error.message,
+    });
+  }
+};
+

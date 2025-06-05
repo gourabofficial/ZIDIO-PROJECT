@@ -451,4 +451,36 @@ export const getRecentOrders = async () => {
   }
 };
 
+// delete user and all associated data
+export const deleteUser = async (userId) => {
+  try {
+    if (!userId) {
+      return {
+        message: "User ID is required",
+        success: false
+      };
+    }
+
+    const response = await axiosInstance.delete(`/admin/delete-user/${userId}`);
+
+    if (!response.data.success) {
+      return {
+        message: response.data.message || "Failed to delete user",
+        success: false
+      };
+    }
+
+    return {
+      message: response.data.message || "User deleted successfully",
+      success: true
+    };
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return {
+      message: error.response?.data?.message || error.message || "Failed to delete user",
+      success: false
+    };
+  }
+};
+
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { addProduct, deleterProductById, getAllOrders, getAllSearchProducts, getAllSearchUsers, getDashboardStats, getProductByIdForAdmin, getProductsbyMultipleIds, getRecentOrders, getRecentUsers, updateHomeContent, updateOrderStatus, updateProductById } from "../controllers/admin.controllers.js";
+import { addProduct, deleterProductById, getAllOrders, getAllSearchProducts, getAllSearchUsers, getDashboardStats, getProductByIdForAdmin, getProductsbyMultipleIds, getRecentOrders, getRecentUsers, updateHomeContent, updateOrderStatus, updateProductById, deleteUser } from "../controllers/admin.controllers.js";
 import { isAdmin } from "../middlewares/isAuthenticated.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { getAllProducts } from "../controllers/product.controllers.js";
@@ -38,5 +38,8 @@ adminRouter.get('/dashboard/stats', isAdmin, getDashboardStats);
 // recent users and orders for dashboard
 adminRouter.get('/recent-users', isAdmin, getRecentUsers);
 adminRouter.get('/recent-orders', isAdmin, getRecentOrders);
+
+// delete user and all associated data
+adminRouter.delete('/delete-user/:userId', isAdmin, deleteUser);
 
 export default adminRouter;

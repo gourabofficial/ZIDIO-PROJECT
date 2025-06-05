@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Search, AlertCircle, X, RefreshCw, Users } from "lucide-react";
 import AdminUserTable from "./AdminUserTable";
-import { getAllSearchUsers } from "../../Api/admin.js";
+import { getAllSearchUsers, deleteUser as deleteUserAPI } from "../../Api/admin.js";
+import toast, { Toaster } from 'react-hot-toast';
 
 const AdminUser = () => {
   const [users, setUsers] = useState([]);
@@ -87,10 +88,65 @@ const AdminUser = () => {
 
   // Delete user
   const deleteUser = async (userId) => {
-    console.log("Deleting user with ID:", userId);
-    // In a real app, you would call an API here
-    // For now, just update the UI optimistically
-    setUsers(users.filter((user) => user._id !== userId));
+    try {
+      console.log("Deleting user with ID:", userId);
+      
+      // Show loading toast
+      const loadingToast = toast.loading('Deleting user and all associated data...', {
+        style: {
+          background: 'rgba(19, 20, 31, 0.9)',
+          backdropFilter: 'blur(10px)',
+          color: '#fff',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+        },
+      });
+      
+      // Optimistically remove user from UI
+      const originalUsers = [...users];
+      setUsers(users.filter((user) => user._id !== userId));
+      
+      // Call the API to delete user
+      const response = await deleteUserAPI(userId);
+      
+      if (response.success) {
+        toast.success('User and all associated data deleted successfully!', {
+          id: loadingToast,
+          style: {
+            background: 'rgba(19, 20, 31, 0.9)',
+            backdropFilter: 'blur(10px)',
+            color: '#fff',
+            border: '1px solid rgba(34, 197, 94, 0.3)',
+          },
+        });
+        
+        // Refresh the user list to get updated data
+        fetchUsers(currentPage, searchQuery);
+      } else {
+        // Revert optimistic update on failure
+        setUsers(originalUsers);
+        toast.error(response.message || 'Failed to delete user', {
+          id: loadingToast,
+          style: {
+            background: 'rgba(19, 20, 31, 0.9)',
+            backdropFilter: 'blur(10px)',
+            color: '#fff',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      // Revert optimistic update on error
+      fetchUsers(currentPage, searchQuery);
+      toast.error('Failed to delete user. Please try again.', {
+        style: {
+          background: 'rgba(19, 20, 31, 0.9)',
+          backdropFilter: 'blur(10px)',
+          color: '#fff',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+        },
+      });
+    }
   };
 
   // Initial load
@@ -100,6 +156,20 @@ const AdminUser = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto">
+      {/* Toast notifications */}
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: 'rgba(19, 20, 31, 0.9)',
+            backdropFilter: 'blur(10px)',
+            color: '#fff',
+            border: '1px solid rgba(75, 85, 99, 0.3)',
+          },
+        }}
+      />
+      
       <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-8 mb-8 border border-gray-700">
         <div className="flex items-center gap-3 mb-8">
           <Users className="text-blue-400" size={28} />
