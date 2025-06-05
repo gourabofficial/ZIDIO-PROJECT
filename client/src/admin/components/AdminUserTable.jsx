@@ -140,11 +140,7 @@ const AdminUserTable = ({
                       <div className="text-sm font-medium text-white">
                         {user.name || 'Unnamed User'}
                       </div>
-                      {user.name && (
-                        <div className="text-xs text-gray-400 mt-0.5">
-                          Last active: {new Date(user.lastActive || user.updatedAt || user.createdAt).toLocaleDateString()}
-                        </div>
-                      )}
+                      
                     </div>
                   </div>
                 </td>

@@ -48,7 +48,7 @@ const Checkout = () => {
     const discount = buyNowProduct.discount || 0;
     const discountedPrice = originalPrice - (originalPrice * discount / 100);
     const subtotal = discountedPrice * buyNowQuantity;
-    const shipping = subtotal >= 2000 ? 0 : 50;
+    const shipping = subtotal >= 2000 ? 0 : 49;
     const total = subtotal + shipping;
     
     return {

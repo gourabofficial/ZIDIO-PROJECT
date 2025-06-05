@@ -18,7 +18,7 @@ import { addToCart } from "../../Api/user.js";
 import { useAuthdata } from "../../context/AuthContext.jsx";
 
 const Product = () => {
-  const { refetchUserData, currentUser, addToCartOptimistic } = useAuthdata();
+  const { refetchUserData, currentUser, addToCartOptimistic, isAuth } = useAuthdata();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -46,6 +46,25 @@ const Product = () => {
   }, [id]);
 
   const handleAddToCart = async () => {
+    // Check if user is authenticated
+    if (!isAuth) {
+      toast.error("Please login first", {
+        icon: <FiAlertTriangle className="text-red-500" size={20} />,
+        duration: 3000,
+        style: {
+          background: 'linear-gradient(to right, #2d0a0a, #450a0a)',
+          color: '#ffffff',
+          padding: '16px',
+          borderRadius: '10px',
+          border: '1px solid #7f1d1d',
+          boxShadow: '0 8px 16px rgba(0, 0, 0, 0.4)',
+          fontSize: '15px',
+          fontWeight: '500',
+        },
+      });
+      return;
+    }
+
     try {
       setAddToCartLoading(true);
 
@@ -110,6 +129,25 @@ const Product = () => {
   };
 
   const handleBuyNow = () => {
+    // Check if user is authenticated
+    if (!isAuth) {
+      toast.error("Please login first", {
+        icon: <FiAlertTriangle className="text-red-500" size={20} />,
+        duration: 3000,
+        style: {
+          background: 'linear-gradient(to right, #2d0a0a, #450a0a)',
+          color: '#ffffff',
+          padding: '16px',
+          borderRadius: '10px',
+          border: '1px solid #7f1d1d',
+          boxShadow: '0 8px 16px rgba(0, 0, 0, 0.4)',
+          fontSize: '15px',
+          fontWeight: '500',
+        },
+      });
+      return;
+    }
+
     // Navigate to checkout page with product info
     navigate('/checkout', {
       state: {
@@ -122,7 +160,8 @@ const Product = () => {
 
   // Check if product is already in cart
   const isInCart = () => {
-    if (!currentUser || !currentUser.cartData || !currentUser.cartData.items) {
+    // Return false if user is not authenticated
+    if (!isAuth || !currentUser || !currentUser.cartData || !currentUser.cartData.items) {
       return false;
     }
     
