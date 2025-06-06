@@ -10,31 +10,31 @@ const HeroSlider = () => {
   const heroSlides = [
   {
     id: 1,
-    image: "https://wallpaperaccess.com/full/19684.jpg",
+    image: "https://wallpapers.com/images/high/iphone-11-pro-max-4k-iron-man-r83mbbvynjgzqd8c.webp",
     title: "Iron Man",
     description: "Genius inventor in armor, fighting threats with tech, courage, and sharp wit and and advanced weapons...."
   },
   {
     id: 2,
-    image: "https://wallpaperaccess.com/full/19690.jpg",
+    image: "https://wallpapercave.com/wp/wp3617696.jpg",
     title: "Captain America",
     description: "Super soldier with a shield, defending freedom and leading the Avengers with honor..."
   },
   {
     id: 3,
-    image: "https://wallpaperaccess.com/full/19691.jpg",
+    image: "https://cdn.pixabay.com/photo/2024/02/24/15/43/ai-generated-8594264_1280.jpg",
     title: "Thor",
     description: "God of Thunder using Mjölnir to protect Earth with strength and lightning power and  and Asgardian power ."
   },
   {
     id: 4,
-    image: "https://wallpaperaccess.com/full/19694.jpg",
+    image: "https://wallpaperaccess.com/full/38424.jpg",
     title: "Hulk",
     description: "Scientist turned green giant, smashing enemies with unstoppable rage and brute strength."
   },
   {
     id: 5,
-    image: "https://wallpaperaccess.com/full/19697.jpg",
+    image: "https://wallpaperaccess.com/full/2388612.jpg",
     title: "Black Widow",
     description: "Skilled spy and fighter, taking down enemies with stealth, speed, and precision speed, and precision."
   },

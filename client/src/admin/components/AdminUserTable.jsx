@@ -1,5 +1,5 @@
-import React from "react";
-import { ChevronLeft, ChevronRight, ToggleLeft, ToggleRight, Trash2, Shield, User, Users } from "lucide-react";
+import React, { useState } from "react";
+import { ChevronLeft, ChevronRight,  Trash2, Shield, User, Users, AlertTriangle, X } from "lucide-react";
 
 const AdminUserTable = ({
   users,
@@ -7,12 +7,37 @@ const AdminUserTable = ({
   currentPage,
   totalPages,
   totalUsers,
-  toggleUserStatus,
   deleteUser,
   goToPreviousPage,
   goToNextPage,
   goToPage,
 }) => {
+  // State for delete confirmation modal
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    user: null
+  });
+
+  // Handle delete confirmation
+  const handleDeleteClick = (user) => {
+    setDeleteModal({
+      isOpen: true,
+      user: user
+    });
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = () => {
+    if (deleteModal.user) {
+      deleteUser(deleteModal.user._id);
+      setDeleteModal({ isOpen: false, user: null });
+    }
+  };
+
+  // Handle delete cancel
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false, user: null });
+  };
   // Enhanced loading state
   if (loading) {
     return (
@@ -166,24 +191,9 @@ const AdminUserTable = ({
                 </td>
                 <td className="py-4 px-4 whitespace-nowrap">
                   <div className="flex space-x-3">
+                   
                     <button
-                      onClick={() => toggleUserStatus(user._id, user.active || false)}
-                      className={`${user.active ? 'text-green-400 hover:text-green-300' : 'text-gray-400 hover:text-gray-300'} 
-                        transition-colors p-1.5 rounded-full hover:bg-gray-700`}
-                      title={user.active ? "Deactivate user" : "Activate user"}
-                    >
-                      {user.active ? (
-                        <ToggleRight className="transform transition-transform duration-200" size={20} />
-                      ) : (
-                        <ToggleLeft className="transform transition-transform duration-200" size={20} />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (window.confirm(`Are you sure you want to delete ${user.name || user.email}?`)) {
-                          deleteUser(user._id);
-                        }
-                      }}
+                      onClick={() => handleDeleteClick(user)}
                       className="text-red-400 hover:text-red-300 transition-colors p-1.5 rounded-full hover:bg-gray-700"
                       title="Delete user"
                     >
@@ -279,6 +289,103 @@ const AdminUserTable = ({
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={handleDeleteCancel}
+          ></div>
+          
+          {/* Modal */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative transform overflow-hidden rounded-xl bg-gray-800 border border-gray-700 shadow-2xl transition-all w-full max-w-md">
+              {/* Close button */}
+              <button
+                onClick={handleDeleteCancel}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-300 transition-colors"
+              >
+                <X size={20} />
+              </button>
+              
+              {/* Modal content */}
+              <div className="p-6">
+                {/* Icon */}
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-4">
+                  <AlertTriangle className="h-8 w-8 text-red-600" />
+                </div>
+                
+                {/* Title */}
+                <h3 className="text-lg font-semibold text-white text-center mb-2">
+                  Delete User
+                </h3>
+                
+                {/* Message */}
+                <p className="text-gray-300 text-center mb-6">
+                  Are you sure you want to delete{' '}
+                  <span className="font-medium text-white">
+                    {deleteModal.user?.name || deleteModal.user?.email}
+                  </span>
+                  ? This action cannot be undone.
+                </p>
+                
+                {/* User info card */}
+                {deleteModal.user && (
+                  <div className="bg-gray-700/50 rounded-lg p-3 mb-6 border border-gray-600">
+                    <div className="flex items-center space-x-3">
+                      {/* User avatar */}
+                      {deleteModal.user.avatar ? (
+                        <img
+                          className="h-10 w-10 object-cover rounded-full"
+                          src={deleteModal.user.avatar}
+                          alt={deleteModal.user.name || deleteModal.user.email}
+                        />
+                      ) : (
+                        <div className="h-10 w-10 rounded-full flex items-center justify-center bg-gradient-to-br from-red-500 to-pink-500">
+                          <span className="text-white font-medium">
+                            {(deleteModal.user.name?.charAt(0) || deleteModal.user.email.charAt(0)).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {/* User details */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">
+                          {deleteModal.user.name || 'Unnamed User'}
+                        </p>
+                        <p className="text-xs text-gray-400 truncate">
+                          {deleteModal.user.email}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {deleteModal.user.role}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Buttons */}
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleDeleteCancel}
+                    className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteConfirm}
+                    className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+                  >
+                    Delete User
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

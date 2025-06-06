@@ -4,7 +4,7 @@ import {
   Users, 
   Package, 
   ShoppingCart, 
-  DollarSign, 
+  IndianRupee, 
   TrendingUp, 
   RefreshCw,
   ArrowUp,
@@ -214,7 +214,7 @@ const AdminDashboard = () => {
               <>
                 <div className="flex justify-between items-start mb-6">
                   <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-4 rounded-2xl text-green-400 group-hover:scale-110 transition-transform duration-300">
-                    <DollarSign size={28} />
+                    <IndianRupee size={28} />
                   </div>
                   {stats.revenueGrowth !== 0 && (
                     <div className={`flex items-center ${stats.revenueGrowth > 0 ? 'text-green-400' : 'text-red-400'} text-sm font-medium`}>
@@ -497,7 +497,7 @@ const AdminDashboard = () => {
             <div className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 p-6 rounded-xl border border-gray-600/30">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-gray-300 font-medium">Revenue Status</span>
-                <DollarSign className="text-green-400" size={20} />
+                <IndianRupee className="text-green-400" size={20} />
               </div>
               <p className="text-2xl font-bold text-white mb-1">{stats.totalRevenue > 0 ? '✓' : '—'}</p>
               <p className="text-sm text-gray-400">
