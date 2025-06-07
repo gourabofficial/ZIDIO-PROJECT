@@ -51,6 +51,9 @@ const Checkout = () => {
   // State for cart item size and quantity selections
   const [cartItemSelections, setCartItemSelections] = useState({});
   
+  // Refs for scroll handling
+  const scrollContainerRef = useRef(null);
+  
   // Ref for dropdown click outside handling
   const sizeDropdownRef = useRef(null);
   
@@ -88,6 +91,28 @@ const Checkout = () => {
       }
     }
   }, [cartItems, isBuyNow]);
+  
+  // Handle mouse wheel scrolling for checkout container
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleWheel = (e) => {
+      // Prevent default smooth scroll behavior
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Apply direct scroll
+      const delta = e.deltaY;
+      container.scrollTop += delta;
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
   
   // Calculate order summary for Buy Now
   const calculateBuyNowSummary = () => {
@@ -624,7 +649,14 @@ const Checkout = () => {
                   <h4 className="text-white font-medium text-sm">
                     {isBuyNow ? "Item (1)" : `Items (${currentItems.length})`}
                   </h4>
-                  <div className="max-h-96 overflow-y-auto space-y-3">
+                  <div 
+                    ref={scrollContainerRef}
+                    className="checkout-scroll-container scrollbar-thin space-y-3 pr-2"
+                    onWheel={(e) => {
+                      // Prevent event bubbling to parent elements that might have smooth scroll
+                      e.stopPropagation();
+                    }}
+                  >
                     {currentItems.map((item, index) => {
                       const selections = isBuyNow ? null : cartItemSelections[item.productId] || {};
                       const currentSize = isBuyNow ? buyNowSelectedSize : selections.selectedSize;

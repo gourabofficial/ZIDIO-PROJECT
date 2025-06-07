@@ -345,3 +345,95 @@ body {
 /* Add these specific scrolling fixes at the end of your file */
 
 /* Reset overflow settings */
+
+/* Custom scrollbar styles for better mouse wheel support */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #7c3aed #374151;
+}
+
+/* Webkit scrollbar styles */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(55, 65, 81, 0.5);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #7c3aed;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #8b5cf6;
+}
+
+/* Ensure proper overflow and mouse wheel support */
+.custom-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Fix for mouse wheel scrolling in containers */
+.scroll-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
+/* Enhanced scrolling support for checkout items */
+.checkout-scroll-container {
+  max-height: 24rem; /* max-h-96 equivalent */
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+  scroll-behavior: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: auto;
+  /* Force mouse wheel events to work */
+  pointer-events: auto !important;
+  /* Prevent interference from smooth scroll libraries */
+  scroll-snap-type: none !important;
+  /* Ensure container is scrollable */
+  position: relative;
+  will-change: scroll-position;
+  /* Disable smooth scrolling for this container */
+  scroll-timeline: none !important;
+  /* Force immediate scrolling */
+  transition: none !important;
+}
+
+/* Disable Lenis smooth scroll for this specific container */
+.checkout-scroll-container * {
+  scroll-behavior: auto !important;
+}
+
+/* Force scrolling to work */
+.checkout-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.checkout-scroll-container::-webkit-scrollbar-track {
+  background: rgba(55, 65, 81, 0.3);
+  border-radius: 3px;
+}
+
+.checkout-scroll-container::-webkit-scrollbar-thumb {
+  background: #7c3aed;
+  border-radius: 3px;
+}
+
+.checkout-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #8b5cf6;
+}
+
+/* Ensure proper mouse wheel support */
+.checkout-scroll-container {
+  scrollbar-width: thin;
+  scrollbar-color: #7c3aed rgba(55, 65, 81, 0.3);
+}
