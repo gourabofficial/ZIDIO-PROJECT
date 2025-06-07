@@ -271,6 +271,23 @@ export const placeOrder = async (req, res) => {
         });
       }
 
+      // Validate selectedSize field
+      if (!item.selectedSize || typeof item.selectedSize !== 'string' || item.selectedSize.trim() === '') {
+        return res.status(400).json({
+          success: false,
+          message: `Selected size is required for product ${product.name}`,
+        });
+      }
+
+      // Validate selectedSize against allowed enum values
+      const allowedSizes = ["S", "M", "L", "XL", "XXL"];
+      if (!allowedSizes.includes(item.selectedSize)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid size '${item.selectedSize}' for product ${product.name}. Allowed sizes: ${allowedSizes.join(', ')}`,
+        });
+      }
+
       // Calculate actual price with discount
       const discount = item.discount || product.discount || 0;
       const discountedPrice = product.price - (product.price * discount / 100);
@@ -281,6 +298,7 @@ export const placeOrder = async (req, res) => {
       orderProducts.push({
         title: product.name,
         quantity: item.quantity,
+        selectedSize: item.selectedSize, // Add the selectedSize field
         original_price: product.price,
         offer: discount,
         payable_price: discountedPrice,

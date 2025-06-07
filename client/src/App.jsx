@@ -33,6 +33,7 @@ import AdminUpdateProduct from "./admin/components/AdminUpdateProduct";
 import Checkout from "./_root/pages/Checkout";
 import PaymentSuccess from "./_root/pages/PaymentSuccess";
 import PaymentCancel from "./_root/pages/PaymentCancel";
+import AdminInventory from "./admin/components/AdminInventory";
 
 const App = () => {
   return (
@@ -77,6 +78,7 @@ const App = () => {
           <Route path="product-details/:id" element={<AdminProductDetails />} />
           <Route path="all-orders" element={<OrderAdmin />} />
           <Route path="all-users" element={<AdminUser />} />
+          <Route path="stock" element={<AdminInventory/> }/>
           <Route path="settings" element={<AdminSettings />} />
         </Route>
       </Routes>

@@ -29,6 +29,11 @@ const orderSchema = new mongoose.Schema({
         required: true,
         min: 1,
       },
+      selectedSize: {
+            type: String,
+            enum: ["S", "M", "L", "XL", "XXL"],
+            required: true,
+         },
       original_price: {
         type: Number,
         required: true,

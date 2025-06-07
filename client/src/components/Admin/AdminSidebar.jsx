@@ -14,7 +14,8 @@ import {
   X, 
   LogOut,
   ChevronRight,
-  Shield
+  Shield,
+  Warehouse
 } from 'lucide-react';
 
 const AdminSidebar = ({ sidebarOpen, toggleSidebar, location }) => {
@@ -24,6 +25,7 @@ const AdminSidebar = ({ sidebarOpen, toggleSidebar, location }) => {
     { name: 'AllProductList', href: '/admin/products-list', icon: <PackageIcon size={20} /> },
     { name: 'AllUser', href: '/admin/all-users', icon: <UserCheck size={20} /> },
     { name: 'AllOrder', href: '/admin/all-orders', icon: <ClipboardList size={20} /> },
+    { name: 'Stock', href: '/admin/stock', icon: <Warehouse size={20} /> },
     { name: 'Settings', href: '/admin/settings', icon: <Settings size={20} /> },
   ];
 

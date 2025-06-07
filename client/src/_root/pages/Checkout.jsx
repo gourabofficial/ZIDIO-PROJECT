@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthdata } from "../../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,12 +10,16 @@ import {
   FiTruck,
   FiShoppingBag,
   FiArrowLeft,
- 
- 
   FiEdit3,
   FiPackage,
   FiLock,
   FiCheck,
+  FiMinus,
+  FiPlus,
+  FiChevronDown,
+  FiChevronUp,
+  FiSettings,
+  FiAlertCircle,
 } from "react-icons/fi";
 import { placeOrder } from "../../Api/user";
 
@@ -29,8 +33,7 @@ const Checkout = () => {
   const orderSummary = location.state?.orderSummary || {};
   const isBuyNow = location.state?.type === 'buyNow';
   const buyNowProduct = location.state?.product;
-  const buyNowQuantity = location.state?.quantity || 1;
-
+  
   const { currentUser, isAuth, isLoaded } = useAuthdata();
 
   // State for payment method and processing
@@ -39,7 +42,53 @@ const Checkout = () => {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [error, setError] = useState("");
   const [orderData, setOrderData] = useState(null);
+  
+  // State for Buy Now selections
+  const [buyNowQuantity, setBuyNowQuantity] = useState(1);
+  const [buyNowSelectedSize, setBuyNowSelectedSize] = useState("");
+  const [isSizeDropdownOpen, setIsSizeDropdownOpen] = useState(false);
+  
+  // State for cart item size and quantity selections
+  const [cartItemSelections, setCartItemSelections] = useState({});
+  
+  // Ref for dropdown click outside handling
+  const sizeDropdownRef = useRef(null);
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sizeDropdownRef.current && !sizeDropdownRef.current.contains(event.target)) {
+        setIsSizeDropdownOpen(false);
+      }
+    };
+    
+    if (isSizeDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isSizeDropdownOpen]);
 
+  // Initialize cart item selections when cartItems load
+  useEffect(() => {
+    if (!isBuyNow && cartItems.length > 0) {
+      const initialSelections = {};
+      cartItems.forEach(item => {
+        if (!cartItemSelections[item.productId]) {
+          initialSelections[item.productId] = {
+            selectedSize: '', // User must select size
+            quantity: item.quantity || 1
+          };
+        }
+      });
+      if (Object.keys(initialSelections).length > 0) {
+        setCartItemSelections(prev => ({ ...prev, ...initialSelections }));
+      }
+    }
+  }, [cartItems, isBuyNow]);
+  
   // Calculate order summary for Buy Now
   const calculateBuyNowSummary = () => {
     if (!buyNowProduct) return {};
@@ -58,6 +107,31 @@ const Checkout = () => {
     };
   };
 
+  // Calculate updated order summary for cart items
+  const calculateUpdatedCartSummary = () => {
+    if (isBuyNow || cartItems.length === 0) return orderSummary;
+    
+    let updatedSubtotal = 0;
+    cartItems.forEach(item => {
+      const selections = cartItemSelections[item.productId];
+      const quantity = selections?.quantity || item.quantity;
+      const originalPrice = item.price;
+      const discount = item.discount || 0;
+      const discountedPrice = originalPrice - (originalPrice * discount / 100);
+      updatedSubtotal += discountedPrice * quantity;
+    });
+    
+    const shipping = updatedSubtotal >= 2000 ? 0 : 49;
+    const total = updatedSubtotal + shipping;
+    
+    return {
+      subtotal: updatedSubtotal,
+      shipping: shipping,
+      total: total,
+      itemsCount: Object.values(cartItemSelections).reduce((acc, sel) => acc + (sel?.quantity || 1), 0)
+    };
+  };
+
   // Use appropriate items and summary based on flow type
   const currentItems = isBuyNow ? [{
     id: buyNowProduct?._id,
@@ -66,10 +140,36 @@ const Checkout = () => {
     price: buyNowProduct?.price,
     discount: buyNowProduct?.discount || 0,
     quantity: buyNowQuantity,
-    image: buyNowProduct?.images?.[0] || "https://ext.same-assets.com/1329671863/375037467.gif"
-  }] : cartItems;
+    selectedSize: buyNowSelectedSize,
+    image: buyNowProduct?.images?.[0]?.imageUrl || "https://ext.same-assets.com/1329671863/375037467.gif"
+  }] : cartItems.map(item => ({
+    ...item,
+    quantity: cartItemSelections[item.productId]?.quantity || item.quantity,
+    selectedSize: cartItemSelections[item.productId]?.selectedSize || ''
+  }));
 
-  const currentOrderSummary = isBuyNow ? calculateBuyNowSummary() : orderSummary;
+  const currentOrderSummary = isBuyNow ? calculateBuyNowSummary() : calculateUpdatedCartSummary();
+
+  // Helper functions for cart item selections
+  const updateCartItemSize = (productId, size) => {
+    setCartItemSelections(prev => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        selectedSize: size
+      }
+    }));
+  };
+  
+  const updateCartItemQuantity = (productId, quantity) => {
+    setCartItemSelections(prev => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        quantity: Math.max(1, quantity)
+      }
+    }));
+  };
 
   // Early returns for invalid states
   if (!isLoaded) {
@@ -116,20 +216,90 @@ const Checkout = () => {
       setIsProcessing(true);
       setError("");
       
-      const orderDataToSubmit = {
-        userId: currentUser._id,
-        items: currentItems.map((item) => ({
+      // Debug: Log the current size selection
+      if (isBuyNow) {
+        console.log("Buy Now Selected Size:", buyNowSelectedSize);
+        console.log("Buy Now Quantity:", buyNowQuantity);
+        console.log("Buy Now Product Sizes:", buyNowProduct.size);
+      }
+      
+      // Validation for Buy Now flow
+      if (isBuyNow) {
+        // Check if product has sizes and if size selection is required
+        if (buyNowProduct.size && buyNowProduct.size.length > 0) {
+          if (!buyNowSelectedSize || buyNowSelectedSize.trim() === "") {
+            setError("Please select a size before placing the order.");
+            setIsProcessing(false);
+            return;
+          }
+        }
+        if (buyNowQuantity < 1) {
+          setError("Please select a valid quantity.");
+          setIsProcessing(false);
+          return;
+        }
+      } else {
+        // Validation for cart checkout flow
+        // Check if all cart items have size selections
+        const missingSelections = cartItems.filter(item => {
+          const selections = cartItemSelections[item.productId];
+          // Get product info to check if it has size options
+          const productHasSizes = true; // Assuming all products need size selection as per requirements
+          return productHasSizes && (!selections?.selectedSize || selections.selectedSize.trim() === "");
+        });
+        
+        if (missingSelections.length > 0) {
+          setError("Please select a size for all items before placing the order.");
+          setIsProcessing(false);
+          return;
+        }
+      }
+      
+      // Create order items with proper size validation
+      const orderItems = currentItems.map((item) => {
+        let selectedSize;
+        if (isBuyNow) {
+          if (buyNowProduct.size && buyNowProduct.size.length > 0) {
+            selectedSize = buyNowSelectedSize;
+          } else {
+            selectedSize = "M"; // fallback
+          }
+        } else {
+          // Use cart item selections
+          const selections = cartItemSelections[item.productId];
+          selectedSize = selections?.selectedSize || "M"; // fallback to M if no selection
+        }
+        return {
           productId: item.productId,
           quantity: item.quantity,
           price: item.price,
           discount: item.discount,
-        })),
+          selectedSize: selectedSize,
+        };
+      });
+      
+      // Additional validation to ensure all items have required size
+      const invalidItems = orderItems.filter(item => !item.selectedSize || item.selectedSize.trim() === "");
+      console.log("Order Items before validation:", orderItems);
+      console.log("Invalid items:", invalidItems);
+      if (invalidItems.length > 0) {
+        setError("Please select a size for all items before placing the order.");
+        setIsProcessing(false);
+        return;
+      }
+      
+      const orderDataToSubmit = {
+        userId: currentUser._id,
+        items: orderItems,
         shippingAddress: currentUser.address,
         paymentMethod: paymentMethod,
         orderSummary: currentOrderSummary,
         orderDate: new Date().toISOString(),
         orderType: isBuyNow ? 'buyNow' : 'cart', // Add order type for tracking
       };
+      
+      // Debug: Log order data before submission
+      console.log("Order Data to Submit:", JSON.stringify(orderDataToSubmit, null, 2));
       
       const response = await placeOrder(orderDataToSubmit);
       
@@ -281,7 +451,7 @@ const Checkout = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column - Order Details */}
+          
           <div className="space-y-6">
             {/* Shipping Address */}
             <motion.div
@@ -421,8 +591,18 @@ const Checkout = () => {
                 </motion.div>
               </div>
             </motion.div>
+
+            {/* Product Configuration - Professional Redesign */}
+            {isBuyNow && buyNowProduct && (
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg border border-gray-600/30 shadow-sm">
+                
+
+                
+              </div>
+            )}
           </div>
 
+          
           {/* Right Column - Order Summary */}
           <div>
             <motion.div
@@ -439,46 +619,294 @@ const Checkout = () => {
               </div>
 
               <div className="px-6 py-4">
-                {/* Order Items - Updated for Buy Now */}
+                {/* Order Items - Enhanced for Buy Now */}
                 <div className="space-y-3 mb-6">
                   <h4 className="text-white font-medium text-sm">
                     {isBuyNow ? "Item (1)" : `Items (${currentItems.length})`}
                   </h4>
-                  <div className="max-h-48 overflow-y-auto space-y-2">
-                    {currentItems.map((item, index) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center space-x-3 p-2 rounded-lg bg-indigo-900/10"
-                      >
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="w-10 h-10 object-contain rounded"
-                          onError={(e) => {
-                            e.target.src =
-                              "https://ext.same-assets.com/1329671863/375037467.gif";
-                          }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white text-sm truncate">
-                            {item.title}
-                          </p>
-                          <p className="text-gray-400 text-xs">
-                            Qty: {item.quantity}
-                          </p>
+                  <div className="max-h-96 overflow-y-auto space-y-3">
+                    {currentItems.map((item, index) => {
+                      const selections = isBuyNow ? null : cartItemSelections[item.productId] || {};
+                      const currentSize = isBuyNow ? buyNowSelectedSize : selections.selectedSize;
+                      const currentQuantity = isBuyNow ? buyNowQuantity : selections.quantity || item.quantity;
+                      
+                      return (
+                        <div
+                          key={item.id}
+                          className="p-4 rounded-lg bg-indigo-900/10 border border-indigo-500/20 space-y-3"
+                        >
+                          {/* Product Info */}
+                          <div className="flex items-center space-x-3">
+                            <img
+                              src={item.image}
+                              alt={item.title}
+                              className="w-12 h-12 object-cover rounded border border-gray-600/30"
+                              onError={(e) => {
+                                e.target.src =
+                                  "https://ext.same-assets.com/1329671863/375037467.gif";
+                              }}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-white text-sm font-medium truncate">
+                                {item.title}
+                              </p>
+                              <div className="flex items-center space-x-2 mt-1">
+                                <span className="text-gray-400 text-xs">
+                                  ₹{(item.discount 
+                                    ? item.price - (item.price * item.discount / 100) 
+                                    : item.price
+                                  ).toLocaleString('en-IN')} each
+                                </span>
+                                {item.discount > 0 && (
+                                  <span className="text-green-400 text-xs">
+                                    {item.discount}% OFF
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Size Selection for Cart Items */}
+                          {!isBuyNow && (
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-300 text-xs font-medium">Size:</span>
+                                {currentSize && (
+                                  <span className="text-green-400 text-xs flex items-center">
+                                    <FiCheck className="w-3 h-3 mr-1" />
+                                    {currentSize}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-5 gap-1">
+                                {['S', 'M', 'L', 'XL', 'XXL'].map((size) => (
+                                  <button
+                                    key={size}
+                                    onClick={() => updateCartItemSize(item.productId, size)}
+                                    className={`
+                                      h-7 rounded text-xs font-medium transition-colors border
+                                      ${currentSize === size
+                                        ? 'bg-purple-600 border-purple-500 text-white'
+                                        : 'bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50 hover:border-purple-500/50'
+                                      }
+                                    `}
+                                  >
+                                    {size}
+                                  </button>
+                                ))}
+                              </div>
+                              {!currentSize && (
+                                <p className="text-red-400 text-xs flex items-center">
+                                  <FiAlertCircle className="w-3 h-3 mr-1" />
+                                  Please select a size
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Quantity Selection for Cart Items */}
+                          {!isBuyNow && (
+                            <div className="space-y-2">
+                              <span className="text-gray-300 text-xs font-medium">Quantity:</span>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center border border-gray-600 rounded">
+                                  <button
+                                    onClick={() => updateCartItemQuantity(item.productId, currentQuantity - 1)}
+                                    disabled={currentQuantity <= 1}
+                                    className="p-1.5 text-gray-300 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    <FiMinus className="w-3 h-3" />
+                                  </button>
+                                  <span className="px-3 py-1.5 text-white text-xs min-w-[40px] text-center">
+                                    {currentQuantity}
+                                  </span>
+                                  <button
+                                    onClick={() => updateCartItemQuantity(item.productId, currentQuantity + 1)}
+                                    className="p-1.5 text-gray-300 hover:bg-gray-700"
+                                  >
+                                    <FiPlus className="w-3 h-3" />
+                                  </button>
+                                </div>
+                                <div className="flex space-x-1">
+                                  {[1, 2, 3, 5].map((qty) => (
+                                    <button
+                                      key={qty}
+                                      onClick={() => updateCartItemQuantity(item.productId, qty)}
+                                      className={`
+                                        px-2 py-1 text-xs rounded border transition-colors
+                                        ${currentQuantity === qty
+                                          ? 'bg-purple-600 border-purple-500 text-white'
+                                          : 'bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50'
+                                        }
+                                      `}
+                                    >
+                                      {qty}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Buy Now Size Display */}
+                          {isBuyNow && buyNowSelectedSize && (
+                            <div className="flex items-center space-x-2">
+                              <span className="text-gray-400 text-xs">Qty: {buyNowQuantity}</span>
+                              <span className="text-gray-500">•</span>
+                              <span className="text-purple-400 text-xs">Size: {buyNowSelectedSize}</span>
+                            </div>
+                          )}
+
+                          {/* Total Price */}
+                          <div className="flex justify-between items-center pt-2 border-t border-gray-600/30">
+                            <span className="text-gray-300 text-xs">Total:</span>
+                            <span className="text-white text-sm font-medium">
+                              ₹{(
+                                (item.discount
+                                  ? item.price - (item.price * item.discount) / 100
+                                  : item.price) * currentQuantity
+                              ).toLocaleString('en-IN')}
+                            </span>
+                          </div>
                         </div>
-                        <p className="text-white text-sm font-medium">
-                          ₹
-                          {(
-                            (item.discount
-                              ? item.price - (item.price * item.discount) / 100
-                              : item.price) * item.quantity
-                          ).toLocaleString('en-IN')}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
+
+                {/* Product Configuration Controls for Buy Now */}
+                {isBuyNow && buyNowProduct && (
+                  <div className="border-t border-purple-900/30 pt-4 mb-4">
+                    <h4 className="text-white font-medium text-sm mb-3 flex items-center">
+                      <FiSettings className="mr-2 text-purple-400 w-4 h-4" />
+                      Product Configuration
+                    </h4>
+                    <div className="bg-indigo-900/20 rounded-lg p-4 space-y-4 border border-indigo-500/20">
+                      
+                      {/* Size Selection */}
+                      {buyNowProduct.size && buyNowProduct.size.length > 0 && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-300 text-sm font-medium">Size:</span>
+                            {buyNowSelectedSize && (
+                              <span className="text-green-400 text-xs flex items-center">
+                                <FiCheck className="w-3 h-3 mr-1" />
+                                {buyNowSelectedSize} selected
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="grid grid-cols-4 gap-2">
+                            {buyNowProduct.size.map((size) => (
+                              <button
+                                key={size}
+                                onClick={() => setBuyNowSelectedSize(size)}
+                                className={`
+                                  h-8 rounded text-xs font-medium transition-colors border
+                                  ${buyNowSelectedSize === size
+                                    ? 'bg-purple-600 border-purple-500 text-white'
+                                    : 'bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50 hover:border-purple-500/50'
+                                  }
+                                `}
+                              >
+                                {size}
+                              </button>
+                            ))}
+                          </div>
+                          
+                          {!buyNowSelectedSize && (
+                            <p className="text-red-400 text-xs flex items-center">
+                              <FiAlertCircle className="w-3 h-3 mr-1" />
+                              Please select a size
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Quantity Selection */}
+                      <div className="space-y-2">
+                        <span className="text-gray-300 text-sm font-medium">Quantity:</span>
+                        
+                        <div className="flex items-center justify-between">
+                          {/* Quantity Controls */}
+                          <div className="flex items-center border border-gray-600 rounded">
+                            <button
+                              onClick={() => setBuyNowQuantity(Math.max(1, buyNowQuantity - 1))}
+                              disabled={buyNowQuantity <= 1}
+                              className="p-1.5 text-gray-300 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <FiMinus size={14} />
+                            </button>
+                            
+                            <span className="px-3 py-1.5 bg-gray-800/50 text-white font-medium text-sm min-w-[50px] text-center">
+                              {buyNowQuantity}
+                            </span>
+                            
+                            <button
+                              onClick={() => setBuyNowQuantity(buyNowQuantity + 1)}
+                              className="p-1.5 text-gray-300 hover:bg-gray-700"
+                            >
+                              <FiPlus size={14} />
+                            </button>
+                          </div>
+                          
+                          {/* Quick Select */}
+                          <div className="flex space-x-1">
+                            {[1, 2, 3, 5].map((qty) => (
+                              <button
+                                key={qty}
+                                onClick={() => setBuyNowQuantity(qty)}
+                                className={`
+                                  px-2 py-1 text-xs rounded border transition-colors
+                                  ${buyNowQuantity === qty
+                                    ? 'bg-purple-600 border-purple-500 text-white'
+                                    : 'bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50'
+                                  }
+                                `}
+                              >
+                                {qty}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Price Summary */}
+                      <div className="pt-3 border-t border-purple-900/30">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-300 text-sm">Unit Price:</span>
+                          <div className="text-right">
+                            <span className="text-white text-sm font-medium">
+                              ₹{(buyNowProduct.discount 
+                                ? buyNowProduct.price - (buyNowProduct.price * buyNowProduct.discount / 100) 
+                                : buyNowProduct.price
+                              ).toLocaleString('en-IN')}
+                            </span>
+                            {buyNowProduct.discount > 0 && (
+                              <div className="flex items-center justify-end space-x-1 mt-1">
+                                <span className="text-xs line-through text-gray-500">
+                                  ₹{buyNowProduct.price.toLocaleString('en-IN')}
+                                </span>
+                                <span className="px-1 py-0.5 bg-green-600/20 text-green-400 text-xs rounded">
+                                  {buyNowProduct.discount}% OFF
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-white text-sm font-medium">Total:</span>
+                          <span className="text-purple-400 text-sm font-semibold">
+                            ₹{((buyNowProduct.discount 
+                              ? buyNowProduct.price - (buyNowProduct.price * buyNowProduct.discount / 100) 
+                              : buyNowProduct.price) * buyNowQuantity).toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Price Breakdown - Updated for Buy Now */}
                 <div className="space-y-3 border-t border-purple-900/30 pt-4">
@@ -530,7 +958,11 @@ const Checkout = () => {
                 {/* Place Order Button */}
                 <button
                   onClick={handlePlaceOrder}
-                  disabled={isProcessing || !currentUser.address}
+                  disabled={
+                    isProcessing ||
+                    !currentUser.address ||
+                    (isBuyNow && buyNowProduct.size && buyNowProduct.size.length > 0 && !buyNowSelectedSize)
+                  }
                   className="w-full mt-6 py-4 px-4 rounded-lg overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed relative group"
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 group-hover:from-pink-600 group-hover:via-purple-600 group-hover:to-indigo-600 transition-all duration-300"></span>
@@ -581,7 +1013,7 @@ const Checkout = () => {
             </motion.div>
           </div>
         </div>
-      </div>
+      </div>  
     </div>
   );
 };
