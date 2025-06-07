@@ -40,7 +40,7 @@ export const AdminAddProduct = async (productData) => {
     };
 
     const response = await axiosInstance.post(
-      "/admin/add-products",
+      "/admin/add-product",
       formData,
       config
     );
