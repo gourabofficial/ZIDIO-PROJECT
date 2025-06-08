@@ -296,6 +296,7 @@ export const placeOrder = async (req, res) => {
 
       // Add to order products array
       orderProducts.push({
+        productId: product._id,
         title: product.name,
         quantity: item.quantity,
         selectedSize: item.selectedSize, // Add the selectedSize field

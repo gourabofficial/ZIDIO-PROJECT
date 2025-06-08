@@ -12,6 +12,7 @@ import {
 import toast, { Toaster } from "react-hot-toast"; 
 import ProductGallery from "../../components/productDetails/ProductGalery";
 import ProductInfo from "../../components/productDetails/ProductInfo";
+import ReviewList from "../../components/Review/ReviewList";
 import { getProductById } from "../../Api/ProductApi.js";
 import MiniLoader from "../../components/Loader/MiniLoader.jsx";
 import { addToCart } from "../../Api/user.js";
@@ -347,6 +348,11 @@ const Product = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mt-16 pt-8 border-t border-gray-700">
+          <ReviewList productId={product._id} />
         </div>
       </div>
     </div>

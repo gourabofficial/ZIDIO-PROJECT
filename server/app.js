@@ -9,6 +9,7 @@ import adminRouter from "./src/routes/admin.routes.js";
 import publicRouter from "./src/routes/public.routes.js";
 import cartRouter from "./src/routes/cart.routes.js";
 import wishlistRouter from "./src/routes/wishlist.routes.js";
+import reviewRouter from "./src/routes/review.routes.js";
 
 dotenv.config();
 
@@ -68,6 +69,9 @@ app.use('/api/cart', cartRouter);
 
 // wishlist routes
 app.use('/api/wishlist',wishlistRouter)
+
+// review routes
+app.use('/api/review', reviewRouter)
 
 
 

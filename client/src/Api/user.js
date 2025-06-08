@@ -431,3 +431,90 @@ export const getPaymentStatus = async (sessionId) => {
     };
   }
 }
+
+// ==================== REVIEW API FUNCTIONS ====================
+
+// Add a new product review
+export const addProductReview = async (reviewData) => {
+  try {
+    const res = await axiosInstance.post("/review/add", reviewData);
+    return res.data;
+  } catch (error) {
+    console.error("Error adding product review:", error);
+    return {
+      message: error.response?.data?.message || "Failed to add review",
+      success: false,
+    };
+  }
+};
+
+// Get reviews for a specific product
+export const getProductReviews = async (productId, page = 1, limit = 10) => {
+  try {
+    const res = await axiosInstance.get(`/review/product/${productId}?page=${page}&limit=${limit}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching product reviews:", error);
+    return {
+      message: error.response?.data?.message || "Failed to fetch reviews",
+      success: false,
+    };
+  }
+};
+
+// Get user's reviews
+export const getUserReviews = async (page = 1, limit = 10) => {
+  try {
+    const res = await axiosInstance.get(`/review/user?page=${page}&limit=${limit}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching user reviews:", error);
+    return {
+      message: error.response?.data?.message || "Failed to fetch user reviews",
+      success: false,
+    };
+  }
+};
+
+// Update a review
+export const updateProductReview = async (reviewId, reviewData) => {
+  try {
+    const res = await axiosInstance.put(`/review/${reviewId}`, reviewData);
+    return res.data;
+  } catch (error) {
+    console.error("Error updating review:", error);
+    return {
+      message: error.response?.data?.message || "Failed to update review",
+      success: false,
+    };
+  }
+};
+
+// Delete a review
+export const deleteProductReview = async (reviewId) => {
+  try {
+    const res = await axiosInstance.delete(`/review/${reviewId}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error deleting review:", error);
+    return {
+      message: error.response?.data?.message || "Failed to delete review",
+      success: false,
+    };
+  }
+};
+
+// Check if user can review a product
+export const canUserReviewProduct = async (productId, orderId) => {
+  try {
+    const res = await axiosInstance.get(`/review/can-review/${productId}/${orderId}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error checking review eligibility:", error);
+    return {
+      message: error.response?.data?.message || "Failed to check review eligibility",
+      success: false,
+      canReview: false,
+    };
+  }
+};

@@ -15,9 +15,12 @@ import {
   FiArrowLeft,
   FiRefreshCw,
   FiAlertCircle,
+  FiStar,
+  FiEdit3,
 } from "react-icons/fi";
-import { getUserOrders, getOrderById } from "../../Api/user";
+import { getUserOrders, getOrderById, canUserReviewProduct } from "../../Api/user";
 import { useAuthdata } from "../../context/AuthContext";
+import ReviewModal from "../../components/Review/ReviewModal";
 
 const Order = () => {
   const location = useLocation();
@@ -33,6 +36,12 @@ const Order = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  
+  // Review modal state
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewProduct, setReviewProduct] = useState(null);
+  const [reviewOrder, setReviewOrder] = useState(null);
+  const [productReviewStatus, setProductReviewStatus] = useState({});
 
   // Check for success state from checkout
   useEffect(() => {
@@ -71,6 +80,11 @@ const Order = () => {
       if (response.success) {
         setSelectedOrder(response.order);
         setShowOrderDetails(true);
+        
+        // Check review status for delivered orders
+        if (response.order.Orderstatus === 'delivered') {
+          checkReviewStatus(orderId, response.order.products);
+        }
       } else {
         throw new Error(response.message || "Failed to fetch order details");
       }
@@ -85,6 +99,68 @@ const Order = () => {
       fetchOrders();
     }
   }, [isLoaded, isAuth]);
+
+  // Check review status for products in delivered orders
+  const checkReviewStatus = async (orderId, products) => {
+    if (!products || products.length === 0) return;
+    
+    const statusMap = {};
+    for (const product of products) {
+      try {
+        // Only check review status if the product has a productId (new order structure)
+        if (product.productId) {
+          const result = await canUserReviewProduct(product.productId, orderId);
+          statusMap[product.productId] = result;
+        } else {
+          // For older orders without productId, disable reviews
+          statusMap[`product_${product.title}`] = { 
+            canReview: false, 
+            hasReviewed: false,
+            message: "Reviews not available for this order"
+          };
+        }
+      } catch (error) {
+        console.error(`Error checking review status for product:`, error);
+        const productKey = product.productId || `product_${product.title}`;
+        statusMap[productKey] = { canReview: false, hasReviewed: false };
+      }
+    }
+    setProductReviewStatus(prev => ({ ...prev, [orderId]: statusMap }));
+  };
+
+  // Handle opening review modal
+  const handleReviewProduct = (product, order) => {
+    // Only allow reviews for products with productId
+    if (!product.productId) {
+      console.warn("Cannot review product without productId");
+      return;
+    }
+    setReviewProduct(product);
+    setReviewOrder(order);
+    setShowReviewModal(true);
+  };
+
+  // Handle review submission
+  const handleReviewAdded = (newReview) => {
+    // Update the review status for this product
+    const productKey = reviewProduct.productId || `product_${reviewProduct.title}`;
+    setProductReviewStatus(prev => ({
+      ...prev,
+      [reviewOrder._id]: {
+        ...prev[reviewOrder._id],
+        [productKey]: {
+          canReview: false,
+          hasReviewed: true,
+          review: newReview
+        }
+      }
+    }));
+    
+    // Close modal and reset state
+    setShowReviewModal(false);
+    setReviewProduct(null);
+    setReviewOrder(null);
+  };
 
   // Get status color and icon
   const getStatusConfig = (status) => {
@@ -410,20 +486,66 @@ const Order = () => {
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-white mb-3">Order Items</h3>
                   <div className="space-y-3">
-                    {selectedOrder.products?.map((product, index) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
-                        <div>
-                          <h4 className="text-white font-medium">{product.title}</h4>
-                          <p className="text-gray-400 text-sm">Quantity: {product.quantity}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-white font-semibold">₹{product.payable_price?.toLocaleString('en-IN')}</p>
-                          {product.offer > 0 && (
-                            <p className="text-gray-400 text-sm line-through">₹{product.original_price?.toLocaleString('en-IN')}</p>
+                    {selectedOrder.products?.map((product, index) => {
+                      // Get review status - handle both new and old order structures
+                      const productKey = product.productId || `product_${product.title}`;
+                      const reviewStatus = productReviewStatus[selectedOrder._id]?.[productKey];
+                      const isDelivered = selectedOrder.Orderstatus === 'delivered';
+                      
+                      return (
+                        <div key={index} className="p-3 bg-gray-700/50 rounded-lg">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <h4 className="text-white font-medium">{product.title}</h4>
+                              <p className="text-gray-400 text-sm">Quantity: {product.quantity}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-white font-semibold">₹{product.payable_price?.toLocaleString('en-IN')}</p>
+                              {product.offer > 0 && (
+                                <p className="text-gray-400 text-sm line-through">₹{product.original_price?.toLocaleString('en-IN')}</p>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Review Button for Delivered Products */}
+                          {isDelivered && product.productId && (
+                            <div className="mt-3 pt-3 border-t border-gray-600">
+                              {reviewStatus?.hasReviewed ? (
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-2 text-green-400">
+                                    <FiCheck className="w-4 h-4" />
+                                    <span className="text-sm">Review submitted</span>
+                                  </div>
+                                  <button
+                                    onClick={() => handleReviewProduct(product, selectedOrder)}
+                                    className="flex items-center space-x-1 px-3 py-1 text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                                  >
+                                    <FiEdit3 className="w-3 h-3" />
+                                    <span>Edit</span>
+                                  </button>
+                                </div>
+                              ) : reviewStatus?.canReview ? (
+                                <button
+                                  onClick={() => handleReviewProduct(product, selectedOrder)}
+                                  className="flex items-center space-x-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 rounded-lg transition-all duration-200 text-sm"
+                                >
+                                  <FiStar className="w-4 h-4 text-purple-400" />
+                                  <span className="text-purple-400 font-medium">Write Review</span>
+                                </button>
+                              ) : reviewStatus !== undefined && (
+                                <p className="text-gray-500 text-sm">Review not available</p>
+                              )}
+                            </div>
+                          )}
+                          {/* Show message for old orders without productId */}
+                          {isDelivered && !product.productId && (
+                            <div className="mt-3 pt-3 border-t border-gray-600">
+                              <p className="text-gray-500 text-sm">Reviews not available for this order</p>
+                            </div>
                           )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -431,6 +553,21 @@ const Order = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Review Modal */}
+      <ReviewModal
+        isOpen={showReviewModal}
+        onClose={() => {
+          setShowReviewModal(false);
+          setReviewProduct(null);
+          setReviewOrder(null);
+        }}
+        productId={reviewProduct?.productId}
+        orderId={reviewOrder?._id}
+        productName={reviewProduct?.title}
+        existingReview={productReviewStatus[reviewOrder?._id]?.[reviewProduct?.productId]?.review}
+        onReviewAdded={handleReviewAdded}
+      />
     </div>
   );
 };
