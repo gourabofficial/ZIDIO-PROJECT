@@ -93,15 +93,19 @@ const Wishlist = () => {
         return {
           id: item._id,
           productId: item._id,
+          _id: item._id, // Add this for consistency
           title: item.name || item.title || "Product",
           price: item.price || 0,
           // Handle different image formats - nested array or direct URL
           image: item.images && item.images.length > 0 
             ? item.images[0].imageUrl || item.images[0] 
             : item.image || 'https://ext.same-assets.com/1329671863/375037467.gif',
+          images: item.images || [item.image || 'https://ext.same-assets.com/1329671863/375037467.gif'], // Add images array
           inStock: item.inStock !== false,
           // For navigation - handle different property names
           handle: item.product_id || item.handle || item.slug || item._id,
+          // Add any other properties from the original item that AddToCartButton might need
+          ...item // Spread the original item to preserve all properties
         };
       });
       
@@ -292,7 +296,17 @@ const Wishlist = () => {
                     
                     <div className="w-full">
                       <AddToCartButton
-                        product={{...item, id: item.productId}}
+                        product={{
+                          id: item.productId,
+                          _id: item.productId,
+                          title: item.title,
+                          price: item.price,
+                          image: item.image,
+                          images: item.images || [item.image],
+                          handle: item.handle,
+                          inStock: item.inStock,
+                          // Add any other properties that AddToCartButton might need
+                        }}
                         disabled={item.inStock === false || pendingRemovals[item.id]}
                         className="w-full"
                       />

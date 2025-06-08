@@ -22,6 +22,7 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import { placeOrder } from "../../Api/user";
+import toast from "react-hot-toast";
 
 
 const Checkout = () => {
@@ -235,8 +236,24 @@ const Checkout = () => {
     );
   }
 
+  //add address function
+  const addAddress = () => {
+    navigate("/account-settings", { state: { from: "/checkout" } });
+  }
+
+  // edit address function
+  const editAddress = () => {
+    navigate("/account-settings", { state: { from: "/checkout" } });
+  }
+
   // Handler function for placing order
   const handlePlaceOrder = async () => {
+    // Check if user has an address before placing order
+    if (!currentUser.address) {
+      toast.error("Please add your address first");
+      return;
+    }
+
     try {
       setIsProcessing(true);
       setError("");
@@ -433,7 +450,7 @@ const Checkout = () => {
           >
             <FiArrowLeft className="w-5 h-5" />
           </button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
               {isBuyNow ? "Buy Now" : "Checkout"}
             </h1>
@@ -490,7 +507,7 @@ const Checkout = () => {
                   <FiMapPin className="mr-2 text-purple-400" />
                   Delivery Address
                 </h3>
-                <button className="text-purple-400 hover:text-purple-300 text-sm flex items-center">
+                <button onClick={editAddress} className="text-purple-400 hover:text-purple-300 text-sm flex items-center">
                   <FiEdit3 className="mr-1 w-4 h-4" />
                   Change
                 </button>
@@ -518,7 +535,10 @@ const Checkout = () => {
                     <p className="text-gray-400 mb-3">
                       No delivery address found
                     </p>
-                    <button className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm">
+                    <button 
+                      onClick={addAddress}
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm"
+                    >
                       Add Address
                     </button>
                   </div>

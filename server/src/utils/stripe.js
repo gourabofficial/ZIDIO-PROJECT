@@ -26,7 +26,7 @@ export const createStripeCheckoutSession = async ({
         product_data: {
           name: product.title,
           metadata: {
-            productId: product.productId || product._id,
+            productId: (product.productId || product._id).toString(),
           },
         },
         unit_amount: Math.round(product.payable_price * 100), // Convert to paise
@@ -76,15 +76,15 @@ export const createStripeCheckoutSession = async ({
       success_url: `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}&order_id=${orderId}`,
       cancel_url: `${process.env.CLIENT_URL}/payment-cancel?order_id=${orderId}`,
       metadata: {
-        orderId: orderId,
-        trackId: trackId,
+        orderId: orderId.toString(),
+        trackId: trackId.toString(),
         orderType: orderType,
         userEmail: userEmail,
       },
       payment_intent_data: {
         metadata: {
-          orderId: orderId,
-          trackId: trackId,
+          orderId: orderId.toString(),
+          trackId: trackId.toString(),
         },
       },
     });
