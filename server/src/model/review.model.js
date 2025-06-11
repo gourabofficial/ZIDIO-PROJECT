@@ -23,6 +23,11 @@ const ProductReviewSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+ orderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Order",
+    required: true,
+ },
  
 }, { timestamps: true })
 

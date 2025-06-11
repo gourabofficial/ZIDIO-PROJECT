@@ -5,7 +5,8 @@ import {
   getUserReviews,
   updateReview,
   deleteReview,
-  canUserReviewProduct
+  canUserReviewProduct,
+  getUserProductReview
 } from "../controllers/review.controllers.js";
 import { isLogedin } from "../middlewares/isAuthenticated.js";
 
@@ -22,5 +23,6 @@ router.route("/user").get(getUserReviews);
 router.route("/:reviewId").put(updateReview);
 router.route("/:reviewId").delete(deleteReview);
 router.route("/can-review/:productId/:orderId").get(canUserReviewProduct);
+router.route("/user-product-review/:productId").get(getUserProductReview);
 
 export default router;

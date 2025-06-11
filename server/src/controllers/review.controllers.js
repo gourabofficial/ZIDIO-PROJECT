@@ -86,6 +86,20 @@ export const addProductReview = async (req, res) => {
       });
     }
 
+    // ENHANCED: Check if user has already reviewed this product from ANY order
+    const existingProductReview = await ProductReview.findOne({
+      owner: userId,
+      productId: productId
+    });
+
+    if (existingProductReview) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already reviewed this product. You can edit your existing review instead.",
+        existingReview: existingProductReview
+      });
+    }
+
     // Create the review
     const review = new ProductReview({
       owner: userId,
@@ -297,19 +311,24 @@ export const updateReview = async (req, res) => {
       });
     }
 
-    // Update the review
-    review.rating = parseInt(rating);
-    review.comment = comment.trim();
-    await review.save();
-
-    // Populate the updated review
-    await review.populate('owner', 'fullName email');
-    await review.populate('productId', 'name');
+    // Update the review using findByIdAndUpdate to avoid validation issues
+    const updatedReview = await ProductReview.findByIdAndUpdate(
+      reviewId,
+      {
+        rating: parseInt(rating),
+        comment: comment.trim()
+      },
+      { 
+        new: true,
+        runValidators: false // Skip validation to avoid orderId requirement issues for existing reviews
+      }
+    ).populate('owner', 'fullName email')
+     .populate('productId', 'name');
 
     res.status(200).json({
       success: true,
       message: "Review updated successfully",
-      review
+      review: updatedReview
     });
 
   } catch (error) {
@@ -456,6 +475,56 @@ export const canUserReviewProduct = async (req, res) => {
 
   } catch (error) {
     console.error("Error checking review eligibility:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message
+    });
+  }
+};
+
+// Check if user has reviewed a product (regardless of order) - NEW FUNCTION
+export const getUserProductReview = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const clerkUserId = req.userId; // From Clerk middleware
+
+    // Find user by Clerk ID
+    const user = await User.findOne({ clerkId: clerkUserId });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    const userId = user._id;
+
+    // Check if user has already reviewed this product (from any order)
+    const existingReview = await ProductReview.findOne({
+      owner: userId,
+      productId: productId
+    }).populate('orderId', 'trackingId Orderstatus');
+
+    if (existingReview) {
+      return res.status(200).json({
+        success: true,
+        hasReviewed: true,
+        canReview: false,
+        review: existingReview,
+        message: "You have already reviewed this product. You can edit your existing review."
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      hasReviewed: false,
+      canReview: true,
+      message: "You can review this product"
+    });
+
+  } catch (error) {
+    console.error("Error checking user product review:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",

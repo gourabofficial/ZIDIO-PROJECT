@@ -518,3 +518,19 @@ export const canUserReviewProduct = async (productId, orderId) => {
     };
   }
 };
+
+// Check if user has reviewed a product (regardless of order)
+export const getUserProductReview = async (productId) => {
+  try {
+    const res = await axiosInstance.get(`/review/user-product-review/${productId}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error checking user product review:", error);
+    return {
+      message: error.response?.data?.message || "Failed to check user product review",
+      success: false,
+      hasReviewed: false,
+      canReview: true,
+    };
+  }
+};

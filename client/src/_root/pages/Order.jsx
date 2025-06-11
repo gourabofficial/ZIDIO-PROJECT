@@ -18,7 +18,7 @@ import {
   FiStar,
   FiEdit3,
 } from "react-icons/fi";
-import { getUserOrders, getOrderById, canUserReviewProduct } from "../../Api/user";
+import { getUserOrders, getOrderById, canUserReviewProduct, getUserProductReview } from "../../Api/user";
 import { useAuthdata } from "../../context/AuthContext";
 import ReviewModal from "../../components/Review/ReviewModal";
 
@@ -109,7 +109,8 @@ const Order = () => {
       try {
         // Only check review status if the product has a productId (new order structure)
         if (product.productId) {
-          const result = await canUserReviewProduct(product.productId, orderId);
+          // Use the new API that checks if user has reviewed the product from ANY order
+          const result = await getUserProductReview(product.productId);
           statusMap[product.productId] = result;
         } else {
           // For older orders without productId, disable reviews
