@@ -7,7 +7,8 @@ import {
   RefreshCw,
   PackageOpen,
   X,
-  Plus
+  Plus,
+  Trash2
 } from 'lucide-react';
 import AdminProductTable from './AdminProductTable';
 import toast from 'react-hot-toast';
@@ -25,6 +26,7 @@ const AllProductList = () => {
   const [totalProducts, setTotalProducts] = useState(0);
   const [limit, setLimit] = useState(10);
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, product: null });
   
   // Fetch products
   const fetchProducts = async (page = 1, searchTerm = '') => {
@@ -100,56 +102,38 @@ const AllProductList = () => {
   };
 
   const handleDeleteProduct = async (product) => {
-    if (window.confirm(`Are you sure you want to delete "${product.name}"?\n\nThis action will:\n- Remove the product from all systems\n- Delete from inventory\n- Remove from all user carts and wishlists\n- Remove from home page content\n- Delete all product reviews\n- Delete product images from cloud storage\n\nThis action cannot be undone.`)) {
-      const loadingToast = toast.loading('Deleting product from all systems...', {
-        style: {
-          background: 'rgba(17, 24, 39, 0.9)',
-          color: '#fff',
-          border: '1px solid rgba(75, 85, 99, 0.3)',
-        },
-      });
+    setDeleteModal({ isOpen: true, product });
+  };
 
-      try {
-        const response = await deleterProductById(product._id || product.id);
+  const confirmDeleteProduct = async () => {
+    const product = deleteModal.product;
+    setDeleteModal({ isOpen: false, product: null });
+
+    const loadingToast = toast.loading('Deleting product...', {
+      style: {
+        background: 'rgba(17, 24, 39, 0.9)',
+        color: '#fff',
+        border: '1px solid rgba(75, 85, 99, 0.3)',
+      },
+    });
+
+    try {
+      const response = await deleterProductById(product._id || product.id);
+      
+      if (response.success) {
+        toast.success(`Product "${product.name}" deleted successfully!`, {
+          id: loadingToast,
+          style: {
+            background: 'rgba(17, 24, 39, 0.9)',
+            color: '#fff',
+            border: '1px solid rgba(34, 197, 94, 0.3)',
+          },
+        });
         
-        if (response.success) {
-          // Show detailed success message
-          toast.success(
-            `Product "${product.name}" deleted successfully!\n\n` +
-            `✅ Product removed\n` +
-            `✅ ${response.deletionResults?.cartItems || 0} cart references cleared\n` +
-            `✅ ${response.deletionResults?.wishlistReferences || 0} wishlist references cleared\n` +
-            `✅ ${response.deletionResults?.reviews || 0} reviews deleted\n` +
-            `✅ ${response.deletionResults?.cloudinaryImages || 0} images deleted\n` +
-            `✅ ${response.deletionResults?.homeContentReferences || 0} home page references removed`,
-            {
-              id: loadingToast,
-              duration: 6000,
-              style: {
-                background: 'rgba(17, 24, 39, 0.9)',
-                color: '#fff',
-                border: '1px solid rgba(34, 197, 94, 0.3)',
-                maxWidth: '500px',
-                whiteSpace: 'pre-line'
-              },
-            }
-          );
-          
-          // Refresh the product list
-          fetchProducts(currentPage, searchQuery);
-        } else {
-          toast.error(response.message || 'Failed to delete product', {
-            id: loadingToast,
-            style: {
-              background: 'rgba(17, 24, 39, 0.9)',
-              color: '#fff',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-            },
-          });
-        }
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        toast.error('Failed to delete product. Please try again.', {
+        // Refresh the product list
+        fetchProducts(currentPage, searchQuery);
+      } else {
+        toast.error(response.message || 'Failed to delete product', {
           id: loadingToast,
           style: {
             background: 'rgba(17, 24, 39, 0.9)',
@@ -158,7 +142,21 @@ const AllProductList = () => {
           },
         });
       }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error('Failed to delete product. Please try again.', {
+        id: loadingToast,
+        style: {
+          background: 'rgba(17, 24, 39, 0.9)',
+          color: '#fff',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+        },
+      });
     }
+  };
+
+  const cancelDeleteProduct = () => {
+    setDeleteModal({ isOpen: false, product: null });
   };
   
   // Initial load
@@ -282,6 +280,106 @@ const AllProductList = () => {
           onDelete={handleDeleteProduct}
         />
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity backdrop-blur-sm"
+            onClick={cancelDeleteProduct}
+          ></div>
+          
+          {/* Modal */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative transform overflow-hidden rounded-xl bg-gray-800 border border-gray-700 shadow-2xl transition-all w-full max-w-md">
+              {/* Close button */}
+              <button
+                onClick={cancelDeleteProduct}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-300 transition-colors z-10"
+              >
+                <X size={20} />
+              </button>
+              
+              {/* Modal content */}
+              <div className="p-6">
+                {/* Icon */}
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-4">
+                  <Trash2 className="h-8 w-8 text-red-600" />
+                </div>
+                
+                {/* Title */}
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    Delete Product
+                  </h3>
+                  <p className="text-sm text-gray-300">
+                    Are you sure you want to delete this product? This action will:
+                  </p>
+                </div>
+
+                {/* Product Info */}
+                {deleteModal.product && (
+                  <div className="bg-gray-700/50 rounded-lg p-4 mb-4">
+                    <div className="flex items-center gap-3">
+                      {deleteModal.product.image ? (
+                        <img
+                          src={deleteModal.product.image}
+                          alt={deleteModal.product.name}
+                          className="h-12 w-12 rounded-lg object-cover border border-gray-600"
+                        />
+                      ) : (
+                        <div className="h-12 w-12 rounded-lg flex items-center justify-center bg-gradient-to-br from-red-500 to-pink-500">
+                          <PackageOpen className="h-6 w-6 text-white" />
+                        </div>
+                      )}
+                      
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">
+                          {deleteModal.product.name}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          ID: {deleteModal.product._id?.substring(0, 12) || 'N/A'}...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Warning List */}
+                <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-3 mb-6">
+                  <ul className="text-xs text-red-200 space-y-1">
+                    <li>• Remove product from all systems</li>
+                    <li>• Delete from inventory</li>
+                    <li>• Remove from user carts and wishlists</li>
+                    <li>• Delete all product reviews</li>
+                    <li>• Remove from homepage content</li>
+                  </ul>
+                  <p className="text-xs text-red-300 font-medium mt-2">
+                    This action cannot be undone.
+                  </p>
+                </div>
+                
+                {/* Buttons */}
+                <div className="flex space-x-3">
+                  <button
+                    onClick={cancelDeleteProduct}
+                    className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDeleteProduct}
+                    className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+                  >
+                    Delete Product
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

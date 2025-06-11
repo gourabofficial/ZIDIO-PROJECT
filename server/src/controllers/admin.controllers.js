@@ -131,16 +131,19 @@ export const addProduct = async (req, res) => {
       });
     }
 
-    // Create inventory for the product with default zero quantities for all sizes
+    // Create inventory for the product with default quantity 1 for all sizes
     const inventoryStocks = size.map((productSize) => ({
       size: productSize,
-      quantity: 0,
+      quantity: 1,
     }));
+
+    // Calculate total quantity from stocks
+    const totalQuantity = inventoryStocks.reduce((total, stock) => total + stock.quantity, 0);
 
     const newInventory = await Inventory.create({
       productId: newProduct._id,
       stocks: inventoryStocks,
-      totalQuantity: 0,
+      totalQuantity: totalQuantity,
     });
 
     console.log("New product created:", newProduct);
