@@ -2,6 +2,7 @@ import { ProductReview } from "../model/review.model.js";
 import { Order } from "../model/order.model.js";
 import { Product } from "../model/product.model.js";
 import { User } from "../model/user.model.js";
+import mongoose from "mongoose";
 
 // Add a new product review (only for delivered orders)
 export const addProductReview = async (req, res) => {
@@ -145,7 +146,7 @@ export const getProductReviews = async (req, res) => {
 
     // Calculate average rating
     const ratingStats = await ProductReview.aggregate([
-      { $match: { productId: productId } },
+      { $match: { productId: new mongoose.Types.ObjectId(productId) } },
       {
         $group: {
           _id: null,

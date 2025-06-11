@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 import ReviewCard from './ReviewCard';
+import StarRating from '../common/StarRating';
 import { getProductReviews } from '../../Api/user';
 
 const ReviewList = ({ productId, showTitle = true }) => {
@@ -112,7 +113,41 @@ const ReviewList = ({ productId, showTitle = true }) => {
             Customer Reviews
           </h3>
           
-          
+          {/* Average Rating Display */}
+          {stats.totalReviews > 0 && (
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl border border-purple-500/20 p-6 mb-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                {/* Average Rating */}
+                <div className="flex items-center space-x-4">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-white mb-1">
+                      {stats.averageRating.toFixed(1)}
+                    </div>
+                    <div className="text-sm text-purple-300">out of 5</div>
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <StarRating 
+                      rating={stats.averageRating} 
+                      totalReviews={stats.totalReviews}
+                      size={24}
+                      showRating={false}
+                      className="mb-2"
+                      starClassName="drop-shadow-md"
+                    />
+                    <div className="text-sm text-purple-300">
+                      Based on {stats.totalReviews} review{stats.totalReviews !== 1 ? 's' : ''}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Rating Distribution */}
+                <div className="flex-1 max-w-md">
+                  <h4 className="text-sm font-semibold text-purple-300 mb-3">Rating Breakdown</h4>
+                  {renderRatingDistribution()}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

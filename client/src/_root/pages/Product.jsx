@@ -14,6 +14,7 @@ import ProductGallery from "../../components/productDetails/ProductGalery";
 import ProductInfo from "../../components/productDetails/ProductInfo";
 import ReviewList from "../../components/Review/ReviewList";
 import { getProductById } from "../../Api/ProductApi.js";
+import { getProductReviews } from "../../Api/user.js";
 import MiniLoader from "../../components/Loader/MiniLoader.jsx";
 import { addToCart } from "../../Api/user.js";
 import { useAuthdata } from "../../context/AuthContext.jsx";
@@ -26,6 +27,10 @@ const Product = () => {
   const [error, setError] = useState(null);
   const [addToCartLoading, setAddToCartLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [ratingStats, setRatingStats] = useState({
+    averageRating: 0,
+    totalReviews: 0
+  });
   const { id } = useParams();
 
   useEffect(() => {
@@ -35,6 +40,11 @@ const Product = () => {
         const data = await getProductById(id);
         console.log("Product data received:", data.product);
         setProduct(data.product);
+        
+        // Fetch rating stats using the MongoDB _id, not the product_id
+        if (data.product && data.product._id) {
+          await fetchRatingStats(data.product._id);
+        }
       } catch (err) {
         console.error("Error fetching product:", err);
         setError(err.message || "Failed to fetch product");
@@ -45,6 +55,21 @@ const Product = () => {
 
     fetchProduct();
   }, [id]);
+
+  const fetchRatingStats = async (productId) => {
+    try {
+      const result = await getProductReviews(productId, 1, 1);
+      if (result.success && result.stats) {
+        setRatingStats({
+          averageRating: result.stats.averageRating || 0,
+          totalReviews: result.stats.totalReviews || 0
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching rating stats:", err);
+      // Don't throw error, just keep default stats
+    }
+  };
 
   const handleAddToCart = async () => {
     // Check if user is authenticated
@@ -273,6 +298,14 @@ const Product = () => {
               }
               discount={product.discount}
               originalPrice={product.discount > 0 ? product.price : null}
+              averageRating={ratingStats.averageRating}
+              totalReviews={ratingStats.totalReviews}
+              onViewReviews={() => {
+                const reviewsSection = document.getElementById('reviews-section');
+                if (reviewsSection) {
+                  reviewsSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
             />
 
             {/* Quantity and Add to Cart Section */}
@@ -351,7 +384,7 @@ const Product = () => {
         </div>
 
         {/* Reviews Section */}
-        <div className="mt-16 pt-8 border-t border-gray-700">
+        <div id="reviews-section" className="mt-16 pt-8 border-t border-gray-700">
           <ReviewList productId={product._id} />
         </div>
       </div>

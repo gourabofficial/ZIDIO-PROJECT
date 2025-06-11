@@ -1,4 +1,16 @@
-const ProductInfo = ({ title, price, description, discount, originalPrice }) => {
+import React from 'react';
+import StarRating from '../common/StarRating';
+
+const ProductInfo = ({ 
+  title, 
+  price, 
+  description, 
+  discount, 
+  originalPrice, 
+  averageRating = 0, 
+  totalReviews = 0,
+  onViewReviews 
+}) => {
   // Format price function
   const formatPrice = (value) => {
     return `₹${value?.toLocaleString('en-IN')}`;
@@ -32,6 +44,28 @@ const ProductInfo = ({ title, price, description, discount, originalPrice }) => 
           </>
         )}
       </div>
+      
+      {/* Rating Section - Right below price */}
+      {totalReviews > 0 && (
+        <div className="flex items-center justify-between">
+          <StarRating 
+            rating={averageRating} 
+            size={20}
+            showRating={true}
+            showCount={true}
+            totalReviews={totalReviews}
+            className="text-sm"
+          />
+          {onViewReviews && (
+            <button
+              onClick={onViewReviews}
+              className="text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors underline"
+            >
+              View all reviews
+            </button>
+          )}
+        </div>
+      )}
       
       {/* Discount Badge - Appears above description for prominent offers */}
       {discountPercentage > 15 && (

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Star, User, Calendar, Edit, Trash2 } from 'lucide-react';
+import { User, Calendar, Edit, Trash2 } from 'lucide-react';
+import StarRating from '../common/StarRating';
 
 const ReviewCard = ({ 
   review, 
@@ -18,22 +19,8 @@ const ReviewCard = ({
   };
 
   const renderStars = (rating) => {
-    return (
-      <div className="flex items-center">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            size={18}
-            className={`${
-              star <= rating
-                ? 'text-yellow-400 fill-current'
-                : 'text-gray-500'
-            }`}
-          />
-        ))}
-        <span className="ml-3 text-sm text-gray-400 font-medium">({rating})</span>
-      </div>
-    );
+    // Always show stars, never N/A, for individual reviews
+    return <StarRating rating={rating} size={18} showRating={false} totalReviews={1} />;
   };
 
   return (
