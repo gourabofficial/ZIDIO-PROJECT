@@ -483,4 +483,98 @@ export const deleteUser = async (userId) => {
   }
 };
 
+// get all inventory
+export const getAllInventory = async (page = 1, searchTerm = "", limit = 10) => {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    });
+
+    if (searchTerm && searchTerm.trim()) {
+      params.append('search', searchTerm.trim());
+    }
+
+    const response = await axiosInstance.get(`/admin/inventory?${params.toString()}`);
+
+    if (!response.data.success) {
+      return {
+        message: response.data.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: response.data.message,
+      success: true,
+      inventory: response.data.inventory,
+      pagination: response.data.pagination,
+    };
+  } catch (error) {
+    console.error("Error fetching inventory:", error);
+    return {
+      message: error.response?.data?.message || error.message,
+      success: false,
+    };
+  }
+};
+
+// get inventory by product id
+export const getInventoryByProductId = async (productId) => {
+  try {
+    const response = await axiosInstance.get(`/admin/inventory/product/${productId}`);
+
+    if (!response.data.success) {
+      return {
+        message: response.data.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: response.data.message,
+      success: true,
+      inventory: response.data.inventory,
+    };
+  } catch (error) {
+    console.error("Error fetching inventory:", error);
+    return {
+      message: error.response?.data?.message || error.message,
+      success: false,
+    };
+  }
+};
+
+// update inventory
+export const updateInventory = async (productId, stocks) => {
+  try {
+    const response = await axiosInstance.patch(`/admin/inventory/${productId}`, {
+      stocks: stocks
+    }, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.data.success) {
+      return {
+        message: response.data.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: response.data.message,
+      success: true,
+      inventory: response.data.inventory,
+    };
+  } catch (error) {
+    console.error("Error updating inventory:", error);
+    return {
+      message: error.response?.data?.message || error.message,
+      success: false,
+    };
+  }
+};
+
 

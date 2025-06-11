@@ -1,12 +1,81 @@
 import { Order } from "../model/order.model.js";
 import { User } from "../model/user.model.js";
 import { Product } from "../model/product.model.js";
+import { Inventory } from "../model/inventory.model.js";
 import PaymentDetails from "../model/paymentDetails.model.js";
 import { Address } from "../model/address.model.js";
 import mongoose from "mongoose";
 import { v4 as uuidv4 } from 'uuid';
 import Stripe from "stripe";
 import { createStripeCheckoutSession, verifyStripeWebhook } from "../utils/stripe.js";
+
+// Utility function to deduct stock for order items
+const deductStockForOrder = async (orderProducts) => {
+  try {
+    for (const item of orderProducts) {
+      const inventory = await Inventory.findOne({ productId: item.productId });
+      
+      if (inventory) {
+        // Find the specific size stock entry
+        const sizeStock = inventory.stocks.find(stock => stock.size === item.selectedSize);
+        
+        if (sizeStock && sizeStock.quantity >= item.quantity) {
+          // Deduct the stock
+          sizeStock.quantity -= item.quantity;
+          
+          // Recalculate total quantity
+          inventory.totalQuantity = inventory.stocks.reduce((total, stock) => total + stock.quantity, 0);
+          
+          // Save the updated inventory
+          await inventory.save();
+          
+          console.log(`Stock deducted for product ${item.productId}, size ${item.selectedSize}: ${item.quantity} units`);
+        } else {
+          console.error(`Insufficient stock for product ${item.productId}, size ${item.selectedSize}`);
+          // Note: At this point, the order validation should have already caught this,
+          // but this is a safeguard in case of race conditions
+        }
+      } else {
+        console.error(`Inventory not found for product ${item.productId}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error deducting stock:', error);
+    // Note: We don't throw here to avoid disrupting the order process
+    // Stock discrepancies can be handled through inventory management
+  }
+};
+
+// Utility function to restore stock for cancelled orders
+const restoreStockForOrder = async (orderProducts) => {
+  try {
+    for (const item of orderProducts) {
+      const inventory = await Inventory.findOne({ productId: item.productId });
+      
+      if (inventory) {
+        // Find the specific size stock entry
+        const sizeStock = inventory.stocks.find(stock => stock.size === item.selectedSize);
+        
+        if (sizeStock) {
+          // Restore the stock
+          sizeStock.quantity += item.quantity;
+          
+          // Recalculate total quantity
+          inventory.totalQuantity = inventory.stocks.reduce((total, stock) => total + stock.quantity, 0);
+          
+          // Save the updated inventory
+          await inventory.save();
+          
+          console.log(`Stock restored for product ${item.productId}, size ${item.selectedSize}: ${item.quantity} units`);
+        }
+      } else {
+        console.error(`Inventory not found for product ${item.productId}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error restoring stock:', error);
+  }
+};
 
 // Generate unique tracking ID using UUID
 const generateTrackingId = () => {
@@ -288,6 +357,23 @@ export const placeOrder = async (req, res) => {
         });
       }
 
+      // Check inventory availability for the selected size
+      const inventory = await Inventory.findOne({ productId: product._id });
+      if (!inventory) {
+        return res.status(400).json({
+          success: false,
+          message: `Inventory not found for product ${product.name}`,
+        });
+      }
+
+      const sizeStock = inventory.stocks.find(stock => stock.size === item.selectedSize);
+      if (!sizeStock || sizeStock.quantity < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for ${product.name} in size ${item.selectedSize}. Available: ${sizeStock ? sizeStock.quantity : 0}, Requested: ${item.quantity}`,
+        });
+      }
+
       // Calculate actual price with discount
       const discount = item.discount || product.discount || 0;
       const discountedPrice = product.price - (product.price * discount / 100);
@@ -375,6 +461,11 @@ export const placeOrder = async (req, res) => {
     // Add order to user's orders array
     user.orders.push(newOrder._id);
     await user.save();
+
+    // For COD orders, deduct stock immediately. For online orders, wait for payment confirmation
+    if (!isOnlinePayment) {
+      await deductStockForOrder(orderProducts);
+    }
 
     // Handle online payment
     if (isOnlinePayment) {
@@ -558,6 +649,9 @@ const handlePaymentSuccess = async (session) => {
     order.Orderstatus = 'processing';
     await order.save();
 
+    // Deduct stock for online payment orders when payment is confirmed
+    await deductStockForOrder(order.products);
+
     // Update payment details
     const paymentDetails = await PaymentDetails.findOne({ orderId: orderId });
     if (paymentDetails) {
@@ -595,6 +689,9 @@ const handlePaymentFailure = async (paymentIntent) => {
     order.paymentStatus = 'failed';
     order.Orderstatus = 'cancelled';
     await order.save();
+
+    // Restore stock for failed payment orders
+    await restoreStockForOrder(order.products);
 
     // Update payment details
     const paymentDetails = await PaymentDetails.findOne({ orderId: orderId });

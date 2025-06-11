@@ -4,13 +4,46 @@ import {
 } from "../config/cloudinary.js";
 import { Product } from "../model/product.model.js";
 import { HomeContent } from "../model/homeContent.model.js";
+import { Inventory } from "../model/inventory.model.js";
 import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
 import { User } from "../model/user.model.js";
 import { Order } from "../model/order.model.js";
 import { Cart } from "../model/cart.model.js";
 import { Address } from "../model/address.model.js";
+import { ProductReview } from "../model/review.model.js";
 import { clerkClient } from '@clerk/clerk-sdk-node';
+
+// Utility function to restore stock for cancelled orders
+const restoreStockForOrder = async (orderProducts) => {
+  try {
+    for (const item of orderProducts) {
+      const inventory = await Inventory.findOne({ productId: item.productId });
+      
+      if (inventory) {
+        // Find the specific size stock entry
+        const sizeStock = inventory.stocks.find(stock => stock.size === item.selectedSize);
+        
+        if (sizeStock) {
+          // Restore the stock
+          sizeStock.quantity += item.quantity;
+          
+          // Recalculate total quantity
+          inventory.totalQuantity = inventory.stocks.reduce((total, stock) => total + stock.quantity, 0);
+          
+          // Save the updated inventory
+          await inventory.save();
+          
+          console.log(`Stock restored for product ${item.productId}, size ${item.selectedSize}: ${item.quantity} units`);
+        }
+      } else {
+        console.error(`Inventory not found for product ${item.productId}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error restoring stock:', error);
+  }
+};
 
 
 
@@ -98,7 +131,20 @@ export const addProduct = async (req, res) => {
       });
     }
 
+    // Create inventory for the product with default zero quantities for all sizes
+    const inventoryStocks = size.map((productSize) => ({
+      size: productSize,
+      quantity: 0,
+    }));
+
+    const newInventory = await Inventory.create({
+      productId: newProduct._id,
+      stocks: inventoryStocks,
+      totalQuantity: 0,
+    });
+
     console.log("New product created:", newProduct);
+    console.log("New inventory created:", newInventory);
 
     return res.status(201).json({
       message: "Product created successfully",
@@ -544,7 +590,7 @@ export const getAllSearchUsers = async (req, res) => {
     });
   }
 };
-// delete product by id
+// delete product by id - comprehensive deletion from all related models
 export const deleterProductById = async (req, res) => {
   try {
     const userId = req.userId;
@@ -557,8 +603,14 @@ export const deleterProductById = async (req, res) => {
 
     const { id } = req.params;
 
-    // Check if the product exists
-    const product = await Product.findOne({ product_id: id });
+    // Check if the product exists by both _id and product_id
+    let product;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      product = await Product.findById(id);
+    } else {
+      product = await Product.findOne({ product_id: id });
+    }
+
     if (!product) {
       return res.status(404).json({
         message: "Product not found",
@@ -566,18 +618,166 @@ export const deleterProductById = async (req, res) => {
       });
     }
 
-    // Delete the product
-    await Product.deleteOne({ product_id: id });
+    const productObjectId = product._id;
+    const productStringId = product.product_id;
+
+    // Keep track of deletion operations
+    const deletionResults = {
+      product: false,
+      inventory: false,
+      cartItems: 0,
+      orderItems: 0,
+      reviews: 0,
+      homeContentReferences: 0,
+      wishlistReferences: 0,
+      cloudinaryImages: 0,
+      errors: []
+    };
+
+    // 1. Delete product images from Cloudinary
+    try {
+      if (product.images && product.images.length > 0) {
+        for (const image of product.images) {
+          if (image.imageId) {
+            await deleteFromCloudinary(image.imageId);
+            deletionResults.cloudinaryImages++;
+          }
+        }
+      }
+    } catch (error) {
+      deletionResults.errors.push(`Cloudinary deletion error: ${error.message}`);
+    }
+
+    // 2. Remove product from all user carts
+    try {
+      const cartUpdateResult = await Cart.updateMany(
+        { "items.productId": productObjectId },
+        { $pull: { items: { productId: productObjectId } } }
+      );
+      deletionResults.cartItems = cartUpdateResult.modifiedCount;
+    } catch (error) {
+      deletionResults.errors.push(`Cart update error: ${error.message}`);
+    }
+
+    // 3. Remove product from user wishlists
+    try {
+      const wishlistUpdateResult = await User.updateMany(
+        { wishlist: productObjectId },
+        { $pull: { wishlist: productObjectId } }
+      );
+      deletionResults.wishlistReferences = wishlistUpdateResult.modifiedCount;
+    } catch (error) {
+      deletionResults.errors.push(`Wishlist update error: ${error.message}`);
+    }
+
+    // 4. Delete all reviews for this product
+    try {
+      const reviewDeleteResult = await ProductReview.deleteMany({ productId: productObjectId });
+      deletionResults.reviews = reviewDeleteResult.deletedCount;
+    } catch (error) {
+      deletionResults.errors.push(`Review deletion error: ${error.message}`);
+    }
+
+    // 5. Remove product from HomeContent (all sections)
+    try {
+      const homeContent = await HomeContent.findOne();
+      if (homeContent) {
+        let updated = false;
+
+        // Remove from newArrival
+        const newArrivalBefore = homeContent.newArrival.length;
+        homeContent.newArrival = homeContent.newArrival.filter(item => 
+          item.productId?.toString() !== productObjectId.toString() && 
+          item.product_id !== productStringId
+        );
+        if (homeContent.newArrival.length < newArrivalBefore) {
+          updated = true;
+          deletionResults.homeContentReferences++;
+        }
+
+        // Remove from hotItems
+        const hotItemsBefore = homeContent.hotItems.length;
+        homeContent.hotItems = homeContent.hotItems.filter(item => 
+          item.productId?.toString() !== productObjectId.toString() && 
+          item.product_id !== productStringId
+        );
+        if (homeContent.hotItems.length < hotItemsBefore) {
+          updated = true;
+          deletionResults.homeContentReferences++;
+        }
+
+        // Remove from trandingItems (note: keeping original typo as per schema)
+        const trandingItemsBefore = homeContent.trandingItems.length;
+        homeContent.trandingItems = homeContent.trandingItems.filter(item => 
+          item.productId?.toString() !== productObjectId.toString() && 
+          item.product_id !== productStringId
+        );
+        if (homeContent.trandingItems.length < trandingItemsBefore) {
+          updated = true;
+          deletionResults.homeContentReferences++;
+        }
+
+        if (updated) {
+          await homeContent.save();
+        }
+      }
+    } catch (error) {
+      deletionResults.errors.push(`HomeContent update error: ${error.message}`);
+    }
+
+    // 6. Delete inventory records
+    try {
+      const inventoryDeleteResult = await Inventory.deleteMany({ productId: productObjectId });
+      deletionResults.inventory = inventoryDeleteResult.deletedCount > 0;
+    } catch (error) {
+      deletionResults.errors.push(`Inventory deletion error: ${error.message}`);
+    }
+
+    // 7. Handle orders - don't delete orders but mark product as deleted/unavailable
+    try {
+      const orderUpdateResult = await Order.updateMany(
+        { "products.productId": productObjectId },
+        { 
+          $set: { 
+            "products.$.productDeleted": true,
+            "products.$.deletedAt": new Date()
+          }
+        }
+      );
+      deletionResults.orderItems = orderUpdateResult.modifiedCount;
+    } catch (error) {
+      deletionResults.errors.push(`Order update error: ${error.message}`);
+    }
+
+    // 8. Finally, delete the product itself
+    try {
+      if (mongoose.Types.ObjectId.isValid(id)) {
+        await Product.findByIdAndDelete(id);
+      } else {
+        await Product.deleteOne({ product_id: id });
+      }
+      deletionResults.product = true;
+    } catch (error) {
+      deletionResults.errors.push(`Product deletion error: ${error.message}`);
+      throw error; // This is critical, so throw if it fails
+    }
 
     return res.status(200).json({
-      message: "Product deleted successfully",
+      message: "Product deleted successfully from all systems",
       success: true,
+      deletionResults,
+      productInfo: {
+        id: productStringId,
+        name: product.name,
+        objectId: productObjectId.toString()
+      }
     });
+
   } catch (error) {
     console.error("Error deleting product:", error);
     return res.status(500).json({
       success: false,
-      message: "Failed to delete product",
+      message: "Failed to delete product completely",
       error: error.message,
     });
   }
@@ -901,6 +1101,17 @@ export const updateOrderStatus = async (req, res) => {
         message: "Order not found",
         success: false,
       });
+    }
+
+    // Check if we need to restore stock (when changing to cancelled or return status)
+    const previousStatus = order.Orderstatus;
+    const shouldRestoreStock = (status.toLowerCase() === 'cancelled' || status.toLowerCase() === 'return') 
+                               && (previousStatus !== 'cancelled' && previousStatus !== 'return');
+
+    // If restoring stock, use the utility function from order controller
+    if (shouldRestoreStock) {
+      // Import the stock restoration utility function
+      await restoreStockForOrder(order.products);
     }
 
     // Update order status
@@ -1304,6 +1515,303 @@ export const deleteUserById = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to delete user",
+      error: error.message,
+    });
+  }
+};
+
+// Get all inventory data
+export const getAllInventory = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const searchTerm = req.query.search || "";
+    let filter = {};
+
+    // Build the aggregation pipeline
+    const pipeline = [
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
+      {
+        $unwind: "$product",
+      },
+    ];
+
+    // Add search filter if provided
+    if (searchTerm && searchTerm.trim() !== "") {
+      const searchRegex = new RegExp(searchTerm, "i");
+      pipeline.push({
+        $match: {
+          $or: [
+            { "product.name": searchRegex },
+            { "product.product_id": searchRegex },
+          ],
+        },
+      });
+    }
+
+    // Add pagination
+    pipeline.push(
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $project: {
+          _id: 1,
+          productId: 1,
+          stocks: 1,
+          totalQuantity: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          "product._id": 1,
+          "product.product_id": 1,
+          "product.name": 1,
+          "product.price": 1,
+          "product.category": 1,
+          "product.images": 1,
+        },
+      }
+    );
+
+    const inventoryData = await Inventory.aggregate(pipeline);
+
+    // Get total count for pagination
+    let totalCount;
+    if (searchTerm && searchTerm.trim() !== "") {
+      const countPipeline = [
+        {
+          $lookup: {
+            from: "products",
+            localField: "productId",
+            foreignField: "_id",
+            as: "product",
+          },
+        },
+        {
+          $unwind: "$product",
+        },
+        {
+          $match: {
+            $or: [
+              { "product.name": new RegExp(searchTerm, "i") },
+              { "product.product_id": new RegExp(searchTerm, "i") },
+            ],
+          },
+        },
+        {
+          $count: "total",
+        },
+      ];
+      const countResult = await Inventory.aggregate(countPipeline);
+      totalCount = countResult.length > 0 ? countResult[0].total : 0;
+    } else {
+      totalCount = await Inventory.countDocuments();
+    }
+
+    // Format the response
+    const formattedInventory = inventoryData.map((item) => ({
+      _id: item._id,
+      productId: item.productId,
+      product: {
+        _id: item.product._id,
+        product_id: item.product.product_id,
+        name: item.product.name,
+        price: item.product.price,
+        category: item.product.category,
+        image:
+          item.product.images && item.product.images.length > 0
+            ? item.product.images[0].imageUrl
+            : null,
+      },
+      stocks: item.stocks,
+      totalQuantity: item.totalQuantity,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    }));
+
+    // Pagination information
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    return res.status(200).json({
+      success: true,
+      message: "Inventory fetched successfully",
+      count: formattedInventory.length,
+      pagination: {
+        totalInventory: totalCount,
+        totalPages,
+        currentPage: page,
+        hasNextPage,
+        hasPrevPage,
+      },
+      inventory: formattedInventory,
+    });
+  } catch (error) {
+    console.error("Error fetching inventory:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch inventory",
+      error: error.message,
+    });
+  }
+};
+
+// Update inventory for a specific product
+export const updateInventory = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    const { productId } = req.params;
+    const { stocks } = req.body;
+
+    if (!stocks || !Array.isArray(stocks)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide valid stocks array",
+      });
+    }
+
+    // Validate each stock entry
+    for (const stock of stocks) {
+      if (!stock.size || typeof stock.quantity !== "number" || stock.quantity < 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Each stock entry must have a valid size and non-negative quantity",
+        });
+      }
+    }
+
+    // Find the inventory by productId
+    const inventory = await Inventory.findOne({ productId });
+    if (!inventory) {
+      return res.status(404).json({
+        success: false,
+        message: "Inventory not found for this product",
+      });
+    }
+
+    // Update stocks
+    inventory.stocks = stocks;
+    inventory.totalQuantity = stocks.reduce((total, stock) => total + stock.quantity, 0);
+
+    await inventory.save();
+
+    // Populate product details for response
+    const updatedInventory = await Inventory.findById(inventory._id).populate({
+      path: "productId",
+      select: "_id product_id name price category images",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Inventory updated successfully",
+      inventory: {
+        _id: updatedInventory._id,
+        productId: updatedInventory.productId._id,
+        product: {
+          _id: updatedInventory.productId._id,
+          product_id: updatedInventory.productId.product_id,
+          name: updatedInventory.productId.name,
+          price: updatedInventory.productId.price,
+          category: updatedInventory.productId.category,
+          image:
+            updatedInventory.productId.images && updatedInventory.productId.images.length > 0
+              ? updatedInventory.productId.images[0].imageUrl
+              : null,
+        },
+        stocks: updatedInventory.stocks,
+        totalQuantity: updatedInventory.totalQuantity,
+        updatedAt: updatedInventory.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating inventory:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update inventory",
+      error: error.message,
+    });
+  }
+};
+
+// Get inventory for a specific product
+export const getInventoryByProductId = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    const { productId } = req.params;
+
+    const inventory = await Inventory.findOne({ productId }).populate({
+      path: "productId",
+      select: "_id product_id name price category images size",
+    });
+
+    if (!inventory) {
+      return res.status(404).json({
+        success: false,
+        message: "Inventory not found for this product",
+      });
+    }
+
+    const formattedInventory = {
+      _id: inventory._id,
+      productId: inventory.productId._id,
+      product: {
+        _id: inventory.productId._id,
+        product_id: inventory.productId.product_id,
+        name: inventory.productId.name,
+        price: inventory.productId.price,
+        category: inventory.productId.category,
+        sizes: inventory.productId.size,
+        image:
+          inventory.productId.images && inventory.productId.images.length > 0
+            ? inventory.productId.images[0].imageUrl
+            : null,
+      },
+      stocks: inventory.stocks,
+      totalQuantity: inventory.totalQuantity,
+      createdAt: inventory.createdAt,
+      updatedAt: inventory.updatedAt,
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Inventory fetched successfully",
+      inventory: formattedInventory,
+    });
+  } catch (error) {
+    console.error("Error fetching inventory:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch inventory",
       error: error.message,
     });
   }

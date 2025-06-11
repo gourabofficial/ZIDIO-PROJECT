@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getAllSearchProducts } from '../../Api/admin.js';
+import { getAllSearchProducts, deleterProductById } from '../../Api/admin.js';
 import { 
   Search, 
   AlertCircle, 
@@ -10,6 +10,7 @@ import {
   Plus
 } from 'lucide-react';
 import AdminProductTable from './AdminProductTable';
+import toast from 'react-hot-toast';
 
 const AllProductList = () => {
   const navigate = useNavigate();
@@ -98,10 +99,65 @@ const AllProductList = () => {
     navigate(`/admin/edit-product/${product._id || product.id}`);
   };
 
-  const handleDeleteProduct = (product) => {
-    if (window.confirm(`Are you sure you want to delete ${product.name}?`)) {
-      console.log('Delete product:', product);
-      fetchProducts(currentPage);
+  const handleDeleteProduct = async (product) => {
+    if (window.confirm(`Are you sure you want to delete "${product.name}"?\n\nThis action will:\n- Remove the product from all systems\n- Delete from inventory\n- Remove from all user carts and wishlists\n- Remove from home page content\n- Delete all product reviews\n- Delete product images from cloud storage\n\nThis action cannot be undone.`)) {
+      const loadingToast = toast.loading('Deleting product from all systems...', {
+        style: {
+          background: 'rgba(17, 24, 39, 0.9)',
+          color: '#fff',
+          border: '1px solid rgba(75, 85, 99, 0.3)',
+        },
+      });
+
+      try {
+        const response = await deleterProductById(product._id || product.id);
+        
+        if (response.success) {
+          // Show detailed success message
+          toast.success(
+            `Product "${product.name}" deleted successfully!\n\n` +
+            `✅ Product removed\n` +
+            `✅ ${response.deletionResults?.cartItems || 0} cart references cleared\n` +
+            `✅ ${response.deletionResults?.wishlistReferences || 0} wishlist references cleared\n` +
+            `✅ ${response.deletionResults?.reviews || 0} reviews deleted\n` +
+            `✅ ${response.deletionResults?.cloudinaryImages || 0} images deleted\n` +
+            `✅ ${response.deletionResults?.homeContentReferences || 0} home page references removed`,
+            {
+              id: loadingToast,
+              duration: 6000,
+              style: {
+                background: 'rgba(17, 24, 39, 0.9)',
+                color: '#fff',
+                border: '1px solid rgba(34, 197, 94, 0.3)',
+                maxWidth: '500px',
+                whiteSpace: 'pre-line'
+              },
+            }
+          );
+          
+          // Refresh the product list
+          fetchProducts(currentPage, searchQuery);
+        } else {
+          toast.error(response.message || 'Failed to delete product', {
+            id: loadingToast,
+            style: {
+              background: 'rgba(17, 24, 39, 0.9)',
+              color: '#fff',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+            },
+          });
+        }
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        toast.error('Failed to delete product. Please try again.', {
+          id: loadingToast,
+          style: {
+            background: 'rgba(17, 24, 39, 0.9)',
+            color: '#fff',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+          },
+        });
+      }
     }
   };
   

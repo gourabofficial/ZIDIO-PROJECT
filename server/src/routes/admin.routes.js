@@ -1,5 +1,5 @@
 import express from "express";
-import { addProduct, deleterProductById, getAllOrders, getAllSearchProducts, getAllSearchUsers, getDashboardStats, getProductByIdForAdmin, getProductsbyMultipleIds, getRecentOrders, getRecentUsers, updateHomeContent, updateOrderStatus, updateProductById, deleteUser } from "../controllers/admin.controllers.js";
+import { addProduct, deleterProductById, getAllOrders, getAllSearchProducts, getAllSearchUsers, getDashboardStats, getProductByIdForAdmin, getProductsbyMultipleIds, getRecentOrders, getRecentUsers, updateHomeContent, updateOrderStatus, updateProductById, deleteUser, getAllInventory, updateInventory, getInventoryByProductId } from "../controllers/admin.controllers.js";
 import { isAdmin } from "../middlewares/isAuthenticated.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { getAllProducts } from "../controllers/product.controllers.js";
@@ -27,8 +27,8 @@ adminRouter.patch('/orders/:orderId/status', isAdmin, updateOrderStatus);
 //update product
 adminRouter.patch('/update-product/:id', isAdmin, upload.array('images', 12), updateProductById);
 
-//delete product
-adminRouter.post('/delete-product/:id', isAdmin, deleterProductById);
+//delete product - comprehensive deletion
+adminRouter.delete('/delete-product/:id', isAdmin, deleterProductById);
 // get product by id for admin
 adminRouter.get('/get-product-for-admin/:id', isAdmin, getProductByIdForAdmin);
 
@@ -41,5 +41,10 @@ adminRouter.get('/recent-orders', isAdmin, getRecentOrders);
 
 // delete user and all associated data
 adminRouter.delete('/delete-user/:userId', isAdmin, deleteUser);
+
+// Inventory management routes
+adminRouter.get('/inventory', isAdmin, getAllInventory);
+adminRouter.get('/inventory/product/:productId', isAdmin, getInventoryByProductId);
+adminRouter.patch('/inventory/:productId', isAdmin, updateInventory);
 
 export default adminRouter;
