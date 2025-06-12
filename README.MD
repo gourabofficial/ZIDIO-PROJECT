@@ -134,6 +134,28 @@ VITE_API_URL=http://localhost:5000
 - Product quantity management
 - Real-time updates
 
+## ⭐ Customer Reviews
+
+The application includes a comprehensive review system featuring:
+- **Product Reviews**: Customers can rate and review purchased products
+- **Star Rating System**: 5-star rating scale with visual feedback
+- **Review Management**: Users can edit or delete their own reviews
+- **Review Filtering**: Sort reviews by rating, date, or helpfulness
+- **Verified Purchase Badge**: Special indicator for verified buyer reviews
+- **Review Moderation**: Admin tools to manage inappropriate content
+- **Review Analytics**: Insights into product performance and customer satisfaction
+- **Photo Reviews**: Customers can upload images with their reviews
+- **Helpful Reviews**: Other users can mark reviews as helpful
+- **Review Notifications**: Email alerts for new reviews on purchased products
+
+### Review Features
+- **Rating Breakdown**: Visual display of rating distribution
+- **Average Rating**: Calculated average with total review count
+- **Recent Reviews**: Display of latest customer feedback
+- **Detailed Reviews**: In-depth written reviews with pros/cons
+- **Review Search**: Find specific reviews by keywords
+- **Response System**: Sellers can respond to customer reviews
+
 ## 🔒 Authentication & Authorization
 
 The application uses **Clerk** for authentication, providing:
