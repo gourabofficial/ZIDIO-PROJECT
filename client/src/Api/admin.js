@@ -11,21 +11,22 @@ export const AdminAddProduct = async (productData, token = null) => {
       );
     }
 
-    const config = {
-      headers: {
+   const headers = {
         'Content-Type': 'multipart/form-data',
-      },
+      
     };
 
     // If token is provided, add it to headers (this will override the interceptor)
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      headers.Authorization = `Bearer ${token}`;
     }
 
     const response = await axiosInstance.post(
       "/admin/add-product",
       productData,
-      config
+      {}, {
+        headers,
+      }
     );
 
     if (!response.data.success) {
