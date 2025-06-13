@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import AdminSidebar from '../components/Admin/AdminSidebar';
 import { LoaderCircle } from 'lucide-react';
