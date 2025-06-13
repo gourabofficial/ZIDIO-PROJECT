@@ -24,6 +24,7 @@ app.use(clerkMiddleware({
 }));
 
 const allowedOrigins = [
+  "https://zidio-project-five.vercel.app",
   process.env.CLIENT_URL?.replace(/\/$/, ''),
   'http://localhost:3000',
   'http://localhost:5173'
@@ -39,6 +40,7 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
+  origin: true,
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
