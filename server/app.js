@@ -24,40 +24,31 @@ app.use(clerkMiddleware({
 }));
 
 const allowedOrigins = [
-  "https://zidio-project-five.vercel.app",
   process.env.CLIENT_URL?.replace(/\/$/, ''),
   'http://localhost:3000',
   'http://localhost:5173'
 ].filter(Boolean);
 
-console.log('Allowed origins:', allowedOrigins);
-
 app.use(cors({
-  origin: true, // Allow all origins temporarily
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log(`Origin ${origin} not allowed by CORS`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-  console.log("Root endpoint hit");
-  res.json({ 
-    message: "Server is running successfully",
-    timestamp: new Date().toISOString(),
-    env: process.env.NODE_ENV || 'development'
-  });
-});
-
-// Health check route
-app.get("/health", (req, res) => {
-  res.json({ 
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  });
+  res.json({ message: "Server is running successfully" });
 });
 
 
@@ -84,15 +75,6 @@ app.use('/api/review', reviewRouter)
 
 
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err.stack);
-  res.status(500).json({ 
-    error: 'Something went wrong!',
-    message: err.message 
-  });
-});
-
 app.listen(port, () => {
   console.log(`Server is running on PORT http://localhost:${port}/`);
   console.log(`Allowed origins for CORS: ${allowedOrigins.join(', ')}`);
@@ -104,5 +86,3 @@ app.listen(port, () => {
   }
   process.exit(1);
 });
-
-export default app;
