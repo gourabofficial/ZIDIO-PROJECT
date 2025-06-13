@@ -238,8 +238,8 @@ const AddProduct = () => {
       // Add text fields
       Object.entries(formData).forEach(([key, value]) => {
         if (key === "size") {
-          // Handle array of sizes
-          productFormData.append("size", JSON.stringify(value));
+          // Append each size value individually for FormData
+          value.forEach((val) => productFormData.append("size", val));
         } else if (key === "images") {
           // Skip images here, we'll add them separately
         } else if (typeof value !== "undefined") {
