@@ -76,7 +76,7 @@ export const updateHomeContent = async (data, token = null) => {
   try {
 
     const headers = {
-      'Content-Type': 'multipart/form-data',
+      'Content-Type': 'application/json',
     }
     if (token) {
       headers.Authorization = `Bearer ${token}`;
