@@ -1,6 +1,6 @@
 import axiosInstance from "./config";
 
-export const AdminAddProduct = async (productData, token) => {
+export const AdminAddProduct = async (productData, token = null) => {
   console.log("productData in admin.js", productData);
   
   if (!token) {
