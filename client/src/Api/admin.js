@@ -1,8 +1,10 @@
 import axiosInstance from "./config";
 
-export const AdminAddProduct = async (productData) => {
+export const AdminAddProduct = async (productData, token = null) => {
   console.log("productData in admin.js", productData);
   try {
+
+
     const formData = new FormData();
 
     Object.keys(productData).forEach((key) => {
@@ -32,17 +34,20 @@ export const AdminAddProduct = async (productData) => {
         pair[0] + ": " + (pair[1] instanceof File ? pair[1].name : pair[1])
       );
     }
-
-    const config = {
-      headers: {
-        "Content-Type": undefined, // Remove default json header, let browser set multipart boundary
-      },
-    };
+    const headers = {
+      'Content-Type': 'multipart/form-data',
+    }
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
 
     const response = await axiosInstance.post(
       "/admin/add-product",
+      {}, {
+      headers,
+    },
       formData,
-      config
+
     );
 
     if (!response.success) {

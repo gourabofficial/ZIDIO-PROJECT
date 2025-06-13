@@ -14,8 +14,10 @@ import {
   
   IndianRupee
 } from "lucide-react";
+import { useAuthdata } from "../../context/AuthContext";
 
 const AddProduct = () => {
+  const { token} = useAuthdata();
   // Form state with images array included
   const [formData, setFormData] = useState({
     name: "",
@@ -251,7 +253,7 @@ const AddProduct = () => {
       });
 
       // Use the FormData object with correctly appended files
-      const response = await AdminAddProduct(formData);
+      const response = await AdminAddProduct(formData,token);
 
       if (!response.success) {
         toast.error(

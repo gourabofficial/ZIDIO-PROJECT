@@ -9,8 +9,14 @@ import {
   FiAlertTriangle,
 } from "react-icons/fi";
 import axiosInstance from "../../Api/config";
+import { useAuthdata } from "../../context/AuthContext";
 
 const PaymentCancel = () => {
+
+
+  const { token} = useAuthdata();
+  
+
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -27,7 +33,16 @@ const PaymentCancel = () => {
   const fetchOrderDetails = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(`/user/orders/${orderId}`);
+      const headers = {
+         'Content-Type': 'application/json',
+      };
+
+      // If token is provided, add it to headers
+      if (token) {
+         headers.Authorization =`Bearer ${token}`;
+      }
+
+      const response = await axiosInstance.get(`/user/orders/${orderId}`, {}, { headers });
       
       if (response.data.success) {
         setOrderDetails(response.data.order);
