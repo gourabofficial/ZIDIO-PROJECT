@@ -1,9 +1,8 @@
 import axiosInstance from "./config";
 
-export const AdminAddProduct = async (productData) => {
+export const AdminAddProduct = async (productData, token = null) => {
   console.log("productData in admin.js", productData);
   try {
-
 
     const formData = new FormData();
 
@@ -34,14 +33,23 @@ export const AdminAddProduct = async (productData) => {
         pair[0] + ": " + (pair[1] instanceof File ? pair[1].name : pair[1])
       );
     }
+
+    const headers = {
+      'Content-Type': 'multipart/form-data',
+    };
+
+    // If token is provided, add it to headers
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
     const response = await axiosInstance.post(
       "/admin/add-product",
       formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      }
+      {}, {
+      headers,
+
+    }
     );
 
     if (!response.data.success) {
