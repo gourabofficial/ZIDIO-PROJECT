@@ -401,7 +401,7 @@ const Header = () => {
                           to="/admin"
                           className="flex items-center px-4 py-3 text-sm text-white hover:bg-white/5 hover:text-orange-300 transition-all duration-150 group"
                           onClick={() => setIsProfileOpen(false)}
-                          target="_blank"
+                          
                           rel="noopener noreferrer"
                         >
                           <FiSettings className="mr-3 text-orange-400" size={16} />
