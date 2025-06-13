@@ -3,53 +3,29 @@ import axiosInstance from "./config";
 export const AdminAddProduct = async (productData, token = null) => {
   console.log("productData in admin.js", productData);
   try {
-
-    const formData = new FormData();
-
-    Object.keys(productData).forEach((key) => {
-      if (key !== "images") {
-        if (Array.isArray(productData[key])) {
-          productData[key].forEach((item) => {
-            formData.append(key, item);
-          });
-        } else {
-          formData.append(key, productData[key]);
-        }
-      }
-    });
-
-    if (productData.images && Array.isArray(productData.images)) {
-      productData.images.forEach((image, index) => {
-        if (image instanceof File) {
-          formData.append("images", image);
-        } else if (image && image.name) {
-          formData.append("images", image);
-        }
-      });
-    }
-
-    for (let pair of formData.entries()) {
+    // productData is already a FormData object from AddProduct.jsx
+    // Just log the FormData contents for debugging
+    for (let pair of productData.entries()) {
       console.log(
         pair[0] + ": " + (pair[1] instanceof File ? pair[1].name : pair[1])
       );
     }
 
-    const headers = {
-      'Content-Type': 'multipart/form-data',
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     };
 
-    // If token is provided, add it to headers
+    // If token is provided, add it to headers (this will override the interceptor)
     if (token) {
-      headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     const response = await axiosInstance.post(
       "/admin/add-product",
-      formData,
-      {}, {
-      headers,
-
-    }
+      productData,
+      config
     );
 
     if (!response.data.success) {

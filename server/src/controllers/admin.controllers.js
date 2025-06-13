@@ -67,10 +67,39 @@ export const addProduct = async (req, res) => {
       size,
       offerStatus,
     } = req.body;
+    
     console.log("Request body:", req.body);
+    console.log("Request files:", req.files);
+    
+    // Validate required fields
     if (!name || !description || !price || !category || !collections) {
       return res.status(400).json({
         message: "Please provide all required fields",
+        success: false,
+      });
+    }
+
+    // Parse size array if it's a string or ensure it's an array
+    let parsedSize = size;
+    if (typeof size === 'string') {
+      // If it's a single size, convert to array
+      parsedSize = [size];
+    } else if (Array.isArray(size)) {
+      // If it's already an array, use as is
+      parsedSize = size;
+    } else if (!size) {
+      return res.status(400).json({
+        message: "Please provide at least one size option",
+        success: false,
+      });
+    }
+
+    console.log("Parsed size:", parsedSize);
+
+    // Validate that at least one image is uploaded
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        message: "Please upload at least one product image",
         success: false,
       });
     }
@@ -119,7 +148,7 @@ export const addProduct = async (req, res) => {
       category,
       collections,
       discount,
-      size,
+      size: parsedSize, // Use parsed size array
       offerStatus,
       images: formattedImages,
     });
@@ -132,7 +161,7 @@ export const addProduct = async (req, res) => {
     }
 
     // Create inventory for the product with default quantity 1 for all sizes
-    const inventoryStocks = size.map((productSize) => ({
+    const inventoryStocks = parsedSize.map((productSize) => ({
       size: productSize,
       quantity: 1,
     }));
