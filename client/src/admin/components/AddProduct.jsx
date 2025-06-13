@@ -17,7 +17,7 @@ import {
 import { useAuthdata } from "../../context/AuthContext";
 
 const AddProduct = () => {
-  const { token} = useAuthdata();
+  const { token, fetchToken } = useAuthdata();
   // Form state with images array included
   const [formData, setFormData] = useState({
     name: "",
@@ -232,6 +232,18 @@ const AddProduct = () => {
         return;
       }
 
+      // Get fresh token before making the request
+      console.log("Getting fresh token before product submission...");
+      const freshToken = await fetchToken();
+      
+      if (!freshToken) {
+        toast.error("Authentication failed. Please log in again.");
+        setLoading(false);
+        return;
+      }
+
+      console.log("Fresh token obtained:", freshToken ? "✓ Available" : "✗ Not available");
+
       // Create FormData object for submission
       const productFormData = new FormData();
 
@@ -252,8 +264,8 @@ const AddProduct = () => {
         productFormData.append(`images`, imageFile);
       });
 
-      // Use the FormData object with correctly appended files
-      const response = await AdminAddProduct(productFormData, token);
+      // Use the FormData object with correctly appended files and fresh token
+      const response = await AdminAddProduct(productFormData, freshToken);
 
       if (!response.success) {
         toast.error(
@@ -261,23 +273,22 @@ const AddProduct = () => {
         );
       } else {
         toast.success("Product added successfully!");
+        // Success message
+        setSuccess(true);
+
+        // Reset form on success
+        setFormData({
+          name: "",
+          description: "",
+          price: "",
+          category: "",
+          size: [],
+          discount: "0",
+          collections: "",
+          offerStatus: false,
+          images: [],
+        });
       }
-
-      // Success message
-      setSuccess(true);
-
-      // Reset form on success
-      setFormData({
-        name: "",
-        description: "",
-        price: "",
-        category: "",
-        size: [],
-        discount: "0",
-        collections: "",
-        offerStatus: false,
-        images: [],
-      });
 
       // Hide success message after 3 seconds
       setTimeout(() => {

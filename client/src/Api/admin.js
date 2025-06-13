@@ -1,33 +1,47 @@
 import axiosInstance from "./config";
 
-export const AdminAddProduct = async (productData, token = null) => {
+export const AdminAddProduct = async (productData, token) => {
   console.log("productData in admin.js", productData);
+  
+  if (!token) {
+    console.error("No token provided to AdminAddProduct");
+    return {
+      message: "Authentication required. Please log in again.",
+      success: false,
+    };
+  }
+
   try {
     // productData is already a FormData object from AddProduct.jsx
     // Just log the FormData contents for debugging
+    console.log("FormData contents:");
     for (let pair of productData.entries()) {
       console.log(
         pair[0] + ": " + (pair[1] instanceof File ? pair[1].name : pair[1])
       );
     }
 
-   const headers = {
-        'Content-Type': 'multipart/form-data',
-      
+    console.log("Using token:", token ? "✓ Token available" : "✗ No token");
+
+    // Prepare config object - the axios interceptor will handle the token and Content-Type
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     };
 
-    // If token is provided, add it to headers (this will override the interceptor)
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
+    // Explicitly ensure no Content-Type is set for FormData
+    delete config.headers['Content-Type'];
+
+    console.log("Request headers:", config.headers);
 
     const response = await axiosInstance.post(
       "/admin/add-product",
       productData,
-      {}, {
-        headers,
-      }
+      config
     );
+
+    console.log("Response:", response.data);
 
     if (!response.data.success) {
       return {
@@ -42,7 +56,17 @@ export const AdminAddProduct = async (productData, token = null) => {
     };
   } catch (error) {
     console.error("Error adding product:", error);
-    console.error("Error details:", error.response?.data);
+    console.error("Error response:", error.response?.data);
+    console.error("Error status:", error.response?.status);
+    
+    // Handle specific 401 errors
+    if (error.response?.status === 401) {
+      return {
+        message: "Authentication failed. Please log in again.",
+        success: false,
+      };
+    }
+    
     return {
       message: error.response?.data?.message || "Failed to add product",
       success: false,
