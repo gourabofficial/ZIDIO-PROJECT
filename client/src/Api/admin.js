@@ -23,22 +23,24 @@ export const AdminAddProduct = async (productData, token) => {
 
     console.log("Using token:", token ? "✓ Token available" : "✗ No token");
 
-    // Prepare config object - the axios interceptor will handle the token and Content-Type
-    const config = {
-      headers: {
+   
+    const headers = {
+      
         Authorization: `Bearer ${token}`
-      }
+      
     };
 
     // Explicitly ensure no Content-Type is set for FormData
-    delete config.headers['Content-Type'];
+    delete headers['Content-Type'];
 
-    console.log("Request headers:", config.headers);
+    console.log("Request headers:", headers);
 
     const response = await axiosInstance.post(
       "/admin/add-product",
       productData,
-      config
+      {}, {
+        headers
+      }
     );
 
     console.log("Response:", response.data);
