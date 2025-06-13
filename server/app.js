@@ -60,6 +60,14 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Test API route
+app.get("/api/test", (req, res) => {
+  res.json({ 
+    message: "API is working",
+    timestamp: new Date().toISOString()
+  });
+});
+
 
 
 // user routes
