@@ -253,7 +253,7 @@ const AddProduct = () => {
       });
 
       // Use the FormData object with correctly appended files
-      const response = await AdminAddProduct(formData,token);
+      const response = await AdminAddProduct(productFormData, token);
 
       if (!response.success) {
         toast.error(
