@@ -138,18 +138,25 @@ export const getAllSearchProducts = async (
   }
 };
 
-export const getProductsbyMultipleIds = async (ids) => {
+export const getProductsbyMultipleIds = async (ids, token = null) => {
   // console.log("ids in getProductsbyMultipleIds", ids);
 
   try {
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+
+    // If token is provided, add it to headers
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
     const response = await axiosInstance.post(
       "/admin/get-products-by-multiple-ids",
       { productIds: ids },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      {}, {
+      headers,
+
+    }
     );
 
     if (!response.data.success) {

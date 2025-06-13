@@ -26,10 +26,15 @@ import {
   AlertCircle,
   GripVertical,
   Info,
+  CloudLightning,
 } from "lucide-react";
+import { useAuthdata } from "../../context/AuthContext";
 
 // Sortable product item component
 const SortableProductItem = ({ product, onRemove }) => {
+  const { token } = useAuthdata();
+  console.log("Product token:", token);
+  
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: product._id });
 
@@ -118,6 +123,7 @@ const SortableProductItem = ({ product, onRemove }) => {
 };
 
 const AdminSettingsNewArrival = ({ selectedIds = [], onSave }) => {
+  const { token } = useAuthdata(); // <-- Add this line to get token
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [productDetails, setProductDetails] = useState([]);
@@ -151,7 +157,7 @@ const AdminSettingsNewArrival = ({ selectedIds = [], onSave }) => {
       setLoading(true);
       setError("");
       try {
-        const response = await getProductsbyMultipleIds(selectedProductIds);
+        const response = await getProductsbyMultipleIds(selectedProductIds, token); // <-- Pass token here
 
         if (response.success) {
           // Maintain the order of products based on selectedProductIds

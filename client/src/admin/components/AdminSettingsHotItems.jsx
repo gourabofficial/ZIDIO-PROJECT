@@ -11,8 +11,11 @@ import {
   ShoppingBag,
   Info,
 } from "lucide-react";
+import { useAuthdata } from "../../context/AuthContext";
 
 const AdminSettingsHotItems = ({ selectedIds = [], onSave }) => {
+
+  const {token} = useAuthdata();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [productDetails, setProductDetails] = useState([]);
@@ -38,7 +41,7 @@ const AdminSettingsHotItems = ({ selectedIds = [], onSave }) => {
       setLoading(true);
       setError("");
       try {
-        const response = await getProductsbyMultipleIds(selectedProductIds);
+        const response = await getProductsbyMultipleIds(selectedProductIds,token);
 
         if (response.success) {
           // Maintain the order of products based on selectedProductIds
