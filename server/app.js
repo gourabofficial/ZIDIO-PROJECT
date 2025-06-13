@@ -33,16 +33,7 @@ const allowedOrigins = [
 console.log('Allowed origins:', allowedOrigins);
 
 app.use(cors({
-  origin: function (origin, callback) {
-    console.log(`Request from origin: ${origin}`);
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.log(`Origin ${origin} not allowed by CORS`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true, // Allow all origins temporarily
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
@@ -52,7 +43,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-  res.json({ message: "Server is running successfully" });
+  console.log("Root endpoint hit");
+  res.json({ 
+    message: "Server is running successfully",
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Health check route
+app.get("/health", (req, res) => {
+  res.json({ 
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
 });
 
 
@@ -79,6 +84,15 @@ app.use('/api/review', reviewRouter)
 
 
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err.stack);
+  res.status(500).json({ 
+    error: 'Something went wrong!',
+    message: err.message 
+  });
+});
+
 app.listen(port, () => {
   console.log(`Server is running on PORT http://localhost:${port}/`);
   console.log(`Allowed origins for CORS: ${allowedOrigins.join(', ')}`);
@@ -90,3 +104,5 @@ app.listen(port, () => {
   }
   process.exit(1);
 });
+
+export default app;
