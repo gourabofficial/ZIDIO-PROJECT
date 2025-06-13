@@ -16,8 +16,11 @@ import {
   Flame, 
   TrendingUp 
 } from "lucide-react";
+import { useAuthdata } from "../../context/AuthContext";
 
 const AdminSettings = () => {
+    const { token} = useAuthdata();
+  
   const [newArrivals, setNewArrivals] = useState([]);
   const [hotItems, setHotItems] = useState([]);
   const [trendingItems, setTrendingItems] = useState([]);
@@ -74,7 +77,7 @@ const AdminSettings = () => {
         [section]: productIds,
       };
 
-      const response = await updateHomeContent(data);
+      const response = await updateHomeContent(data,token);
 
       if (response.success) {
         toast.success(`${section} updated successfully!`, {

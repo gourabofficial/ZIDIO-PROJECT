@@ -71,17 +71,23 @@ export const AdminAddProduct = async (productData, token = null) => {
   }
 };
 
-export const updateHomeContent = async (data) => {
+export const updateHomeContent = async (data, token = null) => {
   console.log("updateHomeContentData in admin.js", data);
   try {
+
+    const headers = {
+      'Content-Type': 'multipart/form-data',
+    }
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
     const response = await axiosInstance.patch(
       "/admin/update-homecontent",
       data,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      {}, {
+      headers,
+    },
     );
     if (!response.data.success) {
       return {
