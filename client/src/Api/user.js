@@ -3,6 +3,7 @@ import axiosInstance from "./config";
 // update account (avatar)
 export const updateAccount = async (formData) => {
   try {
+    
     // Log what we're sending to help debug
     console.log(
       "Sending profile update data:",
@@ -127,9 +128,21 @@ export const addAddress = async (addressData) => {
 };
 
 // is login
-export const isLogin = async () => {
+export const isLogin = async (token = null) => {
+  
   try {
-    const res = await axiosInstance.post("/user/is-login");
+    const headers = {
+         'Content-Type': 'application/json',
+      };
+
+      // If token is provided, add it to headers
+      if (token) {
+         headers.Authorization =`Bearer ${token}`;
+      }
+    const res = await axiosInstance.post("/user/is-login", {}, {
+      headers,
+
+    });
     return res.data;
   } catch (error) {
     console.error("Error checking login status:", error);

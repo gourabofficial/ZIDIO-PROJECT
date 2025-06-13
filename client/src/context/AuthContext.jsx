@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { isLogin } from "../Api/user";
 import { useUser } from "@clerk/clerk-react";
+import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 
 const AuthContext = createContext();
 
@@ -10,12 +11,50 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isAuth, setIsAuth] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [token, setToken] = useState(null);
 
   const { user, isLoaded: isUserLoading } = useUser();
+  const { getToken } = useClerkAuth();
+
+  // Function to fetch and update the Clerk token
+  const fetchToken = async () => {
+    try {
+      if (user && getToken) {
+        const clerkToken = await getToken();
+        console.log("Fetched Clerk token:", clerkToken ? "✓ Token received" : "✗ No token");
+        setToken(clerkToken);
+        
+        // Store token in localStorage for axios interceptor
+        if (clerkToken) {
+          localStorage.setItem('clerk_token', clerkToken);
+        } else {
+          localStorage.removeItem('clerk_token');
+        }
+        
+        return clerkToken;
+      }
+      // Clear token if no user
+      setToken(null);
+      localStorage.removeItem('clerk_token');
+      return null;
+    } catch (error) {
+      console.error("Error fetching Clerk token:", error);
+      setToken(null);
+      localStorage.removeItem('clerk_token');
+      return null;
+    }
+  };
 
   const refetchUserData = async () => {
     try {
       setIsLoaded(false);
+
+      // Ensure we have a fresh token before making the API call
+      const currentToken = await fetchToken();
+      
+      if (!currentToken) {
+        console.warn("No Clerk token available for API call");
+      }
 
       const timestamp = Date.now();
       const response = await isLogin({ _t: timestamp });
@@ -203,11 +242,68 @@ export const AuthProvider = ({ children }) => {
     refetchUserData();
   }, [user, isUserLoading]);
 
+  // Fetch token when user changes or loads
+  useEffect(() => {
+    const initializeToken = async () => {
+      if (user && isUserLoading === false) {
+        console.log("User loaded, fetching token...");
+        await fetchToken();
+      } else if (!user && isUserLoading === false) {
+        console.log("No user, clearing token...");
+        setToken(null);
+        localStorage.removeItem('clerk_token');
+      }
+    };
+
+    initializeToken();
+  }, [user, isUserLoading, getToken]);
+
+  // Listen for token refresh events from axios interceptor
+  useEffect(() => {
+    const handleTokenRefresh = async () => {
+      console.log("Token refresh requested by axios interceptor");
+      await refreshToken();
+    };
+
+    window.addEventListener('refresh_clerk_token', handleTokenRefresh);
+    
+    return () => {
+      window.removeEventListener('refresh_clerk_token', handleTokenRefresh);
+    };
+  }, [user, getToken]);
+
+  const refreshToken = async () => {
+    try {
+      if (user && getToken) {
+        const freshToken = await getToken({ skipCache: true });
+        console.log("Refreshed Clerk token:", freshToken ? "✓ Token refreshed" : "✗ No token");
+        setToken(freshToken);
+        
+        if (freshToken) {
+          localStorage.setItem('clerk_token', freshToken);
+        } else {
+          localStorage.removeItem('clerk_token');
+        }
+        
+        return freshToken;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error refreshing Clerk token:", error);
+      setToken(null);
+      localStorage.removeItem('clerk_token');
+      return null;
+    }
+  };
+
   const authValues = {
     currentUser: overrideData || currentUser,
     isAuth,
     isLoaded,
     error,
+    token,
+    fetchToken,
+    refreshToken,
     refetchUserData,
     updateUserState,
     // Add optimistic update functions
@@ -232,3 +328,4 @@ export const useAuthdata = () => {
   }
   return context;
 };
+
