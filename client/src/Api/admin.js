@@ -1,6 +1,6 @@
 import axiosInstance from "./config";
 
-export const AdminAddProduct = async (productData, token = null) => {
+export const AdminAddProduct = async (productData) => {
   console.log("productData in admin.js", productData);
   try {
 
@@ -34,25 +34,19 @@ export const AdminAddProduct = async (productData, token = null) => {
         pair[0] + ": " + (pair[1] instanceof File ? pair[1].name : pair[1])
       );
     }
-    const headers = {
-      'Content-Type': 'multipart/form-data',
-    }
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-
     const response = await axiosInstance.post(
       "/admin/add-product",
-      {}, {
-      headers,
-    },
       formData,
-
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      }
     );
 
-    if (!response.success) {
+    if (!response.data.success) {
       return {
-        message: response.data,
+        message: response.data.message || response.data,
         success: false,
       };
     }
@@ -71,23 +65,17 @@ export const AdminAddProduct = async (productData, token = null) => {
   }
 };
 
-export const updateHomeContent = async (data, token = null) => {
+export const updateHomeContent = async (data) => {
   console.log("updateHomeContentData in admin.js", data);
   try {
-
-    const headers = {
-      'Content-Type': 'application/json',
-    }
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-
     const response = await axiosInstance.patch(
       "/admin/update-homecontent",
       data,
-      {}, {
-      headers,
-    },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
     );
     if (!response.data.success) {
       return {
