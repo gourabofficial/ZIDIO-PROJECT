@@ -3,14 +3,6 @@ import axiosInstance from "./config";
 export const AdminAddProduct = async (productData, token = null) => {
   console.log("productData in admin.js", productData);
   
-  if (!token) {
-    console.error("No token provided to AdminAddProduct");
-    return {
-      message: "Authentication required. Please log in again.",
-      success: false,
-    };
-  }
-
   try {
     // productData is already a FormData object from AddProduct.jsx
     // Just log the FormData contents for debugging
@@ -23,22 +15,20 @@ export const AdminAddProduct = async (productData, token = null) => {
 
     console.log("Using token:", token ? "✓ Token available" : "✗ No token");
 
-   
-    const headers = {
-      
-        Authorization: `Bearer ${token}`
-      
-    };
+    const headers = {};
+    
+    // Only add Authorization header if token is provided
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
 
-    // Explicitly ensure no Content-Type is set for FormData
-    delete headers['Content-Type'];
-
+    // Don't set Content-Type for FormData - let the browser handle it
     console.log("Request headers:", headers);
 
     const response = await axiosInstance.post(
       "/admin/add-product",
       productData,
-      {}, {
+      {
         headers
       }
     );

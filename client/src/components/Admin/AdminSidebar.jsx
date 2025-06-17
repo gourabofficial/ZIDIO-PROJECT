@@ -12,7 +12,7 @@ import {
   Settings, 
   Menu, 
   X, 
-  LogOut,
+  Home,
   ChevronRight,
   Shield,
   Warehouse
@@ -80,10 +80,24 @@ const AdminSidebar = ({ sidebarOpen, toggleSidebar, location }) => {
       </nav>
 
       <div className="absolute bottom-0 w-full p-4 border-t border-gray-700">
-        <button className="flex items-center justify-center md:justify-start w-full py-2 px-4 rounded-lg text-red-400 hover:bg-gray-700">
-          <LogOut className={sidebarOpen ? 'mr-3' : 'mx-auto'} size={20} />
-          <span className={!sidebarOpen ? 'hidden' : ''}>Logout</span>
-        </button>
+        <Link 
+          to="/" 
+          className={`flex items-center py-4 px-4 rounded-lg hover:bg-gray-800 transition-colors duration-200 group ${
+            sidebarOpen ? 'justify-start' : 'justify-center'
+          }`}
+          title="Home"
+        >
+          <Home 
+            className={`text-white group-hover:scale-110 transition-transform duration-200 ${
+              sidebarOpen ? 'mr-3' : 'mx-auto'
+            }`}
+            size={20} 
+            strokeWidth={2.5}
+          />
+          <span className={`text-white font-medium ${!sidebarOpen ? 'hidden' : ''}`}>
+            Home
+          </span>
+        </Link>
       </div>
     </div>
   );
