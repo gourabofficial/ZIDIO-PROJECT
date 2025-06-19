@@ -3,7 +3,7 @@ import { FiShoppingCart, FiCheck, FiLoader, FiShoppingBag } from "react-icons/fi
 import toast from 'react-hot-toast';
 import { addToCart } from "../../Api/user.js";
 import { useAuthdata } from "../../context/AuthContext.jsx";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
 const AddToCartButton = ({ product }) => {
@@ -33,7 +33,11 @@ const AddToCartButton = ({ product }) => {
     });
   };
   
-  const handleViewCart = () => {
+  const handleViewCart = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     navigate('/cart');
   };
 
@@ -92,15 +96,17 @@ const AddToCartButton = ({ product }) => {
   if (isInCart()) {
     
     return (
-      <Link to={'/cart'}>
-        <button 
-          onClick={handleViewCart}
-          className="flex items-center justify-center p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors w-10 h-10"
-          title="View in Cart"
-        >
-          <FiShoppingBag className="text-lg" />
-        </button>
-      </Link>
+      <button 
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleViewCart();
+        }}
+        className="flex items-center justify-center p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors w-10 h-10"
+        title="View in Cart"
+      >
+        <FiShoppingBag className="text-lg" />
+      </button>
     );
   }
 

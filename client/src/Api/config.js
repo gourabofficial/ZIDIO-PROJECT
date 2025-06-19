@@ -8,6 +8,14 @@ const axiosInstance = axios.create({
   },
 });
 
+export const axiosInstanceForMultipart = axios.create({
+  baseURL: import.meta.env.VITE_SERVER_HOST,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "multipart/form-data",
+  },
+});
+
 // Add a request interceptor to include the Clerk token
 axiosInstance.interceptors.request.use(
   async (config) => {

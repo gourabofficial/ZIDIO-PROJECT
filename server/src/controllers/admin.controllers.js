@@ -1,5 +1,6 @@
 import {
   uploadOnCloudinary,
+  uploadBufferToCloudinary,
   deleteFromCloudinary,
 } from "../config/cloudinary.js";
 import { Product } from "../model/product.model.js";
@@ -19,25 +20,21 @@ const restoreStockForOrder = async (orderProducts) => {
   try {
     for (const item of orderProducts) {
       const inventory = await Inventory.findOne({ productId: item.productId });
-      
+
       if (inventory) {
         // Find the specific size stock entry
         const sizeStock = inventory.stocks.find(stock => stock.size === item.selectedSize);
-        
+
         if (sizeStock) {
           // Restore the stock
           sizeStock.quantity += item.quantity;
-          
+
           // Recalculate total quantity
           inventory.totalQuantity = inventory.stocks.reduce((total, stock) => total + stock.quantity, 0);
-          
+
           // Save the updated inventory
           await inventory.save();
-          
-          console.log(`Stock restored for product ${item.productId}, size ${item.selectedSize}: ${item.quantity} units`);
         }
-      } else {
-        console.error(`Inventory not found for product ${item.productId}`);
       }
     }
   } catch (error) {
@@ -45,11 +42,9 @@ const restoreStockForOrder = async (orderProducts) => {
   }
 };
 
-
-
 export const addProduct = async (req, res) => {
   try {
-    const userId = req.userId;
+    const { userId } = req;
     if (!userId) {
       return res.status(401).json({
         message: "Unauthorized",
@@ -67,10 +62,7 @@ export const addProduct = async (req, res) => {
       size,
       offerStatus,
     } = req.body;
-    
-    console.log("Request body:", req.body);
-    console.log("Request files:", req.files);
-    
+
     // Validate required fields
     if (!name || !description || !price || !category || !collections) {
       return res.status(400).json({
@@ -79,13 +71,11 @@ export const addProduct = async (req, res) => {
       });
     }
 
-    // Parse size array if it's a string or ensure it's an array
-    let parsedSize = size;
+    // Parse and validate size
+    let parsedSize = [];
     if (typeof size === 'string') {
-      // If it's a single size, convert to array
       parsedSize = [size];
     } else if (Array.isArray(size)) {
-      // If it's already an array, use as is
       parsedSize = size;
     } else if (!size) {
       return res.status(400).json({
@@ -94,9 +84,7 @@ export const addProduct = async (req, res) => {
       });
     }
 
-    console.log("Parsed size:", parsedSize);
-
-    // Validate that at least one image is uploaded
+    // Validate images
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         message: "Please upload at least one product image",
@@ -104,52 +92,60 @@ export const addProduct = async (req, res) => {
       });
     }
 
-    // Upload images to Cloudinary
+    // Upload images to Cloudinary using memory buffers
     const imageUrls = [];
     const cloudinaryFolder = "products";
 
-    // If there are files to upload
-    if (req.files && req.files.length > 0) {
+    try {
       const uploadPromises = req.files.map((file) =>
-        uploadOnCloudinary(file.path, cloudinaryFolder)
+        uploadBufferToCloudinary(file.buffer, cloudinaryFolder, file.originalname)
       );
 
-      // Wait for all uploads to complete
       const uploadResults = await Promise.all(uploadPromises);
 
-      // Extract image URLs and other details
       uploadResults.forEach((result) => {
         if (result) {
           imageUrls.push({
             url: result.secure_url,
             public_id: result.public_id,
-            width: result.width,
-            height: result.height,
           });
         }
       });
+
+      if (imageUrls.length === 0) {
+        return res.status(500).json({
+          message: "Failed to upload images",
+          success: false,
+        });
+      }
+    } catch (uploadError) {
+      console.error("Image upload error:", uploadError);
+      return res.status(500).json({
+        message: "Failed to upload images: " + uploadError.message,
+        success: false,
+      });
     }
 
-    // format properly images url and ids
+    // Format images for database
     const formattedImages = imageUrls.map((image) => ({
       imageUrl: image.url,
       imageId: image.public_id,
     }));
 
-    // Create unique product_id using UUID
+    // Create unique product_id
     const product_id = uuidv4();
 
-    // product creation with product_id instead of id
+    // Create product
     const newProduct = await Product.create({
       product_id,
       name,
       description,
-      price,
+      price: parseFloat(price),
       category,
       collections,
-      discount,
-      size: parsedSize, // Use parsed size array
-      offerStatus,
+      discount: parseFloat(discount) || 0,
+      size: parsedSize,
+      offerStatus: offerStatus === 'true' || offerStatus === true,
       images: formattedImages,
     });
 
@@ -160,23 +156,19 @@ export const addProduct = async (req, res) => {
       });
     }
 
-    // Create inventory for the product with default quantity 1 for all sizes
+    // Create inventory for the product
     const inventoryStocks = parsedSize.map((productSize) => ({
       size: productSize,
       quantity: 1,
     }));
 
-    // Calculate total quantity from stocks
     const totalQuantity = inventoryStocks.reduce((total, stock) => total + stock.quantity, 0);
 
-    const newInventory = await Inventory.create({
+    await Inventory.create({
       productId: newProduct._id,
       stocks: inventoryStocks,
       totalQuantity: totalQuantity,
     });
-
-    console.log("New product created:", newProduct);
-    console.log("New inventory created:", newInventory);
 
     return res.status(201).json({
       message: "Product created successfully",
@@ -422,7 +414,7 @@ export const getAllSearchProducts = async (req, res) => {
     // Count total results for pagination info
     const totalProducts = await Product.countDocuments(filter);
 
-    
+
     // Fetch paginated results with only required fields
     const products = await Product.find(filter)
       .select("name product_id images price category discount")
@@ -574,13 +566,9 @@ export const getAllSearchUsers = async (req, res) => {
           { email: new RegExp(searchTerm.trim(), "i") },
         ],
       };
-
-      // console.log("Search term:", searchTerm.trim());
-      // console.log("Search filter:", JSON.stringify(filter, null, 2));
     }
 
     const totalUsers = await User.countDocuments(filter);
-    // console.log("Total users found:", totalUsers);
 
     const users = await User.find(filter)
       .select("fullName email role avatar createdAt")
@@ -718,8 +706,8 @@ export const deleterProductById = async (req, res) => {
 
         // Remove from newArrival
         const newArrivalBefore = homeContent.newArrival.length;
-        homeContent.newArrival = homeContent.newArrival.filter(item => 
-          item.productId?.toString() !== productObjectId.toString() && 
+        homeContent.newArrival = homeContent.newArrival.filter(item =>
+          item.productId?.toString() !== productObjectId.toString() &&
           item.product_id !== productStringId
         );
         if (homeContent.newArrival.length < newArrivalBefore) {
@@ -729,8 +717,8 @@ export const deleterProductById = async (req, res) => {
 
         // Remove from hotItems
         const hotItemsBefore = homeContent.hotItems.length;
-        homeContent.hotItems = homeContent.hotItems.filter(item => 
-          item.productId?.toString() !== productObjectId.toString() && 
+        homeContent.hotItems = homeContent.hotItems.filter(item =>
+          item.productId?.toString() !== productObjectId.toString() &&
           item.product_id !== productStringId
         );
         if (homeContent.hotItems.length < hotItemsBefore) {
@@ -740,8 +728,8 @@ export const deleterProductById = async (req, res) => {
 
         // Remove from trandingItems (note: keeping original typo as per schema)
         const trandingItemsBefore = homeContent.trandingItems.length;
-        homeContent.trandingItems = homeContent.trandingItems.filter(item => 
-          item.productId?.toString() !== productObjectId.toString() && 
+        homeContent.trandingItems = homeContent.trandingItems.filter(item =>
+          item.productId?.toString() !== productObjectId.toString() &&
           item.product_id !== productStringId
         );
         if (homeContent.trandingItems.length < trandingItemsBefore) {
@@ -769,8 +757,8 @@ export const deleterProductById = async (req, res) => {
     try {
       const orderUpdateResult = await Order.updateMany(
         { "products.productId": productObjectId },
-        { 
-          $set: { 
+        {
+          $set: {
             "products.$.productDeleted": true,
             "products.$.deletedAt": new Date()
           }
@@ -867,45 +855,39 @@ export const updateProductById = async (req, res) => {
       } else {
         imagesToRemove = Array.isArray(removedImageIds) ? removedImageIds : [removedImageIds];
       }
-      
-      console.log("Images to remove:", imagesToRemove);
 
       // Delete specified images from Cloudinary and remove from array
       for (const imageIdToRemove of imagesToRemove) {
         const imageIndex = finalImages.findIndex(img => img.imageId === imageIdToRemove);
-        
+
         if (imageIndex !== -1) {
           const imageToDelete = finalImages[imageIndex];
-          
+
           try {
             // Delete from Cloudinary using the imageId (which is the public_id)
             await deleteFromCloudinary(imageToDelete.imageId);
             // Remove from array
             finalImages.splice(imageIndex, 1);
             deletedImagesCount++;
-            console.log(`Successfully deleted image: ${imageIdToRemove}`);
           } catch (error) {
             console.error(`Failed to delete image ${imageIdToRemove}:`, error);
             // Continue with other operations even if one deletion fails
           }
-        } else {
-          console.log(`Image ${imageIdToRemove} not found in product images`);
         }
       }
     }
 
     // Step 2: Handle new image uploads
     if (req.files && req.files.length > 0) {
-      console.log("Uploading new images...");
       const cloudinaryFolder = "products";
 
       const uploadPromises = req.files.map((file) =>
-        uploadOnCloudinary(file.path, cloudinaryFolder)
+        uploadBufferToCloudinary(file.buffer, cloudinaryFolder, file.originalname)
       );
 
       try {
         const uploadResults = await Promise.all(uploadPromises);
-        
+
         // Process successful uploads
         const newImages = uploadResults
           .filter(result => result) // Filter out null results
@@ -916,12 +898,11 @@ export const updateProductById = async (req, res) => {
 
         uploadedImagesCount = newImages.length;
         finalImages = [...finalImages, ...newImages];
-        console.log(`Successfully uploaded ${uploadedImagesCount} new images`);
       } catch (error) {
         console.error("Error uploading images:", error);
         return res.status(500).json({
           success: false,
-          message: "Failed to upload new images",
+          message: "Failed to upload new images: " + error.message,
           error: error.message,
         });
       }
@@ -929,7 +910,7 @@ export const updateProductById = async (req, res) => {
 
     // Step 3: Update the product with new data
     const updateData = {};
-    
+
     // Only update fields that are provided
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
@@ -939,7 +920,7 @@ export const updateProductById = async (req, res) => {
     if (discount !== undefined) updateData.discount = discount;
     if (size !== undefined) updateData.size = size;
     if (offerStatus !== undefined) updateData.offerStatus = offerStatus;
-    
+
     // Always update images array
     updateData.images = finalImages;
 
@@ -948,8 +929,6 @@ export const updateProductById = async (req, res) => {
       updateData,
       { new: true, runValidators: true }
     );
-
-    
 
     return res.status(200).json({
       success: true,
@@ -1025,7 +1004,7 @@ export const getAllOrders = async (req, res) => {
 
     const searchTerm = req.query.search || req.query.query || "";
     const statusFilter = req.query.status || "";
-    
+
     let filter = {};
 
     // Add status filter if provided
@@ -1036,7 +1015,7 @@ export const getAllOrders = async (req, res) => {
     // If search term is provided, search only in trackingId
     if (searchTerm && searchTerm.trim() !== "") {
       const searchRegex = new RegExp(searchTerm, "i");
-      
+
       filter = {
         ...filter,
         trackingId: searchRegex
@@ -1137,8 +1116,8 @@ export const updateOrderStatus = async (req, res) => {
 
     // Check if we need to restore stock (when changing to cancelled or return status)
     const previousStatus = order.Orderstatus;
-    const shouldRestoreStock = (status.toLowerCase() === 'cancelled' || status.toLowerCase() === 'return') 
-                               && (previousStatus !== 'cancelled' && previousStatus !== 'return');
+    const shouldRestoreStock = (status.toLowerCase() === 'cancelled' || status.toLowerCase() === 'return')
+      && (previousStatus !== 'cancelled' && previousStatus !== 'return');
 
     // If restoring stock, use the utility function from order controller
     if (shouldRestoreStock) {
@@ -1221,8 +1200,8 @@ export const getDashboardStats = async (req, res) => {
     });
 
     // Calculate order growth percentage
-    const orderGrowth = lastMonthOrders > 0 
-      ? ((currentMonthOrders - lastMonthOrders) / lastMonthOrders) * 100 
+    const orderGrowth = lastMonthOrders > 0
+      ? ((currentMonthOrders - lastMonthOrders) / lastMonthOrders) * 100
       : currentMonthOrders > 0 ? 100 : 0;
 
     // Get total revenue
@@ -1234,8 +1213,8 @@ export const getDashboardStats = async (req, res) => {
 
     // Get current month revenue
     const currentMonthRevenueResult = await Order.aggregate([
-      { 
-        $match: { 
+      {
+        $match: {
           paymentStatus: 'paid',
           createdAt: { $gte: startOfMonth }
         }
@@ -1246,8 +1225,8 @@ export const getDashboardStats = async (req, res) => {
 
     // Get last month revenue
     const lastMonthRevenueResult = await Order.aggregate([
-      { 
-        $match: { 
+      {
+        $match: {
           paymentStatus: 'paid',
           createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth }
         }
@@ -1257,8 +1236,8 @@ export const getDashboardStats = async (req, res) => {
     const lastMonthRevenue = lastMonthRevenueResult.length > 0 ? lastMonthRevenueResult[0].total : 0;
 
     // Calculate revenue growth percentage
-    const revenueGrowth = lastMonthRevenue > 0 
-      ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 
+    const revenueGrowth = lastMonthRevenue > 0
+      ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
       : currentMonthRevenue > 0 ? 100 : 0;
 
     // Get current month users
@@ -1272,8 +1251,8 @@ export const getDashboardStats = async (req, res) => {
     });
 
     // Calculate user growth percentage
-    const userGrowth = lastMonthUsers > 0 
-      ? ((currentMonthUsers - lastMonthUsers) / lastMonthUsers) * 100 
+    const userGrowth = lastMonthUsers > 0
+      ? ((currentMonthUsers - lastMonthUsers) / lastMonthUsers) * 100
       : currentMonthUsers > 0 ? 100 : 0;
 
     const stats = {
@@ -1423,7 +1402,7 @@ export const deleteUser = async (req, res) => {
 
     // Find the user in our database
     const user = await User.findById(userId);
-    
+
     if (!user) {
       return res.status(404).json({
         message: "User not found",
@@ -1433,14 +1412,13 @@ export const deleteUser = async (req, res) => {
 
     // Start a database transaction for data consistency
     const session = await mongoose.startSession();
-    
+
     try {
       await session.withTransaction(async () => {
         // Delete user from Clerk first
         if (user.clerkId) {
           try {
             await clerkClient.users.deleteUser(user.clerkId);
-            console.log(`Successfully deleted user from Clerk: ${user.clerkId}`);
           } catch (clerkError) {
             console.error("Error deleting user from Clerk:", clerkError);
             // Continue with database cleanup even if Clerk deletion fails
@@ -1451,18 +1429,15 @@ export const deleteUser = async (req, res) => {
         // Delete associated cart data
         if (user.cart) {
           await Cart.findByIdAndDelete(user.cart).session(session);
-          console.log(`Deleted cart for user: ${userId}`);
         }
 
         // Delete associated address data
         if (user.address) {
           await Address.findByIdAndDelete(user.address).session(session);
-          console.log(`Deleted address for user: ${userId}`);
         }
 
         // Delete all orders associated with the user
         const deletedOrders = await Order.deleteMany({ owner: userId }).session(session);
-        console.log(`Deleted ${deletedOrders.deletedCount} orders for user: ${userId}`);
 
         // Remove user from any wishlists or other references
         // This handles the wishlist array in the user model
@@ -1473,7 +1448,6 @@ export const deleteUser = async (req, res) => {
 
         // Finally, delete the user from our database
         await User.findByIdAndDelete(userId).session(session);
-        console.log(`Successfully deleted user from database: ${userId}`);
       });
 
       return res.status(200).json({
@@ -1531,7 +1505,6 @@ export const deleteUserById = async (req, res) => {
     if (user.clerkId) {
       try {
         await clerkClient.users.deleteUser(user.clerkId);
-        console.log(`Successfully deleted user ${user.clerkId} from Clerk`);
       } catch (error) {
         console.error(`Failed to delete user ${user.clerkId} from Clerk:`, error);
         // Continue with the response even if Clerk deletion fails
@@ -1848,4 +1821,3 @@ export const getInventoryByProductId = async (req, res) => {
     });
   }
 };
-

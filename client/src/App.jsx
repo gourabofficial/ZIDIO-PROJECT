@@ -34,11 +34,9 @@ import Checkout from "./_root/pages/Checkout";
 import PaymentSuccess from "./_root/pages/PaymentSuccess";
 import PaymentCancel from "./_root/pages/PaymentCancel";
 import AdminInventory from "./admin/components/AdminInventory";
-import { useAuthdata } from "./context/AuthContext";
 
 const App = () => {
-  const { token } = useAuthdata();
-  console.log(token);
+
   return (
     <>
       <ScrollToTop />

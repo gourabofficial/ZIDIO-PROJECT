@@ -21,7 +21,6 @@ export const AuthProvider = ({ children }) => {
     try {
       if (user && getToken) {
         const clerkToken = await getToken();
-        console.log("Fetched Clerk token:", clerkToken ? "✓ Token received" : "✗ No token");
         setToken(clerkToken);
         
         // Store token in localStorage for axios interceptor
@@ -102,7 +101,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateUserState = (updates) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      return;
+    }
 
     const updatedUser = {
       ...currentUser,
@@ -127,7 +128,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateWishlistLocally = (newWishlist) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      return;
+    }
 
     const updatedUser = {
       ...currentUser,
@@ -214,7 +217,9 @@ export const AuthProvider = ({ children }) => {
 
   // Add to wishlist optimistically
   const addToWishlistOptimistic = (product) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      return;
+    }
 
     const currentWishlist = currentUser.wishlist || [];
     const isAlreadyInWishlist = currentWishlist.some(
@@ -306,7 +311,6 @@ export const AuthProvider = ({ children }) => {
     refreshToken,
     refetchUserData,
     updateUserState,
-    // Add optimistic update functions
     updateCartLocally,
     updateWishlistLocally,
     addToCartOptimistic,
@@ -328,4 +332,3 @@ export const useAuthdata = () => {
   }
   return context;
 };
-

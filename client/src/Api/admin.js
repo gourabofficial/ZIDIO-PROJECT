@@ -1,39 +1,24 @@
-import axiosInstance from "./config";
-
-export const AdminAddProduct = async (productData, token = null) => {
-  console.log("productData in admin.js", productData);
+import axiosInstance, { axiosInstanceForMultipart } from "./config";
   
+export const AdminAddProduct = async (productData, token = null) => {
   try {
-    // productData is already a FormData object from AddProduct.jsx
-    // Just log the FormData contents for debugging
-    console.log("FormData contents:");
-    for (let pair of productData.entries()) {
-      console.log(
-        pair[0] + ": " + (pair[1] instanceof File ? pair[1].name : pair[1])
-      );
-    }
 
-    console.log("Using token:", token ? "✓ Token available" : "✗ No token");
+    const headers = {
+      'Content-Type': 'multipart/form-data',
+    };
 
-    const headers = {};
-    
-    // Only add Authorization header if token is provided
+    // If token is provided, add it to headers
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    // Don't set Content-Type for FormData - let the browser handle it
-    console.log("Request headers:", headers);
-
-    const response = await axiosInstance.post(
+    const response = await axiosInstanceForMultipart.post(
       "/admin/add-product",
       productData,
       {
-        headers
+        headers,
       }
     );
-
-    console.log("Response:", response.data);
 
     if (!response.data.success) {
       return {
@@ -47,10 +32,6 @@ export const AdminAddProduct = async (productData, token = null) => {
       success: true,
     };
   } catch (error) {
-    console.error("Error adding product:", error);
-    console.error("Error response:", error.response?.data);
-    console.error("Error status:", error.response?.status);
-    
     // Handle specific 401 errors
     if (error.response?.status === 401) {
       return {
@@ -58,7 +39,7 @@ export const AdminAddProduct = async (productData, token = null) => {
         success: false,
       };
     }
-    
+
     return {
       message: error.response?.data?.message || "Failed to add product",
       success: false,
@@ -67,7 +48,6 @@ export const AdminAddProduct = async (productData, token = null) => {
 };
 
 export const updateHomeContent = async (data) => {
-  console.log("updateHomeContentData in admin.js", data);
   try {
     const response = await axiosInstance.patch(
       "/admin/update-homecontent",
@@ -132,8 +112,6 @@ export const getAllSearchProducts = async (
 };
 
 export const getProductsbyMultipleIds = async (ids, token = null) => {
-  // console.log("ids in getProductsbyMultipleIds", ids);
-
   try {
     const headers = {
       'Content-Type': 'application/json',
@@ -184,7 +162,7 @@ export const getAllSearchUsers = async (
     const response = await axiosInstance.get(
       `/admin/get-search-all-users?page=${page}&searchTerm=${encodedSearchTerm}&limit=${limit}`
     );
-    console.log("response in getAllSearchUsers", response);
+
     if (!response.data.success) {
       return {
         message: response.data.message,

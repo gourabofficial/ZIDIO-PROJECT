@@ -1,23 +1,32 @@
 import React, { useState, useMemo, useRef } from "react";
 import { AdminAddProduct } from "../../Api/admin";
 import { toast } from "react-toastify";
-import { 
-  Package, 
-  DollarSign, 
-  Tag, 
-  PercentCircle, 
-  Image as ImageIcon, 
-  Info, 
-  Check, 
-  X, 
-  ShoppingBag, 
-  
+import {
+  Package,
+  DollarSign,
+  Tag,
+  PercentCircle,
+  Image as ImageIcon,
+  Info,
+  Check,
+  X,
+  ShoppingBag,
+
   IndianRupee
 } from "lucide-react";
 import { useAuthdata } from "../../context/AuthContext";
 
 const AddProduct = () => {
-  const { token, fetchToken } = useAuthdata();
+  const { isLoaded, token, refreshToken } = useAuthdata();
+
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-gray-400">Loading...</p>
+      </div>
+    );
+  }
+
   // Form state with images array included
   const [formData, setFormData] = useState({
     name: "",
@@ -67,12 +76,12 @@ const AddProduct = () => {
     if (!formData.price || isNaN(formData.price) || Number(formData.price) <= 0) {
       return null;
     }
-    
+
     const price = Number(formData.price);
     const discount = formData.offerStatus ? Number(formData.discount) : 0;
-    
+
     if (discount <= 0) return null;
-    
+
     const discounted = price - (price * discount / 100);
     return discounted.toFixed(2);
   }, [formData.price, formData.discount, formData.offerStatus]);
@@ -232,18 +241,6 @@ const AddProduct = () => {
         return;
       }
 
-      // Get fresh token before making the request
-      console.log("Getting fresh token before product submission...");
-      const freshToken = await fetchToken();
-      
-      if (!freshToken) {
-        toast.error("Authentication failed. Please log in again.");
-        setLoading(false);
-        return;
-      }
-
-      console.log("Fresh token obtained:", freshToken ? "✓ Available" : "✗ Not available");
-
       // Create FormData object for submission
       const productFormData = new FormData();
 
@@ -260,12 +257,18 @@ const AddProduct = () => {
       });
 
       // Add images correctly
-      formData.images.forEach((imageFile, index) => {
+      formData.images.forEach((imageFile) => {
         productFormData.append(`images`, imageFile);
       });
 
-      // Use the FormData object with correctly appended files and fresh token
-      const response = await AdminAddProduct(productFormData, freshToken);
+      if (!token) {
+        toast.error("Authentication token is missing. Please log in again.");
+        setLoading(false);
+        return;
+      }
+
+      // Use the FormData object with correctly appended files
+      const response = await AdminAddProduct(productFormData, token);
 
       if (!response.success) {
         toast.error(
@@ -273,7 +276,6 @@ const AddProduct = () => {
         );
       } else {
         toast.success("Product added successfully!");
-        // Success message
         setSuccess(true);
 
         // Reset form on success
@@ -288,6 +290,11 @@ const AddProduct = () => {
           offerStatus: false,
           images: [],
         });
+
+        // Clear file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       }
 
       // Hide success message after 3 seconds
@@ -296,9 +303,7 @@ const AddProduct = () => {
       }, 3000);
     } catch (err) {
       console.error("Error in form submission:", err);
-      setErrors({
-        general: "An unexpected error occurred",
-      });
+      toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -309,7 +314,7 @@ const AddProduct = () => {
   // Navigation tabs for form sections
   const navigationTabs = [
     { id: "basic", label: "Basic Info", icon: <Info size={18} /> },
-    { id: "pricing", label: "Pricing & Options", icon:  <IndianRupee size={18}  /> },
+    { id: "pricing", label: "Pricing & Options", icon: <IndianRupee size={18} /> },
     { id: "images", label: "Product Images", icon: <ImageIcon size={18} /> },
   ];
 
@@ -318,27 +323,27 @@ const AddProduct = () => {
     e.preventDefault();
     e.currentTarget.classList.add('border-blue-400', 'bg-blue-900/10');
   };
-  
+
   const handleDragLeave = (e) => {
     e.preventDefault();
     e.currentTarget.classList.remove('border-blue-400', 'bg-blue-900/10');
   };
-  
+
   const handleDrop = (e) => {
     e.preventDefault();
     e.currentTarget.classList.remove('border-blue-400', 'bg-blue-900/10');
-    
+
     if (e.dataTransfer.files.length > 0) {
       const droppedFiles = Array.from(e.dataTransfer.files).filter(
         file => file.type.startsWith("image/")
       );
-      
+
       if (droppedFiles.length > 0) {
         setFormData((prevData) => ({
           ...prevData,
           images: [...prevData.images, ...droppedFiles],
         }));
-        
+
         if (errors.images) {
           setErrors((prevErrors) => ({
             ...prevErrors,
@@ -378,11 +383,10 @@ const AddProduct = () => {
           <button
             key={tab.id}
             onClick={() => setActiveSection(tab.id)}
-            className={`flex items-center py-2 px-4 mr-2 rounded-t-lg transition-all duration-200 whitespace-nowrap ${
-              activeSection === tab.id
-                ? "bg-blue-900/30 text-blue-400 border-b-2 border-blue-500"
-                : "text-gray-400 hover:text-gray-300 hover:bg-gray-800/40"
-            }`}
+            className={`flex items-center py-2 px-4 mr-2 rounded-t-lg transition-all duration-200 whitespace-nowrap ${activeSection === tab.id
+              ? "bg-blue-900/30 text-blue-400 border-b-2 border-blue-500"
+              : "text-gray-400 hover:text-gray-300 hover:bg-gray-800/40"
+              }`}
           >
             <span className="mr-2">{tab.icon}</span>
             <span>{tab.label}</span>
@@ -398,7 +402,7 @@ const AddProduct = () => {
               <Package className="mr-2" size={18} />
               Basic Product Information
             </h3>
-            
+
             <div className="space-y-6">
               <div className="form-group">
                 <label htmlFor="name" className="block mb-1 font-medium text-gray-200">
@@ -411,11 +415,10 @@ const AddProduct = () => {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter product name"
-                  className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${
-                    errors.name
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4"
-                  }`}
+                  className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${errors.name
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4"
+                    }`}
                 />
                 {errors.name && (
                   <p className="text-red-400 text-sm mt-1 flex items-center">
@@ -435,11 +438,10 @@ const AddProduct = () => {
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Describe your product in detail"
-                  className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${
-                    errors.description
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4"
-                  }`}
+                  className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${errors.description
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4"
+                    }`}
                   rows="4"
                 />
                 {errors.description && (
@@ -461,11 +463,10 @@ const AddProduct = () => {
                       name="category"
                       value={formData.category}
                       onChange={handleChange}
-                      className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 appearance-none ${
-                        errors.category
-                          ? "border-red-500 focus:ring-red-500"
-                          : "border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4"
-                      }`}
+                      className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 appearance-none ${errors.category
+                        ? "border-red-500 focus:ring-red-500"
+                        : "border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4"
+                        }`}
                     >
                       <option value="">Select Category</option>
                       {categoryOptions.map((option) => (
@@ -496,11 +497,10 @@ const AddProduct = () => {
                       name="collections"
                       value={formData.collections}
                       onChange={handleChange}
-                      className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 appearance-none ${
-                        errors.collections
-                          ? "border-red-500 focus:ring-red-500"
-                          : "border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4"
-                      }`}
+                      className={`w-full p-3 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 appearance-none ${errors.collections
+                        ? "border-red-500 focus:ring-red-500"
+                        : "border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4"
+                        }`}
                     >
                       <option value="">Select Collection</option>
                       {collectionOptions.map((option) => (
@@ -525,18 +525,16 @@ const AddProduct = () => {
               <div className="form-group">
                 <label className="block mb-2 font-medium text-gray-200">Size Options *</label>
                 <div
-                  className={`size-options flex flex-wrap gap-3 p-3 bg-gray-800 border rounded-lg transition-all duration-300 ${
-                    errors.size ? "border-red-500" : "border-gray-700"
-                  }`}
+                  className={`size-options flex flex-wrap gap-3 p-3 bg-gray-800 border rounded-lg transition-all duration-300 ${errors.size ? "border-red-500" : "border-gray-700"
+                    }`}
                 >
                   {sizeOptions.map((size) => (
                     <label
                       key={size}
-                      className={`size-checkbox inline-flex items-center cursor-pointer px-4 py-2 rounded-lg transition-all duration-300 ${
-                        formData.size.includes(size)
-                          ? "bg-blue-600 text-white border border-blue-500"
-                          : "bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600"
-                      }`}
+                      className={`size-checkbox inline-flex items-center cursor-pointer px-4 py-2 rounded-lg transition-all duration-300 ${formData.size.includes(size)
+                        ? "bg-blue-600 text-white border border-blue-500"
+                        : "bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600"
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -557,14 +555,14 @@ const AddProduct = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="flex justify-end">
             <button
               type="button"
               onClick={() => setActiveSection("pricing")}
               className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center"
             >
-              
+
               Next: Pricing & Options
               <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
@@ -577,10 +575,10 @@ const AddProduct = () => {
         <div className={activeSection === "pricing" ? "block" : "hidden"}>
           <div className="bg-gray-800/40 p-4 rounded-lg border border-gray-700 mb-6">
             <h3 className="text-lg font-medium text-blue-400 mb-4 flex items-center">
-             <IndianRupee className="mr-2" size={18} />
+              <IndianRupee className="mr-2" size={18} />
               Pricing & Discount Options
             </h3>
-            
+
             <div className="space-y-6">
               <div className="form-group">
                 <label htmlFor="price" className="block mb-1 font-medium text-gray-200">
@@ -595,11 +593,10 @@ const AddProduct = () => {
                     value={formData.price}
                     onChange={handleChange}
                     placeholder="0.00"
-                    className={`w-full p-3 pl-8 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${
-                      errors.price
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4"
-                    }`}
+                    className={`w-full p-3 pl-8 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${errors.price
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4"
+                      }`}
                     min="0"
                     step="0.01"
                   />
@@ -643,11 +640,10 @@ const AddProduct = () => {
                       name="discount"
                       value={formData.discount}
                       onChange={handleChange}
-                      className={`w-full p-3 pl-8 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${
-                        errors.discount
-                          ? "border-red-500"
-                          : "border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4"
-                      }`}
+                      className={`w-full p-3 pl-8 bg-gray-800 border rounded-lg text-white focus:outline-none transition-all duration-300 ${errors.discount
+                        ? "border-red-500"
+                        : "border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4"
+                        }`}
                       min="0"
                       max="100"
                       disabled={!formData.offerStatus}
@@ -659,7 +655,7 @@ const AddProduct = () => {
                       {errors.discount}
                     </p>
                   )}
-                  
+
                   {/* Enhanced discounted price preview */}
                   {discountedPrice && formData.offerStatus && (
                     <div className="mt-4 bg-gradient-to-r from-green-900/20 to-blue-900/20 backdrop-blur-sm border border-green-600/30 rounded-lg p-4">
@@ -690,7 +686,7 @@ const AddProduct = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="flex justify-between">
             <button
               type="button"
@@ -722,13 +718,13 @@ const AddProduct = () => {
               <ImageIcon className="mr-2" size={18} />
               Product Images
             </h3>
-            
+
             <div className="space-y-6">
               <div className="form-group">
                 <label htmlFor="images" className="block mb-2 font-medium text-gray-200">
                   Upload Product Images *
                 </label>
-                <div 
+                <div
                   className="border-2 border-dashed border-gray-600 rounded-lg p-6 hover:border-blue-500 transition-colors duration-200 cursor-pointer bg-gray-800/50"
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
@@ -779,7 +775,7 @@ const AddProduct = () => {
                     {formData.images.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => setFormData({...formData, images: []})}
+                        onClick={() => setFormData({ ...formData, images: [] })}
                         className="text-sm text-red-400 hover:text-red-300 transition-colors duration-200 px-3 py-1 rounded-md hover:bg-red-900/20"
                       >
                         Clear All
@@ -823,7 +819,7 @@ const AddProduct = () => {
               )}
             </div>
           </div>
-          
+
           <div className="flex justify-between">
             <button
               type="button"

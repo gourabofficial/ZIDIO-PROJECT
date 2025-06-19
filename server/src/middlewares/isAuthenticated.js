@@ -4,9 +4,6 @@ import { User } from '../model/user.model.js';
 
 export const isLogedin = async (req, res, next) => {
   try {
-     console.log('isLogedin middleware - Headers:', req.headers);
-     console.log('isLogedin middleware - Auth object:', req.auth);
-    
     // Check for userId from Clerk middleware
     let userId = req.auth?.userId;
 
@@ -74,8 +71,6 @@ export const isLogedin = async (req, res, next) => {
 
 export const isAdmin = async (req, res, next) => {
   try {
-    // console.log('isAdmin middleware - Headers:', req.headers);
-    // console.log('isAdmin middleware - Auth object:', req.auth);
     
     // Check for userId from Clerk middleware
     let userId = req.auth?.userId;
@@ -83,19 +78,15 @@ export const isAdmin = async (req, res, next) => {
     // If no userId from Clerk middleware, try to extract from Authorization header
     if (!userId) {
        const authHeader = req.headers.authorization;
-       console.log('isAdmin middleware - Authorization header:', authHeader);
        
        if (authHeader && authHeader.startsWith('Bearer ')) {
           const token = authHeader.substring(7);
-          console.log('isAdmin middleware - Extracted token:', token ? 'Present' : 'Not present');
           
           try {
              // Verify the token with Clerk
              const session = await clerkClient.verifyToken(token);
              userId = session.sub;
-             console.log('isAdmin middleware - Token verified, userId:', userId);
           } catch (tokenError) {
-             console.error('isAdmin middleware - Token verification failed:', tokenError);
              return res.status(401).json({
                 success: false,
                 message: "Invalid token"
@@ -105,7 +96,6 @@ export const isAdmin = async (req, res, next) => {
     }
 
     if (!userId) {
-       console.log('isAdmin middleware - No userId found');
        return res.status(401).json({
           success: false,
           message: "Unauthorized: Authentication required"
@@ -113,9 +103,7 @@ export const isAdmin = async (req, res, next) => {
     }
 
     try {
-      // console.log('isAdmin middleware - Attempting to get user with ID:', userId);
       const clerkUser = await clerkClient.users.getUser(userId);
-      // console.log('isAdmin middleware - Clerk response:', clerkUser.id);
       
       if (!clerkUser) {
         return res.status(401).json({
